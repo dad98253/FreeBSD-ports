@@ -2,19 +2,20 @@
 
 PORTNAME=	api
 PORTVERSION=	0.5.0
-PORTREVISION=	5
+PORTREVISION=	7
 CATEGORIES=	security
 MASTER_SITES=	SF/razorbacktm/API
 PKGNAMEPREFIX=	razorback-
 DIST_SUBDIR=	razorback
 
-MAINTAINER=	tj@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Framework for an intelligence driven security solution - API
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
 LIB_DEPENDS=	libconfig.so:devel/libconfig \
+		libssh.so:security/libssh \
 		libuuid.so:misc/e2fsprogs-libuuid \
 		libcurl.so:ftp/curl \
 		libjson-c.so:devel/json-c

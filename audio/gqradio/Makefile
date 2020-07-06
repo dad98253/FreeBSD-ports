@@ -3,7 +3,7 @@
 
 PORTNAME=	gqradio
 PORTVERSION=	1.9.2
-PORTREVISION=	12
+PORTREVISION=	13
 CATEGORIES=	audio
 MASTER_SITES=	SF/gqmpeg/${PORTNAME}/${PORTVERSION}
 
@@ -12,7 +12,7 @@ COMMENT=	GTK2 based FM tuner
 
 LICENSE=	GPLv2
 
-USES=		gettext pathfix pkgconfig
+USES=		gettext gnome pathfix pkgconfig xorg
 USE_GNOME=	gtk20
 USE_XORG=	x11
 GNU_CONFIGURE=	yes

@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	racket
-PORTVERSION=	6.12
+PORTVERSION=	7.5
+PORTREVISION=	1
 CATEGORIES=	lang scheme
 MASTER_SITES=	http://mirror.racket-lang.org/installers/${PORTVERSION}/ \
 		http://www.cs.utah.edu/plt/installers/${PORTVERSION}/ \
@@ -16,36 +17,33 @@ DIST_SUBDIR=	${PORTNAME}/${PORTVERSION}
 MAINTAINER=	olgeni@FreeBSD.org
 COMMENT=	Interactive, integrated, graphical Scheme programming environment
 
-LICENSE=	LGPL3
+LICENSE=	APACHE20 MIT
+LICENSE_COMB=	dual
+LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
-LIB_DEPENDS=	libffi.so:devel/libffi		\
-		libcairo.so:graphics/cairo	\
+IGNORE_powerpc64=	./lightning/lightning.h:81:2: GNU lightning does not support the current target
+BROKEN_i386=		segfaults during build
+
+LIB_DEPENDS=	libcairo.so:graphics/cairo \
+		libffi.so:devel/libffi \
 		libpng.so:graphics/png
 
-BROKEN_powerpc64=	fails to build: jit.c: 'JIT_LOCAL4' undeclared (first use in this function)
-BROKEN_FreeBSD_10_i386=	segfaults during build
-BROKEN_FreeBSD_11_i386=	segfaults during build
-BROKEN_FreeBSD_12_i386=	segfaults during build
-NOT_FOR_ARCHS=		aarch64 armv6 armv7 sparc64
-NOT_FOR_ARCHS_REASON=	not yet ported to this arch
-
-MAKE_JOBS_UNSAFE=yes
-
-CONFLICTS=	racket-minimal-[0-9]*
-
+USES=		gnome iconv jpeg libtool localbase sqlite tar:tgz
+USE_GNOME=	cairo pango
 GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	-enable-libffi --enable-pthread --enable-places --enable-shared
-CPPFLAGS+=	-I${LOCALBASE}/include
-LIBS+=		-L${LOCALBASE}/lib
+CONFIGURE_ARGS=	--enable-libffi \
+		--enable-places \
+		--enable-pthread \
+		--mandir=${PREFIX}/share/man
 WRKSRC=		${WRKDIR}/racket-${PORTVERSION}/src
 PATCH_WRKSRC=	${WRKDIR}/racket-${PORTVERSION}
-USES=		iconv jpeg libtool sqlite tar:tgz
 USE_LDCONFIG=	yes
 REINPLACE_ARGS=	-i ""
-USE_GNOME=	cairo pango
+MAKE_JOBS_UNSAFE=	yes
+CONFLICTS=	racket-minimal-[0-9]*
 
-OPTIONS_DEFINE=	FUTURES
-OPTIONS_DEFAULT=FUTURES
+OPTIONS_DEFINE=		DOCS FUTURES
+OPTIONS_DEFAULT=	FUTURES
 
 OPTIONS_DEFINE_amd64=	JIT
 OPTIONS_DEFINE_i386=	JIT
@@ -54,10 +52,16 @@ OPTIONS_DEFAULT_i386=	JIT
 
 FUTURES_DESC=	Enable futures
 JIT_DESC=	Enable JIT compiler
-JIT_CFLAGS=	-msse -msse2 -mfpmath=sse
 
+FUTURES_IMPLIES=		JIT
 FUTURES_CONFIGURE_ENABLE=	futures
-JIT_CONFIGURE_ENABLE=	jit
+JIT_CONFIGURE_ENABLE=		jit
+
+.include <bsd.port.options.mk>
+
+.if ${PORT_OPTIONS:MJIT} && ${ARCH} == "amd64"
+CFLAGS+=	-msse -msse2 -mfpmath=sse
+.endif
 
 post-install:
 	${FIND} ${STAGEDIR}${PREFIX} -type d -empty -delete

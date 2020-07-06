@@ -2,21 +2,22 @@
 # $FreeBSD$
 
 PORTNAME=	azure-core
-PORTVERSION=	0.1.14
+PORTVERSION=	0.1.15
 CATEGORIES=	net rubygems
 MASTER_SITES=	RG
 
-MAINTAINER=	ruby@FreeBSD.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	Microsoft Azure Client Core Library for Ruby SDK
 
 LICENSE=	APACHE20
 
-RUN_DEPENDS=	rubygem-faraday>=0.9:www/rubygem-faraday \
-		rubygem-faraday_middleware>=0.10:www/rubygem-faraday_middleware \
-		rubygem-nokogiri>=1.6:textproc/rubygem-nokogiri
+RUN_DEPENDS=	rubygem-faraday>=0.9<1:www/rubygem-faraday \
+		rubygem-faraday_middleware>=0.10<1:www/rubygem-faraday_middleware \
+		rubygem-nokogiri>=1.6<2:textproc/rubygem-nokogiri
+
+USES=		gem
+USE_RUBY=	yes
 
 NO_ARCH=	yes
-USE_RUBY=	yes
-USES=		gem
 
 .include <bsd.port.mk>

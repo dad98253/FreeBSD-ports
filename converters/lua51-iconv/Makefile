@@ -3,7 +3,7 @@
 
 PORTNAME=	iconv
 PORTVERSION=	7
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	converters
 MASTER_SITES=	GHC
 PKGNAMEPREFIX=	${LUA_PKGNAMEPREFIX}
@@ -11,6 +11,8 @@ DISTNAME=	lua-${PORTNAME}-${PORTVERSION}
 
 MAINTAINER=	feld@FreeBSD.org
 COMMENT=	Iconv binding for Lua 5
+
+BROKEN=		unfetchable
 
 USES=		pkgconfig iconv lua:51
 
@@ -22,7 +24,9 @@ PLIST_FILES=	%%LUA_MODLIBDIR%%/iconv.so
 CFLAGS+=	`pkgconf --cflags lua-${LUA_VER}` -I${LOCALBASE}/include
 MAKE_ARGS=	LUABIN=${LUA_CMD} CFLAGS="${CFLAGS}"
 LDFLAGS=	-shared ${ICONV_LIB} -L${LOCALBASE}/lib
+CFLAGS_aarch64=	-fPIC
 CFLAGS_amd64=	-fPIC
+CFLAGS_i386=	-fPIC
 
 do-install:
 	@${MKDIR} ${STAGEDIR}${LUA_MODLIBDIR}

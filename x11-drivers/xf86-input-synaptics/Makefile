@@ -2,23 +2,26 @@
 
 PORTNAME=	xf86-input-synaptics
 PORTVERSION=	1.9.1
+PORTREVISION=	6
 CATEGORIES=	x11-drivers
 
 MAINTAINER=	x11@FreeBSD.org
 COMMENT=	X.Org synaptics input driver
 
-LICESNE=	MIT
+LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-USES=		pathfix
+USES=		pathfix xorg xorg-cat:driver
 USE_XORG=	x11 xtst
-XORG_CAT=	driver
 
 OPTIONS_DEFINE=	EVDEV
+OPTIONS_DEFAULT_FreeBSD_12=	EVDEV
+OPTIONS_DEFAULT_FreeBSD_13=	EVDEV
+OPTIONS_DEFAULT=${OPTIONS_DEFAULT_${OPSYS}_${OSREL:R}}
 EVDEV_DESC=	Use evdev for input events (requires kernel support)
 
 EVDEV_CONFIGURE_ENV=	BUILD_EVENTCOMM=yes
-EVDEV_BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:multimedia/v4l_compat
+EVDEV_BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:devel/evdev-proto
 EVDEV_LIB_DEPENDS=	libevdev.so:devel/libevdev
 
 .include <bsd.port.mk>

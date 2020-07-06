@@ -5,7 +5,7 @@ PORTNAME=	ev
 PORTVERSION=	1.0.4
 CATEGORIES=	devel
 
-MAINTAINER=	johnpupu@gmail.com
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	Libev extension for PHP
 
 LICENSE=	PHP301

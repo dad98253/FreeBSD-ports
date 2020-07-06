@@ -11,7 +11,8 @@ DISTNAME=	${PORTNAME}-${PORTVERSION:S/.//}
 MAINTAINER=	acm@FreeBSD.org
 COMMENT=	File splitter, GTK and CLI versions
 
-USE_GNOME=	#
+BROKEN=		unfetchable
+
 USES=		gmake pkgconfig
 
 MAKE_ARGS=	CC="${CC}"
@@ -25,6 +26,7 @@ LANG_EN_DESC=	language support
 .include <bsd.port.options.mk>
 
 .if ${PORT_OPTIONS:MGTK2}
+USES+=		gnome
 USE_GNOME+=	gtk20
 .endif
 
@@ -41,15 +43,15 @@ PLIST_FILES+=	bin/ghoz
 .endif
 
 .if ${PORT_OPTIONS:MLANG_ES}
-MAKE_ENV+=	LANG="-DHOZ_LANG_ES"
+MAKE_ENV+=	HOZ_LANG="-DHOZ_LANG_ES"
 .endif
 
 .if ${PORT_OPTIONS:MLANG_EN}
-MAKE_ENV+=	LANG="-DHOZ_LANG_EN"
+MAKE_ENV+=	HOZ_LANG="-DHOZ_LANG_EN"
 .endif
 
 .if ${PORT_OPTIONS:MLANG_FR}
-MAKE_ENV+=	LANG="-DHOZ_LANG_FR"
+MAKE_ENV+=	HOZ_LANG="-DHOZ_LANG_FR"
 .endif
 
 do-install:

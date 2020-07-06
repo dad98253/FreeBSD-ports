@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	emkatic
-PORTVERSION=	0.36
+PORTVERSION=	0.38
 PORTREVISION=	1
 CATEGORIES=	russian emulators
 PKGNAMESUFFIX=	${LAZARUS_PKGNAMESUFFIX}
@@ -15,7 +15,7 @@ COMMENT=	Emulator of Elektronika RPN programmable calculator series
 LICENSE=	GPLv3+
 LICENSE_FILE=	${WRKSRC}/COPYING.txt
 
-USES=		fpc lazarus:flavors
+USES=		fpc lazarus:flavors xorg
 USE_FPC=	cairo chm fcl-base fcl-image fcl-json fcl-registry fcl-xml \
 		pasjpeg regexpr rtl-extra x11
 USE_XORG=	x11
@@ -27,9 +27,8 @@ PLIST_FILES=	bin/${PORTNAME}
 PORTDATA=	*
 PORTDOCS=	CHANGELOG.*.txt README.*.txt
 
-gtk2_CONFLICTS_INSTALL=	ru-${PORTNAME}-qt4 ru-${PORTNAME}-qt5
-qt4_CONFLICTS_INSTALL=	ru-${PORTNAME}-gtk2 ru-${PORTNAME}-qt5
-qt5_CONFLICTS_INSTALL=	ru-${PORTNAME}-gtk2 ru-${PORTNAME}-qt4
+gtk2_CONFLICTS_INSTALL=	ru-${PORTNAME}-qt5
+qt5_CONFLICTS_INSTALL=	ru-${PORTNAME}-gtk2
 
 OPTIONS_DEFINE=		DOCS PORTAUDIO
 OPTIONS_DEFAULT=	PORTAUDIO
@@ -37,6 +36,7 @@ OPTIONS_DEFAULT=	PORTAUDIO
 PORTAUDIO_LIB_DEPENDS=	libportaudio.so:audio/portaudio
 
 .if ${FLAVOR:Ugtk2:Mgtk2}
+USES+=		gnome
 USE_GNOME+=	cairo
 .endif
 

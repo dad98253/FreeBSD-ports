@@ -2,8 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	libopenraw
-PORTVERSION=	0.1.2
-PORTREVISION=	1
+PORTVERSION=	0.1.3
+PORTREVISION=	7
 CATEGORIES=	graphics
 MASTER_SITES=	http://libopenraw.freedesktop.org/download/
 
@@ -15,7 +15,8 @@ LICENSE_FILE=	${WRKSRC}/COPYING.LESSER
 
 BUILD_DEPENDS=	${LOCALBASE}/include/boost/variant.hpp:devel/boost-libs
 
-USES=		compiler:c++11-lib jpeg libtool localbase pkgconfig tar:bz2
+USES=		compiler:c++11-lib gnome jpeg libtool localbase pkgconfig \
+		tar:bz2
 USE_GNOME=	libxml2
 USE_LDCONFIG=	yes
 

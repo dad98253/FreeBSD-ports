@@ -3,8 +3,9 @@
 
 PORTNAME=	electric
 PORTVERSION=	9.07
+PORTREVISION=	1
 CATEGORIES=	cad java
-MASTER_SITES=	GNU/${PORTNAME:S/-ng//} \
+MASTER_SITES=	GNU \
 		http://www.staticfreesoft.com/:1 \
 		http://www.staticfreesoft.com/jmanual/:2
 PKGNAMESUFFIX=	-ng
@@ -20,7 +21,6 @@ LICENSE=	GPLv3
 EXTRACT_DEPENDS=	${UNZIP_CMD}:archivers/unzip
 
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NO_BUILD=	yes
 SUB_LIST+=	LIBFILES="${LIBFILES}" \
 		JARFILE="${JARFILE}"

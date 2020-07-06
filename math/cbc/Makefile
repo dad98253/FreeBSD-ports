@@ -2,8 +2,9 @@
 
 PORTNAME=	cbc
 DISTVERSIONPREFIX=	releases/
-DISTVERSION=	2.9.9
+DISTVERSION=	2.10.5
 CATEGORIES=	math
+PKGNAMEPREFIX=	coin-or-
 
 MAINTAINER=	yuri@FreeBSD.org
 COMMENT=	Coin-or Branch and Cut: mixed integer programming solver
@@ -16,7 +17,7 @@ LIB_DEPENDS=	libblas.so:math/blas \
 		libClp.so:math/clp \
 		liblapack.so:math/lapack
 
-USES=		fortran gmake libtool pkgconfig
+USES=		compiler:c++11-lang fortran gmake libtool pkgconfig
 USE_GITHUB=	yes
 GH_ACCOUNT=	coin-or
 GH_PROJECT=	Cbc

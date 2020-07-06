@@ -1,45 +1,33 @@
---- gencode.c.orig	2016-07-30 13:42:44 UTC
+diff --git a/gencode.c b/gencode.c
+index bdc35e64..040a5531 100644
+--- gencode.c
 +++ gencode.c
-@@ -523,7 +523,8 @@ static struct block *gen_host6(compiler_
-     struct in6_addr *, int, int, int);
- #endif
- #ifndef INET6
--static struct block *gen_gateway(const u_char *, bpf_u_int32 **, int, int);
-+static struct block *gen_gateway(compiler_state_t *, const u_char *,
-+    bpf_u_int32 **, int, int);
- #endif
- static struct block *gen_ipfrag(compiler_state_t *);
- static struct block *gen_portatom(compiler_state_t *, int, bpf_int32);
-@@ -690,7 +691,9 @@ pcap_compile(pcap_t *p, struct bpf_progr
- 	}
- 	initchunks(&cstate);
- 	cstate.no_optimize = 0;
-+#ifdef INET6
- 	cstate.ai = NULL;
-+#endif
- 	cstate.ic.root = NULL;
- 	cstate.ic.cur_mark = 0;
- 	cstate.bpf_pcap = p;
-@@ -4846,11 +4849,8 @@ gen_host6(compiler_state_t *cstate, stru
+@@ -6947,11 +6947,15 @@ gen_mcode(compiler_state_t *cstate, const char *s1, const char *s2,
+ 		return (NULL);
  
- #ifndef INET6
- static struct block *
--gen_gateway(eaddr, alist, proto, dir)
--	const u_char *eaddr;
--	bpf_u_int32 **alist;
--	int proto;
--	int dir;
-+gen_gateway(compiler_state_t *cstate, const u_char *eaddr,
-+    bpf_u_int32 **alist, int proto, int dir)
- {
- 	struct block *b0, *b1, *tmp;
+ 	nlen = __pcap_atoin(s1, &n);
++	if (nlen < 0)
++		bpf_error(cstate, "invalid IPv4 address '%s'", s1);
+ 	/* Promote short ipaddr */
+ 	n <<= 32 - nlen;
  
-@@ -6414,7 +6414,7 @@ gen_scode(compiler_state_t *cstate, cons
- 		alist = pcap_nametoaddr(name);
- 		if (alist == NULL || *alist == NULL)
- 			bpf_error(cstate, "unknown host '%s'", name);
--		b = gen_gateway(eaddr, alist, proto, dir);
-+		b = gen_gateway(cstate, eaddr, alist, proto, dir);
- 		free(eaddr);
- 		return b;
- #else
+ 	if (s2 != NULL) {
+ 		mlen = __pcap_atoin(s2, &m);
++		if (mlen < 0)
++			bpf_error(cstate, "invalid IPv4 address '%s'", s2);
+ 		/* Promote short ipaddr */
+ 		m <<= 32 - mlen;
+ 		if ((n & ~m) != 0)
+@@ -7009,8 +7013,11 @@ gen_ncode(compiler_state_t *cstate, const char *s, bpf_u_int32 v, struct qual q)
+ 		vlen = __pcap_atodn(s, &v);
+ 		if (vlen == 0)
+ 			bpf_error(cstate, "malformed decnet address '%s'", s);
+-	} else
++	} else {
+ 		vlen = __pcap_atoin(s, &v);
++		if (vlen < 0)
++			bpf_error(cstate, "invalid IPv4 address '%s'", s);
++	}
+ 
+ 	switch (q.addr) {
+ 

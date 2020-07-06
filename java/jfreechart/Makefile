@@ -11,12 +11,9 @@ COMMENT=	Free Java class library for generating charts
 
 LICENSE=	LGPL21
 
-BROKEN_powerpc64=	fails to build: DirectionalGradientPaintTransformer.java:60: unmappable character for encoding ASCII
-
 RUN_DEPENDS=	${JAVALIBDIR}/jcommon.jar:java/jcommon
 
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 
 OPTIONS_DEFINE=	COMPILE DOCS
 OPTIONS_DEFAULT=COMPILE

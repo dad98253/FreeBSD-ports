@@ -1,73 +1,46 @@
 # $FreeBSD$
 
 PORTNAME=	dpdk
-PORTVERSION=	16.07
-PORTREVISION=	1
+DISTVERSION=	19.11
+PORTREVISION=	2
 CATEGORIES=	net
-MASTER_SITES=	http://www.dpdk.org/browse/dpdk/snapshot/
+MASTER_SITES=	http://fast.dpdk.org/rel/
 
 MAINTAINER=	bruce.richardson@intel.com
 COMMENT=	DPDK: Software libraries for packet processing
 
 LICENSE=	BSD3CLAUSE
 
-USES=		gmake kmod
-MAKEFILE=	GNUmakefile
 ONLY_FOR_ARCHS=	amd64
 ONLY_FOR_ARCHS_REASON=	Only works on 64-bit x86 hardware
-NO_PACKAGE=	ignores cflags
-RTE_TARGET=	x86_64-native-bsdapp-clang
-WRKBUILD=	${WRKSRC}/${RTE_TARGET}
-MAKE_ENV=	V=1
 
-ALL_TARGET=	install T=${RTE_TARGET}
+LIB_DEPENDS=	libjansson.so:devel/jansson
 
-OPTIONS_DEFINE=	DEBUG TOOLS
-OPTIONS_SUB=	yes
-DEBUG_DESC=	Debugging support (unoptimized build, impacts performance)
-TOOLS_DESC=	Install tool scripts
+USES=		meson kmod shebangfix ssl tar:xz
+MESON_ARGS=	-Dmachine=default -Ddefault_library=shared
+USE_LDCONFIG=	yes
+SHEBANG_FILES=	usertools/dpdk-pmdinfo.py \
+	usertools/dpdk-telemetry-client.py \
+	usertools/dpdk-devbind.py \
+	examples/ipsec-secgw/test/pkttest.py \
+	examples/ipsec-secgw/test/pkttest.sh \
+	examples/ipsec-secgw/test/run_test.sh \
+	examples/ipsec-secgw/test/trs_ipv6opts.py \
+	examples/ipsec-secgw/test/tun_null_header_reconstruct.py \
+	examples/performance-thread/l3fwd-thread/test.sh \
 
-DEBUG_MAKE_ENV=	EXTRA_CFLAGS='-O0 -g'
+OPTIONS_DEFINE=		EXAMPLES DEBUG TOOLS TESTS
+OPTIONS_DEFAULT=	TOOLS
+OPTIONS_SUB=		yes
+DEBUG_DESC=		Debugging support (unoptimized build, impacts performance)
+TOOLS_DESC=		Install tool scripts
+TESTS_DESC=		Build the automated unit test binary
+
+EXAMPLES_MESON_ON=	-Dexamples=all
+DEBUG_MESON_ON=		--buildtype=debug
+DEBUG_MESON_OFF=	--buildtype=release
+TESTS_MESON_TRUE=	tests
 TOOLS_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pyelftools>=0:devel/py-pyelftools@${PY_FLAVOR}
-TOOLS_USES=	python:2.7
-
-# build up the list of files in the compiled directory that should be executable
-EXEC_FILES=	app/cmdline_test \
-		app/testpipeline \
-		app/testpmd \
-		app/testacl \
-		app/test
-
-do-install:
-	@${MKDIR} ${STAGEDIR}${DATADIR}/${RTE_TARGET}/app \
-	  ${STAGEDIR}${DATADIR}/${RTE_TARGET}/lib \
-	  ${STAGEDIR}${DATADIR}/${RTE_TARGET}/include/generic \
-	  ${STAGEDIR}${DATADIR}/${RTE_TARGET}/include/exec-env
-	cd ${WRKSRC} && ${COPYTREE_SHARE} mk ${STAGEDIR}${DATADIR} \
-	   && ${COPYTREE_SHARE} examples ${STAGEDIR}${DATADIR}
-	${INSTALL_DATA} ${WRKBUILD}/.config ${STAGEDIR}${DATADIR}/${RTE_TARGET}
-	for f in ${EXEC_FILES} ; do \
-		${INSTALL_PROGRAM} ${WRKBUILD}/$$f ${STAGEDIR}${DATADIR}/${RTE_TARGET}/app; \
-	done
-	for f in ${WRKBUILD}/lib/* ; do \
-		${INSTALL_DATA} $$f ${STAGEDIR}${DATADIR}/${RTE_TARGET}/lib ; \
-	done
-	for f in ${WRKBUILD}/include/*.h ; do \
-		${INSTALL_DATA} $$f ${STAGEDIR}${DATADIR}/${RTE_TARGET}/include ; \
-	done
-	for f in ${WRKBUILD}/include/generic/*.h ; do \
-		${INSTALL_DATA} $$f ${STAGEDIR}${DATADIR}/${RTE_TARGET}/include/generic ; \
-	done
-	for f in ${WRKBUILD}/include/exec-env/*.h ; do \
-		${INSTALL_DATA} $$f ${STAGEDIR}${DATADIR}/${RTE_TARGET}/include/exec-env ; \
-	done
-	${LN} -sf ${DATADIR}/${RTE_TARGET}/lib ${STAGEDIR}${PREFIX}/lib/dpdk
-	${LN} -sf ${DATADIR}/${RTE_TARGET}/include ${STAGEDIR}${PREFIX}/include/dpdk
-	${LN} -sf ${DATADIR}/examples ${STAGEDIR}${EXAMPLESDIR}
-	${INSTALL_KLD} ${WRKBUILD}/kmod/* ${STAGEDIR}${KMODDIR}
-
-do-install-TOOLS-on:
-	@${MKDIR} ${STAGEDIR}${PREFIX}/bin/
-	${INSTALL_SCRIPT} ${WRKSRC}/tools/dpdk-pmdinfo.py ${STAGEDIR}${PREFIX}/bin/
+TOOLS_USES=		python:3.5+
 
 .include <bsd.port.mk>

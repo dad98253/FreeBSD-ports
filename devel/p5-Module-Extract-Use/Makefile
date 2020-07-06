@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	Module-Extract-Use
-PORTVERSION=	1.043
-PORTREVISION=	1
+PORTVERSION=	1.045
 CATEGORIES=	devel perl5
 MASTER_SITES=	CPAN
 PKGNAMEPREFIX=	p5-
@@ -14,8 +13,8 @@ COMMENT=	Pull out the modules a module explicitly uses
 LICENSE=	ART20
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-BUILD_DEPENDS=	p5-PPI>=0:textproc/p5-PPI
-RUN_DEPENDS:=	${BUILD_DEPENDS}
+BUILD_DEPENDS=	${RUN_DEPENDS}
+RUN_DEPENDS=	p5-PPI>=0:textproc/p5-PPI
 TEST_DEPENDS=	p5-Test-Pod>0:devel/p5-Test-Pod \
 		p5-Test-Pod-Coverage>0:devel/p5-Test-Pod-Coverage
 

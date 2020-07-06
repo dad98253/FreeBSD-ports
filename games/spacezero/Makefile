@@ -14,10 +14,9 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 
 LIB_DEPENDS=	libvorbisfile.so:audio/libvorbis
 
-USES=		openal:al,alut pkgconfig
+USES=		openal:al,alut gnome pkgconfig xorg
 USE_GNOME=	gtk20
 USE_XORG=	x11
-LLD_UNSAFE=	yes
 MAKE_ARGS=	DATADIR="${DATADIR}" \
 		INSTALL_DATA_DIR="${DATADIR}"
 ALL_TARGET=	${PORTNAME}
@@ -25,6 +24,7 @@ ALL_TARGET=	${PORTNAME}
 WRKSRC=		${WRKDIR}/${PORTNAME}
 
 LDFLAGS+=	-lX11
+LDFLAGS_i386=	-Wl,-znotext
 
 PORTDOCS=	*
 PORTDATA=	*
@@ -40,13 +40,6 @@ DESKTOP_ENTRIES="SpaceZero" \
 
 OPTIONS_DEFINE=	DOCS
 
-.include <bsd.port.pre.mk>
-
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1101000
-post-patch:
-	@${REINPLACE_CMD} -e 's|fdatasync|fsync|g' ${WRKSRC}/src/spacecomm.c
-.endif
-
 do-install:
 	${INSTALL_DATA} ${WRKSRC}/html/manual_files/space.ico ${STAGEDIR}${PREFIX}/share/pixmaps/${PORTNAME}.ico
 	${INSTALL_PROGRAM} ${WRKSRC}/bin/${PORTNAME} ${STAGEDIR}${PREFIX}/bin/
@@ -55,4 +48,4 @@ do-install:
 do-install-DOCS-on:
 	cd ${WRKSRC}/html && ${COPYTREE_SHARE} . ${STAGEDIR}${DOCSDIR}
 
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

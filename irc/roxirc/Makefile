@@ -10,11 +10,15 @@ MASTER_SITES=	http://roxirc.lighter.net/download/
 MAINTAINER=	tcltk@FreeBSD.org
 COMMENT=	Tcl/tk irc client
 
+BROKEN=		unfetchable
+
 USES+=		tk:run
 NO_BUILD=	yes
 
 PLIST_FILES=	bin/roxirc
 PORTDOCS=	*
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} 's|if \[ -x .*|${WISH} "$$0" "$$@"|' ${WRKSRC}/roxirc

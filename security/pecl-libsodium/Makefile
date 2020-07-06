@@ -2,17 +2,19 @@
 # $FreeBSD$
 
 PORTNAME=	libsodium
-PORTVERSION=	1.0.6
-PORTREVISION=	1
+PORTVERSION=	2.0.22
 CATEGORIES=	security
 
-MAINTAINER=	gasol.wu@gmail.com
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	PHP wrapper for the Sodium cryptographic library
 
 LICENSE=	BSD2CLAUSE
 
 LIB_DEPENDS=	libsodium.so:security/libsodium
 
-USES=		php:pecl
+USES=		localbase php:pecl
+
+#IGNORE_WITH_PHP=72 73 74
+PHP_MODNAME=	sodium
 
 .include <bsd.port.mk>

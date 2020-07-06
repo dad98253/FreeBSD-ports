@@ -2,12 +2,11 @@
 # $FreeBSD$
 
 PORTNAME=	hexchat
-PORTVERSION=	2.14.1
+PORTVERSION=	2.14.3
 DISTVERSIONPREFIX=	v
-PORTREVISION=	1
-CATEGORIES=	irc gnome ipv6
+CATEGORIES=	irc gnome
 
-MAINTAINER=	pkubaj@anongoth.pl
+MAINTAINER=	pkubaj@FreeBSD.org
 COMMENT=	IRC chat program with GTK and Text Frontend
 
 LICENSE=	GPLv2+
@@ -20,26 +19,27 @@ LIB_DEPENDS=	libproxy.so:net/libproxy \
 		libfreetype.so:print/freetype2
 RUN_DEPENDS=	${LOCALBASE}/share/xml/iso-codes/iso_639.xml:misc/iso-codes
 
-USES=		meson ninja desktop-file-utils libtool pkgconfig ssl shebangfix \
-		gettext-tools
+USES=		compiler:c++11-lang desktop-file-utils gettext-tools gnome \
+		libtool localbase meson ninja pkgconfig python:3.5+ shebangfix \
+		ssl xorg
 USE_GNOME=	cairo gtk20 intltool libxml2
 USE_XORG=	x11
 USE_GITHUB=	yes
-MESON_ARGS=	-Dwith-ssl=true -Dwith-gtk=true -Dwith-sysinfo=false
+
+MESON_ARGS=	-Dwith-ssl=true -Dwith-gtk=true -Dwith-python=python-${PYTHON_VER}
 INSTALLS_ICONS=	yes
 INSTALL_TARGET=	install-strip
 
-CPPFLAGS+=	-I${LOCALBASE}/include
-LIBS+=		-L${LOCALBASE}/lib -lX11
+LIBS+=		-lX11
 
 SUB_FILES=	pkg-message
 
 PORTDOCS=	*
 
 OPTIONS_DEFINE=		CA_BUNDLE CANBERRA DBUS DOCS FISHLIM LUA NOTIFY \
-			PERL PYTHON TEXTFE
+			PERL TEXTFE SYSINFO
 
-OPTIONS_DEFAULT=	CA_BUNDLE CANBERRA DBUS NOTIFY PERL PYTHON
+OPTIONS_DEFAULT=	CA_BUNDLE CANBERRA DBUS NOTIFY PERL
 
 OPTIONS_SUB=	yes
 
@@ -47,6 +47,7 @@ CA_BUNDLE_DESC=		Include CA bundle for SSL verification
 CANBERRA_DESC=		Audio support via Libcanberra
 FISHLIM_DESC=		FiSHLiM plugin
 TEXTFE_DESC=		Text frontend
+SYSINFO_DESC=		Sysinfo plugin
 
 CA_BUNDLE_RUN_DEPENDS=	${LOCALBASE}/share/certs/ca-root-nss.crt:security/ca_root_nss
 CA_BUNDLE_VARS=	CA_BUNDLE="${LOCALBASE}/share/certs/ca-root-nss.crt"
@@ -65,17 +66,19 @@ NOTIFY_LIB_DEPENDS=	libnotify.so:devel/libnotify
 NOTIFY_MESON_TRUE=	with-libnotify
 PERL_MESON_TRUE=	with-perl
 PERL_USES=		perl5
-PYTHON_MESON_ON=	-Dwith-python=python-${PYTHON_VER}
-PYTHON_MESON_OFF=	-Dwith-python=false
-PYTHON_USES=		python:3.4+ shebangfix
-PYTHON_VARS=		SHEBANG_FILES=meson_post_install.py
-PYTHON_VARS+=		SHEBANG_FILES=plugins/perl/generate_header.py
-PYTHON_VARS+=		SHEBANG_FILES=src/common/make-te.py
 TEXTFE_MESON_TRUE=	with-text
+SYSINFO_MESON_TRUE=	with-sysinfo
+
+SHEBANG_FILES=	meson_post_install.py \
+		plugins/perl/generate_header.py \
+		src/common/make-te.py
 
 post-patch:
 	@${REINPLACE_CMD} -e 's|%%CA_BUNDLE%%|${CA_BUNDLE}|' \
 		${WRKSRC}/src/common/server.c
+	@${REINPLACE_CMD} -e 's|%%PREFIX%%|${PREFIX}|g' \
+		-e 's|%%PERL_VER%%|${PERL_VER}|g' \
+		${WRKSRC}/plugins/perl/meson.build
 
 post-install:
 	${LN} -sf ../share/icons/hicolor/48x48/apps/${PORTNAME}.png \

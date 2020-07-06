@@ -2,9 +2,9 @@
 # $FreeBSD$
 
 PORTNAME=	mysqld_exporter
-PORTVERSION=	0.10.0
-PORTREVISION=	1
+PORTVERSION=	0.11.0
 DISTVERSIONPREFIX=v
+PORTREVISION=	1
 CATEGORIES=	net-mgmt
 
 MAINTAINER=	mr.deadlystorm@gmail.com
@@ -18,13 +18,9 @@ USE_GITHUB=	yes
 GH_ACCOUNT=	prometheus
 
 GO_PKGNAME=	github.com/${GH_ACCOUNT}/${PORTNAME}
-GO_TARGET=	github.com/${GH_ACCOUNT}/${PORTNAME}
 
 PLIST_FILES=	bin/mysqld_exporter
 
 USE_RC_SUBR=	mysqld_exporter
-
-do-install:
-	${INSTALL_PROGRAM} ${WRKDIR}/bin/mysqld_exporter ${STAGEDIR}${PREFIX}/bin
 
 .include <bsd.port.mk>

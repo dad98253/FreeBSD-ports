@@ -38,8 +38,8 @@
 const char version[] = "01.00.00.01";
 
 static char read_flash_cmd[] = "flashrom -p internal -r " FLASH_FILENAME " >/dev/null 2>&1";
-static char write_full_flash_cmd[] = "flashrom -p internal:ich_spi_force=yes -w " FLASH_FILENAME " >/dev/null 2>&1";
-static char write_4kflash_cmd[] = "flashrom -p internal:ich_spi_force=yes -l " BIOS_LAYOUT " -i 4kdescriptor -w " FLASH_FILENAME " >/dev/null 2>&1";
+static char write_full_flash_cmd[] = "flashrom -p internal -w " FLASH_FILENAME " >/dev/null 2>&1";
+static char write_4kflash_cmd[] = "flashrom -p internal -l " BIOS_LAYOUT " -i 4kdescriptor -w " FLASH_FILENAME " >/dev/null 2>&1";
 
 int flash_size = ADI_RCCVE_FLASH_SIZE;
 
@@ -387,7 +387,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		default:
-			fprintf(stderr, "Unkown Operation, Aborting...\n");
+			fprintf(stderr, "Unknown Operation, Aborting...\n");
 			/* delete bios layout file */
 			unlink(BIOS_LAYOUT);
 			exit(-1);

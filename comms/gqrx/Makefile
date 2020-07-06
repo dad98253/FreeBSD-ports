@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	gqrx
-PORTVERSION=	2.11.5
+PORTVERSION=	2.12.1
 DISTVERSIONPREFIX=	v
 PORTREVISION=	1
 PORTEPOCH=	1
@@ -24,9 +24,11 @@ LIB_DEPENDS=	libgnuradio-runtime.so:comms/gnuradio \
 		libgnuradio-osmosdr.so:comms/gr-osmosdr \
 		libboost_system.so:devel/boost-libs \
 		libboost_program_options.so:devel/boost-libs \
-		liblog4cpp.so:devel/log4cpp
+		liblog4cpp.so:devel/log4cpp \
+		libgmpxx.so:math/gmp \
+		libgmp.so:math/gmp
 
-USES=		pkgconfig qmake qt:5
+USES=		gl pkgconfig qmake qt:5
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	csete

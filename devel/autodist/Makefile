@@ -3,6 +3,7 @@
 
 PORTNAME=	autodist
 PORTVERSION=	1.5
+PORTREVISION=	1
 CATEGORIES=	devel
 MASTER_SITES=	http://silcnet.org/download/autodist/sources/ \
 		http://public.planetmirror.com/pub/silcnet/autodist/sources/ \
@@ -10,6 +11,8 @@ MASTER_SITES=	http://silcnet.org/download/autodist/sources/ \
 
 MAINTAINER=	johnson.peter@gmail.com
 COMMENT=	Distribution creation system
+
+BROKEN=		unfetchable
 
 GNU_CONFIGURE=	yes
 

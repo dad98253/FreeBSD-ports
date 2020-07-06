@@ -3,7 +3,7 @@
 
 PORTNAME=	pymc
 PORTVERSION=	2.3.6
-PORTREVISION=	1
+PORTREVISION=	3
 PORTEPOCH=	1
 CATEGORIES=	math python
 MASTER_SITES=	CHEESESHOP
@@ -16,6 +16,9 @@ LICENSE=	AFL
 LICENSE_NAME=	Academic Free License
 LICENSE_FILE=	${WRKSRC}/LICENSE
 LICENSE_PERMS=	dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 BUILD_DEPENDS=	${PYNUMPY} \
 		${PYTHON_PKGNAMEPREFIX}matplotlib>0:math/py-matplotlib@${PY_FLAVOR} \

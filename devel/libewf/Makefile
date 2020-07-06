@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	libewf
-PORTVERSION=	20140803
-PORTREVISION=	1
+PORTVERSION=	20140808
 CATEGORIES=	devel
 MASTER_SITES=	https://github.com/libyal/libewf-legacy/releases/download/${PORTVERSION}/ \
 		LOCAL/antoine
@@ -18,12 +17,14 @@ LIB_DEPENDS=	libsmdev.so:devel/libsmdev \
 		libsmraw.so:devel/libsmraw \
 		libuuid.so:misc/e2fsprogs-libuuid
 
-USES=		fuse libtool pathfix pkgconfig python:2.7
+USES=		fuse libtool pathfix pkgconfig python:3.5+
 USE_LDCONFIG=	yes
 
 GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--enable-python --with-libsmdev=${LOCALBASE} --with-libsmraw=${LOCALBASE} \
+CONFIGURE_ARGS=	--enable-python --with-libsmdev=${LOCALBASE} \
+		--with-libsmraw=${LOCALBASE} \
 		--with-libuuid=${LOCALBASE} --with-openssl=no
+CONFIGURE_ENV=	PYTHON_CONFIG=${PYTHON_CMD}-config
 INSTALL_TARGET=	install-strip
 
 OPTIONS_DEFINE=	NLS

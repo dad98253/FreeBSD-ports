@@ -1,7 +1,8 @@
 # $FreeBSD$
 
 PORTNAME=	doorkeeper-openid_connect
-PORTVERSION=	1.5.0
+PORTVERSION=	1.6.3
+PORTREVISION=	0
 CATEGORIES=	security rubygems
 MASTER_SITES=	RG
 
@@ -11,8 +12,8 @@ COMMENT=	OpenID Connect extension for Doorkeeper
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
-RUN_DEPENDS=	rubygem-doorkeeper>=4.3:security/rubygem-doorkeeper \
-		rubygem-json-jwt>=1.6:www/rubygem-json-jwt
+RUN_DEPENDS=	rubygem-doorkeeper>=5.0<5.2:security/rubygem-doorkeeper \
+		rubygem-json-jwt>=1.6<2:www/rubygem-json-jwt
 
 USES=		gem
 USE_RUBY=	yes

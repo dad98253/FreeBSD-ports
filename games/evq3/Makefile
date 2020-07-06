@@ -16,7 +16,7 @@ COMMENT=	Marriage of XreaL and Icculus.org Q3 w/ Improvements
 
 LIB_DEPENDS=	libfreetype.so:print/freetype2
 
-USES=		gmake dos2unix tar:bzip2
+USES=		dos2unix gmake tar:bzip2
 ALL_TARGET=	release
 WRKSRC=		${WRKDIR}/${PORTNAME}
 CFLAGS+=	-DMAP_ANONYMOUS=MAP_ANON
@@ -46,7 +46,7 @@ VM_ARCHS=	amd64 i386
 
 .include "${.CURDIR}/../quake3-data/Makefile.include"
 
-.include <bsd.port.pre.mk>
+.include <bsd.port.options.mk>
 
 .for i in ${ARCH}
 .   if ${VM_ARCHS:M${i}} != ""
@@ -75,6 +75,7 @@ MAKE_ENV+=	USE_OPENAL_DLOPEN=1
 .       endif
 .   endif
 # SDL
+USES+=		sdl
 USE_SDL=	sdl
 # VOIP
 .   if ${PORT_OPTIONS:MVOIP}
@@ -156,4 +157,4 @@ maint-gen-distfile:
 	tar cjf ${DISTDIR}/${DISTNAME}${EXTRACT_SUFX} ${PORTNAME}
 	${RM} -r ${PORTNAME}
 
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

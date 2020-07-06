@@ -3,7 +3,7 @@
 
 PORTNAME=	pam_mysql
 PORTVERSION=	0.7.r1
-PORTREVISION=	5
+PORTREVISION=	6
 CATEGORIES=	security databases
 MASTER_SITES=	SF/pam-mysql/pam-mysql/0.7RC1
 DISTNAME=	${PORTNAME}-0.7RC1${DISTVERSIONSUFFIX}
@@ -14,8 +14,7 @@ COMMENT=	Pam module for authenticating with MySQL
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-USES=		libtool:keepla
-USE_MYSQL=	yes
+USES=		compiler:c11 libtool:keepla mysql
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--with-mysql=${LOCALBASE} \
 		--with-pam-mods-dir=${PREFIX}/lib \
@@ -26,7 +25,7 @@ SUB_FILES=	pkg-message
 PORTDOCS=	*
 PLIST_FILES=	lib/pam_mysql.so lib/pam_mysql.la
 
-OPTIONS_DEFINE= SSL
+OPTIONS_DEFINE= DOCS SSL
 SSL_DESC=	Build with OpenSSL support (non-crypt()ish MD5 hash)
 SSL_CONFIGURE_WITH= openssl
 

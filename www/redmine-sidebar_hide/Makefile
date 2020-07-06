@@ -5,8 +5,10 @@ PORTNAME=	sidebar_hide
 PORTVERSION=	0.0.8
 CATEGORIES=	www
 
-MAINTAINER=	kozlov.sergey.404@gmail.com
+MAINTAINER=	skozlov@FreeBSD.org
 COMMENT=	Adds simple hide button for sidebar of Redmine
+
+BROKEN=		unfetchable
 
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE.md

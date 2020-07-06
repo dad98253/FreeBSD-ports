@@ -1,13 +1,16 @@
 # $FreeBSD$
 
 PORTNAME=	igakit
-DISTVERSION=	g20180107
+DISTVERSION=	0.1
+PORTREVISION=	4
 CATEGORIES=	math python
 MASTER_SITES=	https://bitbucket.org/${BB_ACCOUNT}/${BB_PROJECT}/get/${BB_COMMIT}.tar.gz?dummy=/
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
 MAINTAINER=	yuri@FreeBSD.org
 COMMENT=	Low-level routines for manipulations of NURBS geometries
+
+BROKEN=		unfetchable
 
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=	${WRKSRC}/LICENSE.rst

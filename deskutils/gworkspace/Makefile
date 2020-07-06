@@ -2,12 +2,12 @@
 
 PORTNAME=	gworkspace
 PORTVERSION=	0.9.4
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	deskutils gnustep
 #MASTER_SITES=	http://www.gnustep.it/enrico/gworkspace/
 MASTER_SITES=	GNUSTEP/usr-apps
 
-MAINTAINER=	theraven@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	GNUstep workspace manager
 
 LICENSE=	GPLv2

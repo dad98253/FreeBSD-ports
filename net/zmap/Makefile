@@ -4,7 +4,7 @@
 PORTNAME=	zmap
 PORTVERSION=	2.1.1
 DISTVERSIONPREFIX=	v
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	net
 
 MAINTAINER=	yuri@FreeBSD.org
@@ -19,7 +19,7 @@ LIB_DEPENDS=	libdnet.so:net/libdnet \
 
 USE_GITHUB=	yes
 
-USES=		cmake pkgconfig
+USES=		cmake:insource pkgconfig
 
 MANPAGE=	zblacklist.1 zmap.1 ztee.1
 
@@ -27,10 +27,10 @@ OPTIONS_DEFINE=	REDIS MONGO JSON
 OPTIONS_DEFAULT=JSON
 JSON_DESC=	Build with support for JSON
 
-REDIS_LIB_DEPENDS=	libhiredis.so:/databases/hiredis
+REDIS_LIB_DEPENDS=	libhiredis.so:databases/hiredis
 REDIS_CMAKE_BOOL=	WITH_REDIS
 
-MONGO_LIB_DEPENDS=	libmongoc-1.0.so:/devel/mongo-c-driver
+MONGO_LIB_DEPENDS=	libmongoc-1.0.so:devel/mongo-c-driver
 MONGO_CMAKE_BOOL=	WITH_MONGO
 
 JSON_LIB_DEPENDS=	libjson-c.so:devel/json-c

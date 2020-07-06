@@ -2,21 +2,28 @@
 # $FreeBSD$
 
 PORTNAME=	pcap
-PORTVERSION=	0.6.4
-PORTREVISION=	1
+PORTVERSION=	0.6.6
 CATEGORIES=	net python
-MASTER_SITES=	SF/pylib${PORTNAME}/pylib${PORTNAME}/${PORTVERSION}
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
-DISTNAME=	pylib${PORTNAME}-${PORTVERSION}
 
-MAINTAINER=	leres@FreeBSD.org
+MAINTAINER=	bofh@FreeBSD.org
 COMMENT=	Python interface to LBL Packet Capture library (libpcap)
 
 LICENSE=	BSD3CLAUSE
-LICENSE_FILE=	${WRKSRC}/COPYING
+LICENSE_FILE=	${WRKSRC}/LICENSE
 
-USES=		python:2.7
-USE_PYTHON=	distutils autoplist
+DEPRECATED=	Broken with python3 please consider using net/py-pypcap
+EXPIRATION_DATE=2020-05-01
+
+BUILD_DEPENDS=	swig3.0:devel/swig30
+
+USES=		python
+
+USE_GITHUB=	yes
+GH_ACCOUNT=	5u623l20
+GH_PROJECT=	pylibpcap
+GH_TAGNAME=	d442c3e
+USE_PYTHON=	autoplist distutils
 
 OPTIONS_DEFINE=	LIBPCAP
 

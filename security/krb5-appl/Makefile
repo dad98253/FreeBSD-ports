@@ -25,7 +25,7 @@ GNU_CONFIGURE=		yes
 USE_PERL5=		build
 USE_LDCONFIG=		yes
 USE_CSTD=		gnu89
-CONFIGURE_ARGS?=	--enable-shared --with-krb5=${PREFIX}/bin/krb5-config
+CONFIGURE_ARGS?=	--with-krb5=${KRB5_HOME}
 CONFIGURE_ENV=		INSTALL="${INSTALL}" YACC=/usr/bin/yacc
 MAKE_ARGS=		INSTALL="${INSTALL}"
 PATCH_DIST_STRIP=	-p1
@@ -33,35 +33,21 @@ PATCH_DIST_STRIP=	-p1
 OPTIONS_DEFINE=	KRB5_RENAME_FTP KRB5_RENAME_TELNET KRB5_RENAME_RLOGIN KRB5_RENAME_RSH KRB5_RENAME_RCP
 OPTIONS_DEFAULT=	KRB5_PORT KRB5_RENAME_FTP KRB5_RENAME_TELNET \
 			KRB5_RENAME_RLOGIN KRB5_RENAME_RSH KRB5_RENAME_RCP
-OPTIONS_SINGLE=		KRB5_VERSION
-OPTIONS_SINGLE_KRB5_VERSION=	KRB5_PORT \
-			KRB5_114_PORT KRB5_115_PORT
 KRB5_RENAME_FTP_DESC=		Rename ftp to kftp
 KRB5_RENAME_TELNET_DESC=	Rename telnet to ktelnet
 KRB5_RENAME_RLOGIN_DESC=	Rename rlogin to krlogin
 KRB5_RENAME_RSH_DESC=		Rename rsh to krsh
 KRB5_RENAME_RCP_DESC=		Rename rcp to krcp
 KRB5_PORT_DESC=			Depend on security/krb5
-KRB5_114_PORT_DESC=		Depend on security/krb5-114
-KRB5_115_PORT_DESC=		Depend on security/krb5-115
 
 .include <bsd.port.pre.mk>
 
 KRB5_PORT_LIB_DEPENDS=		libkrb5support.so:security/krb5
 KRB5_PORT_RUN_DEPENDS=		kinit:security/krb5
-KRB5_114_PORT_LIB_DEPENDS=		libkrb5support.so:security/krb5-114
-KRB5_114_PORT_RUN_DEPENDS=		kinit:security/krb5-114
 
 KRB5_DOC_BUILD_DEPENDS+=	texi2dvi:print/texinfo \
 			dvips:print/dvipsk-tetex
 KRB5_DOC_INFO=			krb5-admin krb5-install krb5-user
-
-.if defined(KRB5_HOME)
-PREFIX=			${KRB5_HOME}
-.if ${KRB5_HOME} != ${LOCALBASE}
-BROKEN=			LIB_DEPENDS when using KRB5_HOME is broken
-.endif
-.endif
 
 CFLAGS+=		-I${PREFIX}/include
 LDFLAGS+=		-L${PREFIX}/lib

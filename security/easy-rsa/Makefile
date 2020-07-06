@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	easy-rsa
-DISTVERSION=	3.0.4
+DISTVERSION=	3.0.7
 CATEGORIES=	security net-mgmt
 MASTER_SITES=	https://github.com/OpenVPN/easy-rsa/releases/download/v${DISTVERSION}/
 DISTNAME=	EasyRSA-${DISTVERSION}
@@ -13,15 +13,19 @@ COMMENT=	Small RSA key management package based on openssl
 
 LICENSE=	GPLv2
 
+USES=		tar:tgz
+
 CONFLICTS_INSTALL=easy-rsa2-*
 
-USES=		tar:tgz
 NO_BUILD=	yes
+NO_ARCH=	yes
+
+WRKSRC=		${WRKDIR}/EasyRSA-${DISTVERSION}
 
 OPTIONS_DEFINE=		DOCS EXAMPLES
 
 PORTDATA=	x509-types/
-_pd_files=	ChangeLog README.quickstart.md
+_pd_files=	ChangeLog COPYING.md README.md README.quickstart.md mktemp.txt
 _pd_dirs=	doc/
 PORTDOCS=	${_pd_files} ${_pd_dirs}
 

@@ -1,7 +1,8 @@
 # $FreeBSD$
 
 PORTNAME=	seed-fu
-PORTVERSION=	2.3.7
+PORTVERSION=	2.3.9
+PORTREVISION=	1
 CATEGORIES=	databases rubygems
 MASTER_SITES=	RG
 
@@ -11,11 +12,12 @@ COMMENT=	Library to maintain seed datas
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-RUN_DEPENDS=	rubygem-activerecord4>=3.1:databases/rubygem-activerecord4 \
-		rubygem-activesupport4>=3.1:devel/rubygem-activesupport4
+RUN_DEPENDS=	rubygem-activerecord52>=3.1:databases/rubygem-activerecord52 \
+		rubygem-activesupport52>=3.1:devel/rubygem-activesupport52
+
+USES=		gem
+USE_RUBY=	yes
 
 NO_ARCH=	yes
-USE_RUBY=	yes
-USES=		gem
 
 .include <bsd.port.mk>

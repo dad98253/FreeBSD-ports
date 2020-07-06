@@ -3,6 +3,7 @@
 
 PORTNAME=	resynthesizer
 PORTVERSION=	2.0.3
+PORTREVISION=	1
 DISTVERSIONPREFIX=	v
 CATEGORIES=	graphics
 PKGNAMEPREFIX=	gimp-
@@ -13,6 +14,9 @@ COMMENT=	Gimp plug-in for texture synthesis
 LICENSE=	GPLv2+ # though COPYING has GPLv3
 LICENSE_FILE=	${WRKSRC}/COPYING
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 RUN_DEPENDS=	${LOCALBASE}/libexec/gimp/2.2/python/gimpfu.py:graphics/py-gimp
 BUILD_DEPENDS=	intltool-extract:textproc/intltool
 LIB_DEPENDS=	libgimp-2.0.so:graphics/gimp-app
@@ -20,7 +24,8 @@ LIB_DEPENDS=	libgimp-2.0.so:graphics/gimp-app
 USE_GITHUB=	yes
 GH_ACCOUNT=	bootchk
 
-USES=		autoreconf gettext gmake localbase pkgconfig python:2.7,run shebangfix
+USES=		autoreconf compiler:c++11-lang gettext gmake localbase \
+		pkgconfig python:2.7,run shebangfix
 SHEBANG_FILES=	PluginScripts/*.py
 GNU_CONFIGURE=	yes
 

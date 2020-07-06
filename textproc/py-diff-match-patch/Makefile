@@ -2,25 +2,26 @@
 # $FreeBSD$
 
 PORTNAME=	diff-match-patch
-PORTVERSION=	20121119
+PORTVERSION=	20181111
 CATEGORIES=	textproc python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	rene@FreeBSD.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	Algorithms for converting plain text
 
 LICENSE=	APACHE20
-LICENSE_FILE=	${WRKSRC}/LICENCE
+LICENSE_FILE=	${WRKSRC}/LICENSE
 
 USES=		python shebangfix
-python_OLD_CMD=	/usr/bin/python[0-9\.]*
-SHEBANG_FILES=	python*/diff_match_patch/*.py
-USE_PYTHON=	autoplist distutils
+USE_PYTHON=	autoplist concurrent distutils
 
 NO_ARCH=	yes
 
-do-test: build
+python_OLD_CMD=	/usr/bin/python[0-9\.]*
+SHEBANG_GLOB=	*.py
+
+do-test:
 	@cd ${WRKSRC} && ${PYTHON_CMD} ${PYDISTUTILS_SETUP} test
 
 .include <bsd.port.mk>

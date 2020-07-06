@@ -3,9 +3,9 @@
 
 PORTNAME=	evilfinder
 PORTVERSION=	1.00
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	games
-MASTER_SITES=	http://lcamtuf.coredump.cx/:src \
+MASTER_SITES=	https://aklv.github.io/distfiles/:src \
 	http://lcamtuf.coredump.cx/evilfinder/:numbers
 DISTFILES=	ef.tgz:src \
 	evilnumbers.dat:numbers
@@ -25,7 +25,7 @@ PLIST_FILES=	bin/ef \
 PORTDATA=	evilnumbers.dat
 PORTDOCS=	README
 
-OPTIONS_DEFINE=	WRAPPER
+OPTIONS_DEFINE=	DOCS WRAPPER
 WRAPPER_DESC=	Evilfinder local wrapper
 OPTIONS_DEFAULT=	WRAPPER
 

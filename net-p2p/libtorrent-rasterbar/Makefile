@@ -2,90 +2,81 @@
 # $FreeBSD$
 
 PORTNAME=	libtorrent-rasterbar
-PORTVERSION=	1.1.6
-PORTREVISION=	2
-CATEGORIES?=	net-p2p ipv6
-MASTER_SITES=	https://github.com/arvidn/libtorrent/releases/download/libtorrent-${PORTVERSION:S/./_/g}/
+DISTVERSIONPREFIX=	libtorrent-
+DISTVERSION=	1_2_5
+PORTREVISION=	1
+CATEGORIES=	net-p2p
 
-PATCH_SITES=	https://github.com/arvidn/libtorrent/commit/
-PATCHFILES=	64d6b4900448.patch:-p1 3a1b0f1abb1d.patch:-p1
-
-MAINTAINER=	rezny@FreeBSD.org
-COMMENT?=	C++ library implementing a BitTorrent client
+MAINTAINER=	yuri@FreeBSD.org
+COMMENT=	C++ library implementing a BitTorrent client
 
 LICENSE=	BSD3CLAUSE
+LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_powerpc64=	fails to build: client_test.cpp: undefined reference to std::__cxx11::basic_string
-
-LIB_DEPENDS+=	libboost_chrono.so:devel/boost-libs \
+LIB_DEPENDS=	libboost_chrono.so:devel/boost-libs \
 		libboost_random.so:devel/boost-libs \
 		libboost_system.so:devel/boost-libs
 
-USES+=		compiler:c++11-lib iconv:wchar_t libtool pathfix pkgconfig ssl
-USE_CXXSTD=	c++11
-GNU_CONFIGURE=	yes
+USES=		cmake iconv:wchar_t libtool pathfix pkgconfig python:2.7,test shebangfix ssl # compiler:c++14-lang
+LDFLAGS+=	-L${LOCALBASE}/lib ${ICONV_LIB}
+SHEBANG_FILES=	test/socks.py test/web_server.py
+USE_GITHUB=	yes
+GH_ACCOUNT=	arvidn
+GH_PROJECT=	libtorrent
 USE_LDCONFIG=	yes
-TEST_TARGET=	check
 
-CONFIGURE_ARGS=	--disable-static \
-		--enable-dht \
-		--enable-encryption \
-		--enable-pool-allocators \
-		--enable-deprecated-functions \
-		--with-boost=${LOCALBASE} \
-		--with-libiconv \
-		--with-openssl=${OPENSSLBASE}
-
-SHLIB_VER=	9
+SHLIB_VER=	10
 PLIST_SUB+=	SHLIB_VER="${SHLIB_VER}"
 
 DOCFILES=	AUTHORS ChangeLog
 PORTDOCS=	${DOCFILES} docs/*
 PORTEXAMPLES=	*.cpp
 
-OPTIONS_DEFINE=	DEBUG DOCS EXAMPLES LOGGING TEST
-OPTIONS_DEFAULT=LOGGING
-OPTIONS_SUB=	yes
-LOGGING_DESC=	Enable disk stat logging and logging to disk
+OPTIONS_DEFINE=		DOCS EXAMPLES LOGGING
+OPTIONS_DEFAULT=	LOGGING
+OPTIONS_SUB=		yes
+LOGGING_DESC=		Enable logging to disk
 
-DEBUG_CONFIGURE_ENABLE=		debug
-EXAMPLES_CONFIGURE_ENABLE=	examples
-LOGGING_CONFIGURE_ENABLE=	logging disk-stats
-TEST_CONFIGURE_ENABLE=		tests
+EXAMPLES_CMAKE_BOOL=	build_examples
+LOGGING_CMAKE_BOOL=	logging
 
-.include <bsd.port.options.mk>
-
-.if defined(SLAVE_PORT) && ${SLAVE_PORT:tl} == "yes" && defined(USE_PYTHON)
-CONFIGURE_ARGS+=	--enable-python-binding
-.else
-CONFIGURE_ARGS+=	--disable-python-binding
-.endif
+# workaroud for the clang-10 compiler failure: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=244830
+LLVM_VER=	90
+BUILD_DEPENDS+=	clang${LLVM_VER}:devel/llvm${LLVM_VER}
+CPP=		clang-cpp${LLVM_VER}
+CC=		clang${LLVM_VER}
+CXX=		clang++${LLVM_VER}
 
 post-patch:
 	@${REINPLACE_CMD} -e 's|/usr/local/include|${PREFIX}/include|' \
 		${WRKSRC}/Jamfile
-
-post-configure:
-	${FIND} ${WRKSRC} -name Makefile -o -name link_flags | \
-		${XARGS} ${REINPLACE_CMD} 's| *-R${LOCALBASE}/lib||'
+	@${REINPLACE_CMD} -e 's|python|${PYTHON_CMD}|' \
+		${WRKSRC}/test/setup_transfer.cpp
 
 post-install:
-.if defined(SLAVE_PORT) && ${SLAVE_PORT:tl} == "yes" && defined(USE_PYTHON)
-	${STRIP_CMD} ${STAGEDIR}${PYTHON_SITELIBDIR}/libtorrent.so
-.else
-	${STRIP_CMD} \
-	${STAGEDIR}${PREFIX}/lib/libtorrent-rasterbar.so.${SHLIB_VER}
-.endif
+	@${RM} ${STAGEDIR}${PREFIX}/include/libtorrent/Makefile*
+	# Workaround for -DTHREADS_HAVE_PTHREAD_ARG:BOOL=YES being set in
+	# Mk/Uses/cmake.mk
+	# References:   https://mariadb.atlassian.net/browse/MDEV-9388
+	#               https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=206169
+	@${REINPLACE_CMD} 's/-l-pthread/-lpthread/' \
+		${STAGEDIR}${PREFIX}/libdata/pkgconfig/libtorrent-rasterbar.pc
 
 post-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}
 	${INSTALL_DATA} ${DOCFILES:S|^|${WRKSRC}/|} ${STAGEDIR}${DOCSDIR}
-	(cd ${WRKSRC} && ${COPYTREE_SHARE} docs ${STAGEDIR}${DOCSDIR})
+	cd ${WRKSRC} && ${COPYTREE_SHARE} docs ${STAGEDIR}${DOCSDIR}
 	${RM} ${STAGEDIR}${DOCSDIR}/docs/._*
 
 post-install-EXAMPLES-on:
 	@${MKDIR} ${STAGEDIR}${EXAMPLESDIR}
 	${INSTALL_DATA} ${WRKSRC}/examples/${PORTEXAMPLES} \
 		${STAGEDIR}${EXAMPLESDIR}
+
+do-test:
+	@cd ${BUILD_WRKSRC} && \
+		${SETENV} ${CONFIGURE_ENV} ${CMAKE_BIN} ${CMAKE_ARGS} -Dbuild_tests:BOOL=ON ${CMAKE_SOURCE_PATH} && \
+		${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} ${ALL_TARGET} && \
+		${SETENV} ${MAKE_ENV} ${MAKE_CMD} ${MAKE_ARGS} test
 
 .include <bsd.port.mk>

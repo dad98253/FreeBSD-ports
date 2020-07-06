@@ -3,7 +3,7 @@
 
 PORTNAME=	mydns-ng
 PORTVERSION=	1.2.8.31
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	dns databases
 MASTER_SITES=	SF/${PORTNAME}/mydns/${PORTVERSION}
 DISTNAME=	mydns-${PORTVERSION}
@@ -25,9 +25,9 @@ OPTIONS_DEFINE=		DOCS ALIAS SSL NLS
 OPTIONS_SINGLE=		DATABASE
 OPTIONS_SINGLE_DATABASE=	PGSQL MYSQL
 OPTIONS_DEFAULT=	ALIAS MYSQL
-ALIAS_DESC=	Server side aliasas
-ALIAS_CONFIGURE_ENABLE=	alias
 OPTIONS_SUB=	yes
+
+ALIAS_DESC=	Server side aliasas
 
 ALIAS_CONFIGURE_ENABLE=	alias
 
@@ -42,7 +42,7 @@ PGSQL_CONFIGURE_ON=	--with-pgsql \
 			--with-pgsql-lib=${LOCALBASE}/lib
 PGSQL_CONFIGURE_OFF=	--without-pgsql
 
-MYSQL_USE=	MYSQL=yes
+MYSQL_USES=	mysql
 MYSQL_CONFIGURE_ON=	--with-mysql \
 			--with-mysql-include=${LOCALBASE}/include/mysql \
 			--with-mysql-lib=${LOCALBASE}/lib/mysql

@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	firmware
-PORTVERSION=	0.1.6
+PORTVERSION=	0.1.7
 CATEGORIES=	science
 MASTER_SITES=	http://sigrok.org/download/binary/${PKGNAMEPREFIX}${PORTNAME}${PKGNAMESUFFIX}/
 PKGNAMEPREFIX=	sigrok-
@@ -31,6 +31,8 @@ FW_FILES=	fx2lafw-braintechnology-usb-lps.fw \
 
 PORTDOCS=	README NEWS
 PLIST_FILES=	${FW_FILES:S,^,share/sigrok-firmware/,}
+
+OPTIONS_DEFINE=	DOCS
 
 do-install:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

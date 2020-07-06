@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	doomsday
-PORTVERSION=	2.0.3
-PORTREVISION=	2
+PORTVERSION=	2.2.2
 CATEGORIES=	games
 MASTER_SITES=	SF/deng/Doomsday%20Engine/${PORTVERSION}
 
@@ -12,18 +11,24 @@ COMMENT=	Enhanced Doom, Heretic, and Hexen source port
 
 LICENSE=	GPLv2
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 LIB_DEPENDS=	libcurl.so:ftp/curl \
 		libassimp.so:multimedia/assimp \
 		libfluidsynth.so:audio/fluidsynth
 RUN_DEPENDS=	timidity:audio/timidity
 
-USES=		cmake:outsource compiler:c++11-lib localbase:ldflags ninja openal pkgconfig python:2.7,build qt:5
+USES=		cmake compiler:c++11-lib gl localbase:ldflags ncurses ninja openal pkgconfig \
+		python:2.7,build qt:5 sdl xorg
+
 USE_GL=		gl glu
 USE_LDCONFIG=	yes
 USE_SDL=	sdl2 mixer2
 USE_XORG=	x11 sm ice xext xrandr xxf86vm
-USE_QT=		buildtools_build core gui network widgets qmake opengl x11extras
+USE_QT=		buildtools_build core gui network widgets qmake_build opengl x11extras
 CMAKE_ARGS+=	-DDENG_ENABLE_COTIRE=OFF -DDENG_ASSIMP_EMBEDDED=OFF
+LDFLAGS+=	-lexecinfo
 
 WRKSRC=	${WRKDIR}/${PORTNAME}-${PORTVERSION}/${PORTNAME}
 

@@ -3,7 +3,7 @@
 
 PORTNAME=	plotutils
 PORTVERSION=	2.6
-PORTREVISION=	7
+PORTREVISION=	8
 PORTEPOCH=	1
 CATEGORIES=	graphics
 MASTER_SITES=	GNU
@@ -13,7 +13,7 @@ COMMENT=	Plotting library and toolkit
 
 LIB_DEPENDS=	libpng.so:graphics/png
 
-USES=		gmake libtool	# parallel builds are broken with bmake(1)
+USES=		gmake libtool xorg	# parallel builds are broken with bmake(1)
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--enable-libplotter --enable-libxmi
 USE_LDCONFIG=	yes

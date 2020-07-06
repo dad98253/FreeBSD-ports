@@ -12,9 +12,9 @@
     SUBDIR += crashmail
     SUBDIR += diablo
     SUBDIR += fidogate
+    SUBDIR += fidogate4
     SUBDIR += golded+
     SUBDIR += gup
-    SUBDIR += hellanzb
     SUBDIR += husky
     SUBDIR += husky-areafix
     SUBDIR += husky-fidoconf
@@ -31,7 +31,6 @@
     SUBDIR += mail2nntp
     SUBDIR += mmail
     SUBDIR += multisuck
-    SUBDIR += newscache
     SUBDIR += newsfetch
     SUBDIR += newsfish
     SUBDIR += newsgrab
@@ -42,10 +41,10 @@
     SUBDIR += nn
     SUBDIR += nnap
     SUBDIR += nntp
-    SUBDIR += nntpbtr
     SUBDIR += nntpcache
     SUBDIR += noffle
     SUBDIR += nzbget
+    SUBDIR += nzbhydra2
     SUBDIR += nzbperl
     SUBDIR += p5-NNTPClient
     SUBDIR += p5-News-Article
@@ -54,17 +53,16 @@
     SUBDIR += p5-POE-Component-Client-NNTP
     SUBDIR += p5-POE-Component-Server-NNTP
     SUBDIR += pan
-    SUBDIR += papercut
     SUBDIR += pgpmoose
     SUBDIR += plor
     SUBDIR += py-pynzb
     SUBDIR += py-sabyenc
+    SUBDIR += py-sabyenc3
     SUBDIR += py-yenc
     SUBDIR += rawdog
     SUBDIR += s-news
     SUBDIR += sabnzbdplus
     SUBDIR += slrn
-    SUBDIR += slrnconf
     SUBDIR += slrnface
     SUBDIR += sn
     SUBDIR += suck
@@ -73,7 +71,6 @@
     SUBDIR += trn
     SUBDIR += trn4
     SUBDIR += ubh
-    SUBDIR += xpn
     SUBDIR += xrn
     SUBDIR += yencode
     SUBDIR += yydecode

@@ -1,20 +1,21 @@
+
 # $FreeBSD$
 
 PORTNAME=	veracrypt
-PORTVERSION=	1.22
+PORTVERSION=	1.24
 CATEGORIES=	security
-MASTER_SITES=	SF/${PORTNAME}/${PORTNAME:S/v/V/:S/c/C/}%20${PORTVERSION}/
-DISTNAME=	${PORTNAME:S/v/V/:S/c/C/}_${PORTVERSION}_Source
+MASTER_SITES=	SF/${PORTNAME}/${PORTNAME:S/v/V/:S/c/C/}%20${PORTVERSION}-Update3/
+DISTNAME=	${PORTNAME:S/v/V/:S/c/C/}_${PORTVERSION}-Update3_Source
 
 MAINTAINER=	acm@FreeBSD.org
 COMMENT=	Open-source disk encryption software based on Truecrypt
 
-LICENSE_FILE=	${DOCSDIR}/LICENSE
-
 BUILD_DEPENDS=	yasm:devel/yasm
 RUN_DEPENDS=	${LOCALBASE}/bin/sudo:security/sudo
 
-USES=		desktop-file-utils fuse gmake iconv pkgconfig tar:bz2
+LICENSE_FILE=	${DOCSDIR}/LICENSE
+
+USES=		compiler:c++11-lang desktop-file-utils fuse gmake iconv pkgconfig tar:bz2
 USE_WX=		3.0+
 NO_WRKSUBDIR=	yes
 BUILD_WRKSRC=	${WRKSRC}/src
@@ -23,6 +24,12 @@ DOCSDIR=	${PREFIX}/share/doc/${PORTNAME}
 SUB_FILES=	pkg-message
 
 OPTIONS_DEFINE=	DOCS
+
+.include <bsd.port.pre.mk>
+
+.if ${ARCH} == "i386"
+MAKE_ENV+=	LFLAGS=-Wl,-z,notext
+.endif
 
 post-patch:
 	${REINPLACE_CMD} -e 's|wx-config|${WX_CONFIG}|g' ${WRKSRC}/src/Makefile
@@ -39,4 +46,4 @@ do-install-DOCS-on:
 	${INSTALL_DATA} ${WRKSRC}/License.txt ${STAGEDIR}${DOCSDIR}
 	cd ${WRKSRC}/doc/html && ${COPYTREE_SHARE} . ${STAGEDIR}${DOCSDIR}/html
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

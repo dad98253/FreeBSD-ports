@@ -3,7 +3,7 @@
 
 PORTNAME=	uim-tomoe-gtk
 PORTVERSION=	0.6.0
-PORTREVISION=	14
+PORTREVISION=	15
 CATEGORIES=	japanese
 MASTER_SITES=	SF/tomoe/${PORTNAME}/${PORTNAME}-${PORTVERSION}
 
@@ -14,7 +14,7 @@ LIB_DEPENDS=	libtomoe.so:japanese/tomoe \
 		libtomoe-gtk.so:japanese/libtomoe-gtk \
 		libuim.so:textproc/uim
 
-USES=		gettext gmake libtool pkgconfig
+USES=		gettext gmake gnome libtool pkgconfig
 USE_GNOME=	gtk20 intltool
 GNU_CONFIGURE=	yes
 

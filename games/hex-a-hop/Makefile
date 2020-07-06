@@ -13,11 +13,10 @@ COMMENT=	Puzzle game based on hexagonal tiles
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-USES=		iconv localbase
+USES=		iconv localbase sdl
 USE_SDL=	sdl
+USE_CXXSTD=	c++98
 GNU_CONFIGURE=	yes
-
-CXXFLAGS+=	-Wno-c++11-narrowing
 
 OPTIONS_DEFINE=	PANGO SOUND NLS DEBUG
 OPTIONS_DEFAULT=	SOUND

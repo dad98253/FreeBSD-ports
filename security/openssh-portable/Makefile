@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	openssh
-DISTVERSION=	7.7p1
-PORTREVISION=	6
+DISTVERSION=	8.2p1
+PORTREVISION=	1
 PORTEPOCH=	1
-CATEGORIES=	security ipv6
+CATEGORIES=	security
 MASTER_SITES=	OPENBSD/OpenSSH/portable
 PKGNAMESUFFIX?=	-portable
 
@@ -26,20 +26,25 @@ CONFIGURE_ARGS=		--prefix=${PREFIX} --with-md5-passwords \
 
 ETCOLD=			${PREFIX}/etc
 
-BROKEN_SSL=	openssl-devel
-BROKEN_SSL_REASON_openssl-devel=	error: OpenSSL >= 1.1.0 is not yet supported
-
-FLAVORS=			default hpn
-default_CONFLICTS_INSTALL=	openssl-portable-hpn
-hpn_CONFLICTS_INSTALL=		openssh-portable
+FLAVORS=			default hpn gssapi
+default_CONFLICTS_INSTALL=	openssh-portable-hpn openssh-portable-gssapi \
+				openssh-portable-x509
+hpn_CONFLICTS_INSTALL=		openssh-portable openssh-portable-gssapi \
+				openssh-portable-x509
 hpn_PKGNAMESUFFIX=		-portable-hpn
+gssapi_CONFLICTS_INSTALL=	openssh-portable openssh-portable-hpn \
+				openssh-portable-x509
+gssapi_PKGNAMESUFFIX=		-portable-gssapi
 
-OPTIONS_DEFINE=		PAM TCP_WRAPPERS LIBEDIT BSM \
-			HPN X509 KERB_GSSAPI \
+OPTIONS_DEFINE=		DOCS PAM TCP_WRAPPERS LIBEDIT BSM \
+			HPN KERB_GSSAPI \
 			LDNS NONECIPHER XMSS
 OPTIONS_DEFAULT=	LIBEDIT PAM TCP_WRAPPERS LDNS
 .if ${FLAVOR:U} == hpn
 OPTIONS_DEFAULT+=	HPN NONECIPHER
+.endif
+.if ${FLAVOR:U} == gssapi
+OPTIONS_DEFAULT+=	KERB_GSSAPI MIT
 .endif
 OPTIONS_RADIO=		KERBEROS
 OPTIONS_RADIO_KERBEROS=	MIT HEIMDAL HEIMDAL_BASE
@@ -48,7 +53,6 @@ BSM_DESC=		OpenBSM Auditing
 KERB_GSSAPI_DESC=	Kerberos/GSSAPI patch (req: GSSAPI)
 HPN_DESC=		HPN-SSH patch
 LDNS_DESC=		SSHFP/LDNS support
-X509_DESC=		x509 certificate patch
 HEIMDAL_DESC=		Heimdal Kerberos (security/heimdal)
 HEIMDAL_BASE_DESC=	Heimdal Kerberos (base)
 MIT_DESC=		MIT Kerberos (security/krb5)
@@ -68,12 +72,6 @@ LDNS_CONFIGURE_ON=	--with-ldflags='-L${LOCALBASE}/lib'
 HPN_CONFIGURE_WITH=		hpn
 NONECIPHER_CONFIGURE_WITH=	nonecipher
 
-# See http://www.roumenpetrov.info/openssh/
-X509_VERSION=		11.3.2
-X509_PATCH_SITES=	http://www.roumenpetrov.info/openssh/x509-${X509_VERSION}/:x509
-X509_EXTRA_PATCHES+=	${FILESDIR}/extra-patch-x509-glue
-X509_PATCHFILES=	${PORTNAME}-7.7p1+x509-${X509_VERSION}.diff.gz:-p1:x509
-
 MIT_LIB_DEPENDS=		libkrb5.so.3:security/krb5
 HEIMDAL_LIB_DEPENDS=		libkrb5.so.26:security/heimdal
 
@@ -88,31 +86,29 @@ ETCDIR?=		${PREFIX}/etc/ssh
 
 .include <bsd.port.pre.mk>
 
-PATCH_SITES+=		http://mirror.shatow.net/freebsd/${PORTNAME}/:DEFAULT,x509,hpn,gsskex
-
-# X509 patch includes TCP Wrapper support already
-.if ${PORT_OPTIONS:MX509}
-EXTRA_PATCHES:=		${EXTRA_PATCHES:N${TCP_WRAPPERS_EXTRA_PATCHES}}
-.endif
+PATCH_SITES+=	http://mirror.shatow.net/freebsd/${PORTNAME}/:DEFAULT,hpn,gsskex
 
 # Must add this patch before HPN due to conflicts
 .if ${PORT_OPTIONS:MKERB_GSSAPI}
 #BROKEN=	KERB_GSSAPI No patch for ${DISTVERSION} yet.
-# Patch from:
-# https://sources.debian.org/data/main/o/openssh/1:7.7p1-2/debian/patches/gssapi.patch
-# which was originally based on 5.7 patch from
-# http://www.sxw.org.uk/computing/patches/
-# It is mirrored simply to apply gzip -9.
 .  if ${PORT_OPTIONS:MHPN} || ${PORT_OPTIONS:MNONECIPHER}
 # Needed glue for applying HPN patch without conflict
 EXTRA_PATCHES+=	${FILESDIR}/extra-patch-hpn-gss-glue
 .  endif
-PATCHFILES+=	openssh-7.7p1-gsskex-all-20141021-debian-rh-20171004.patch.gz:-p1:gsskex
+# - See https://sources.debian.org/data/main/o/openssh/ for which subdir to
+# pull from.
+GSSAPI_DEBIAN_SUBDIR=	${DISTVERSION}-4
+# - Debian does not use a versioned filename so we trick fetch to make one for
+# us with the ?<anything>=/ trick.
+PATCH_SITES+=	https://sources.debian.org/data/main/o/openssh/1:${GSSAPI_DEBIAN_SUBDIR}/debian/patches/gssapi.patch?dummy=/:gsskex
+# Bump this when updating the patch location
+GSSAPI_UPDATE_DATE=	20190719
+PATCHFILES+=	openssh-${DISTVERSION}-gsskex-all-20141021-debian-rh-${GSSAPI_UPDATE_DATE}.patch:-p1:gsskex
 .endif
 
 # https://www.psc.edu/hpn-ssh https://github.com/rapier1/openssh-portable/tree/hpn-openssl1.1-7_7_P1
 .if ${PORT_OPTIONS:MHPN} || ${PORT_OPTIONS:MNONECIPHER}
-#BROKEN=			HPN: Not yet updated for ${DISTVERSION} and disabled in base
+#BROKEN=			HPN: Not yet updated for ${DISTVERSION} yet.
 PORTDOCS+=		HPN-README
 HPN_VERSION=		14v15
 HPN_DISTVERSION=	7.7p1
@@ -130,17 +126,6 @@ CONFIGURE_ARGS+=	--disable-utmp --disable-wtmp --disable-wtmpx --without-lastlog
 
 # Keep this last
 EXTRA_PATCHES+=		${FILESDIR}/extra-patch-version-addendum
-
-.if ${PORT_OPTIONS:MX509}
-.  if ${PORT_OPTIONS:MHPN} || ${PORT_OPTIONS:MNONECIPHER}
-BROKEN=		X509 patch and HPN patch do not apply cleanly together
-.  endif
-
-.  if ${PORT_OPTIONS:MKERB_GSSAPI}
-BROKEN=		X509 patch incompatible with KERB_GSSAPI patch
-.  endif
-
-.endif
 
 .if ${PORT_OPTIONS:MHEIMDAL_BASE} && ${PORT_OPTIONS:MKERB_GSSAPI}
 BROKEN=		KERB_GSSAPI Requires either MIT or HEMIDAL, does not build with base Heimdal currently

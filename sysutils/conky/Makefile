@@ -2,31 +2,31 @@
 # $FreeBSD$
 
 PORTNAME=	conky
-PORTVERSION=	1.10.8
+PORTVERSION=	1.11.5
 DISTVERSIONPREFIX=	v
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	sysutils
 
 MAINTAINER=	madpilot@FreeBSD.org
 COMMENT?=	Advanced, highly configurable system monitor for X11
 
-LIB_DEPENDS=	libtolua++-5.1.so:lang/tolua++ \
-		libinotify.so:devel/libinotify
+LIB_DEPENDS=	libinotify.so:devel/libinotify
 BUILD_DEPENDS=	db2x_xsltproc:textproc/docbook2X \
 		docbook-xsl>=0:textproc/docbook-xsl \
 		xsltproc:textproc/libxslt
 
-CONFLICTS?=	conky-awesome-[0-9]*
-SLAVEDIRS=	sysutils/conky-awesome
-
 USES=		cpe cmake:noninja compiler:c++11-lib gettext-runtime iconv \
-		localbase lua:51 pkgconfig tar:bzip2
-CMAKE_ARGS+=	-DBUILD_PORT_MONITORS:BOOL=false \
+		localbase lua:52 pkgconfig tar:bzip2
+
+CMAKE_ARGS=	-DBUILD_PORT_MONITORS:BOOL=false \
 		-DBUILD_IBM:BOOL=false \
 		-DBUILD_HDDTEMP:BOOL=false \
 		-DBUILD_IOSTATS:BOOL=false \
-		-DBUILD_AUDACIOUS:BOOL=false
+		-DBUILD_AUDACIOUS:BOOL=false \
+		-DBUILD_DOCS:BOOL=true
+CONFLICTS?=	conky-awesome-[0-9]*
 
+SLAVEDIRS=	sysutils/conky-awesome
 PLIST_FILES=	bin/conky man/man1/conky.1.gz
 PORTEXAMPLES=	conky.conf conky_no_x11.conf convert.lua
 PORTDOCS=	html/config_settings.html html/docs.html html/lua.html html/variables.html
@@ -39,7 +39,7 @@ OPTIONS_DEFINE=	APCUPSD CURL DOCS EXAMPLES IPV6 METAR MOC MPD NCURSES RSS \
 
 OPTIONS_GROUP?=	X11
 OPTIONS_GROUP_X11=	ARGB DOUBLE_BUFFER IMLIB2 XFT XINERAMA LUA_CAIRO LUA_IMLIB2 LUA_RSVG
-OPTIONS_DEFAULT?=	X11 ARGB DOUBLE_BUFFER XFT
+OPTIONS_DEFAULT?=	X11 ARGB DOUBLE_BUFFER XFT LUA_CAIRO
 
 APCUPSD_DESC=		Monitor APCUPSD
 APCUPSD_CMAKE_BOOL=	BUILD_APCUPSD
@@ -63,6 +63,7 @@ IPV6_CMAKE_BOOL=	BUILD_IPV6
 
 LUA_CAIRO_DESC=		Lua-Cairo binding
 LUA_CAIRO_CMAKE_BOOL=	BUILD_LUA_CAIRO
+LUA_CAIRO_USES=		gnome
 LUA_CAIRO_USE=		gnome=cairo
 LUA_CAIRO_PLIST_FILES=	lib/conky/libcairo.so
 LUA_CAIRO_IMPLIES=	X11
@@ -74,6 +75,7 @@ LUA_IMLIB2_IMPLIES=	IMLIB2 X11
 
 LUA_RSVG_DESC=		Lua-rsvg binding
 LUA_RSVG_CMAKE_BOOL=	BUILD_LUA_RSVG
+LUA_RSVG_USES=		gnome
 LUA_RSVG_USE=		gnome=librsvg2
 LUA_RSVG_PLIST_FILES=	lib/conky/librsvg.so
 LUA_RSVG_IMPLIES=	X11
@@ -94,9 +96,11 @@ NCURSES_USES=		ncurses:port
 
 RSS_DESC=		Display RSS feeds
 RSS_CMAKE_BOOL=		BUILD_RSS
+RSS_USES=		gnome
 RSS_USE=		gnome=glib20,libxml2
 RSS_IMPLIES=		CURL
 
+X11_USES=		xorg
 X11_USE=		xorg=x11,xext,xdamage,xfixes
 X11_CMAKE_BOOL=		BUILD_X11 OWN_WINDOW
 X11_VARS=		EXAMPLE_CONF_FILE=${WRKSRC}/data/conky.conf
@@ -117,12 +121,18 @@ XMMS2_LIB_DEPENDS=	libxmmsclient.so:audio/xmms2
 XOAP_DESC=		Display XOAP weather reports
 XOAP_CMAKE_BOOL=	BUILD_WEATHER_XOAP
 XOAP_IMPLIES=		CURL METAR
+XOAP_USES=		gnome
 XOAP_USE=		gnome=libxml2
 
 .include <bsd.port.options.mk>
 
 .if ${PORT_OPTIONS:MLUA_CAIRO} && ${PORT_OPTIONS:MLUA_IMLIB2}
 PLIST_FILES+=		lib/conky/libcairo_imlib2_helper.so
+.endif
+
+# disable apm on non-x86 archs
+.if ${ARCH} != amd64 && ${ARCH} != i386
+EXTRA_PATCHES+=		${PATCHDIR}/extra-patch-src_CMakeLists.txt
 .endif
 
 post-patch:
@@ -133,8 +143,7 @@ post-patch:
 		-e 's/ -lbsd/ -lintl -linotify/' \
 		${WRKSRC}/cmake/ConkyPlatformChecks.cmake
 	@${REINPLACE_CMD} -e 's,LOCALBASE,${LOCALBASE},' \
-		${WRKSRC}/doc/docgen.sh \
-		${WRKSRC}/doc/docs.xml
+		${WRKSRC}/doc/docgen.sh
 
 post-build:
 	(cd ${WRKSRC}/doc && ${SH} docgen.sh)

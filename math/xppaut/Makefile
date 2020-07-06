@@ -3,7 +3,7 @@
 
 PORTNAME=	xppaut
 PORTVERSION=	7.0
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	math graphics
 MASTER_SITES=	http://www.math.pitt.edu/~bard/bardware/
 DISTNAME=	${PORTNAME}${PORTVERSION}
@@ -11,13 +11,17 @@ DISTNAME=	${PORTNAME}${PORTVERSION}
 MAINTAINER=	stephen@FreeBSD.org
 COMMENT=	Graphical tool for solving differential equations, etc
 
+BROKEN=		unfetchable
+
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-USE_XORG=	x11 xbitmaps xproto
+USES=		xorg
+USE_XORG=	x11 xbitmaps xorgproto
 CFLAGS+=	-w -Wno-return-type
-WRKSRC=		${WRKDIR}
 ALL_TARGET=	xppaut
+
+NO_WRKSUBDIR=	yes
 
 OPTIONS_DEFINE=	DOCS EXAMPLES
 

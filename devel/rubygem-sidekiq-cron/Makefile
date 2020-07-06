@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	sidekiq-cron
-PORTVERSION=	0.6.3
+PORTVERSION=	1.1.0
 PORTREVISION=	1
 CATEGORIES=	devel rubygems
 MASTER_SITES=	RG
@@ -13,11 +13,13 @@ COMMENT=	Enables to set jobs to be run in specified time (using CRON notation)
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
-RUN_DEPENDS=	rubygem-rufus-scheduler>=3.3.0:devel/rubygem-rufus-scheduler \
-		rubygem-sidekiq>=4.2.1:devel/rubygem-sidekiq
+# Use the same rubygem-sidekiq for www/gitlab-ce and its dependencies
+RUN_DEPENDS=	rubygem-fugit>=1.1<2:devel/rubygem-fugit \
+		rubygem-sidekiq5>=4.2.1:devel/rubygem-sidekiq5
+
+USES=		gem
+USE_RUBY=	yes
 
 NO_ARCH=	yes
-USE_RUBY=	yes
-USES=		gem
 
 .include <bsd.port.mk>

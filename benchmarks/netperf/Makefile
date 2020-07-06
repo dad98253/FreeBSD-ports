@@ -3,7 +3,8 @@
 
 PORTNAME=	netperf
 PORTVERSION=	2.7.1.p20170921
-CATEGORIES=	benchmarks ipv6
+PORTREVISION=	1
+CATEGORIES=	benchmarks
 
 MAINTAINER=	marius@FreeBSD.org
 COMMENT=	Network performance benchmarking package
@@ -13,7 +14,7 @@ GH_ACCOUNT=	HewlettPackard
 #GH_TAGNAME=	${PORTNAME}-${PORTVERSION}
 GH_TAGNAME=	d566775bf
 
-OPTIONS_DEFINE=		EXAMPLES EXS HISTOGRAM OMNI SCTP SOCKETS
+OPTIONS_DEFINE=		EXAMPLES EXS HISTOGRAM INFO OMNI SCTP SOCKETS
 OPTIONS_DEFAULT=	${OPTIONS_DEFINE}
 
 EXS_DESC=	Enable ICSC async socket support
@@ -28,7 +29,7 @@ CONFIGURE_ENV=	"transform="
 CONFIGURE_ARGS=	--program-prefix="" --program-suffix="" --enable-dirty \
 		--enable-demo --enable-burst --enable-intervals
 
-INFO=		netperf
+INFO_INFO=	netperf
 
 EXS_CONFIGURE_ENABLE=		exs
 HISTOGRAM_CONFIGURE_ENABLE=	histogram

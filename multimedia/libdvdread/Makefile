@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	libdvdread
-PORTVERSION=	6.0.0
+PORTVERSION=	6.1.0
 CATEGORIES=	multimedia
 MASTER_SITES=	http://download.videolan.org/pub/videolan/libdvdread/${PORTVERSION}/ \
 		http://dvdnav.mplayerhq.hu/releases/ \
@@ -14,14 +14,16 @@ COMMENT=	Videolan version of the libdvdread project
 
 LICENSE=	GPLv2
 
+USES=		tar:bz2 gmake libtool pathfix pkgconfig
+USE_CSTD=	c99
+USE_LDCONFIG=	yes
+
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
-USES=		tar:bz2 gmake libtool pathfix pkgconfig
-USE_LDCONFIG=	yes
 
 PORTDOCS=	AUTHORS COPYING ChangeLog NEWS README TODO
 
-OPTIONS_DEFINE=	DVDCSS
+OPTIONS_DEFINE=	DVDCSS DOCS
 .if !defined(PACKAGE_BUILDING)
 OPTIONS_DEFAULT=	DVDCSS
 .endif

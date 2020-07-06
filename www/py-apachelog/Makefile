@@ -9,11 +9,14 @@ MASTER_SITES=	https://storage.googleapis.com/google-code-archive-downloads/v2/co
 		http://freebsd.unixfreunde.de/sources/
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	joneum@FreeBSD.org
 COMMENT=	Python access log parser
 
 LICENSE=	ART10 GPLv1+ # same as Perl
 LICENSE_COMB=	dual
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 USES=		python:2.7
 USE_PYTHON=	autoplist distutils

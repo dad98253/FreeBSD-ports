@@ -3,7 +3,7 @@
  * stunnel.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015-2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,25 +28,23 @@ require_once('service-utils.inc');
 
 define('STUNNEL_LOCALBASE', '/usr/local');
 define('STUNNEL_ETCDIR', STUNNEL_LOCALBASE . "/etc/stunnel");
+define('STUNNEL_CHROOTDIR', '/var/tmp/stunnel');
 
 function stunnel_save() {
 	global $config;
-	conf_mount_rw();
-	safe_mkdir(STUNNEL_ETCDIR, 0755);
+	stunnel_make_directories();
 	$fout = fopen(STUNNEL_ETCDIR . "/stunnel.conf", "w");
 	fwrite($fout, "cert = " . STUNNEL_ETCDIR . "/stunnel.pem \n");
-	fwrite($fout, "chroot = /var/tmp/stunnel \n");
+	fwrite($fout, "chroot = " . STUNNEL_CHROOTDIR . " \n");
 	fwrite($fout, "setuid = stunnel \n");
 	fwrite($fout, "setgid = stunnel \n");
-	if (!is_array($config['installedpackages']['stunnel']['config'])) {
-		$config['installedpackages']['stunnel']['config'] = array();
-	}
+	init_config_arr(array('installedpackages', 'stunnel', 'config'));
 
 	// Keep array of in-use certificates so we can clean up after ourselves.
 	$in_use_certs = array();
 	$in_use_certs[] = 'stunnel.pem';
 
-	foreach ($config['installedpackages']['stunnel']['config'] as $pkgconfig) {
+	foreach ($config['installedpackages']['stunnel']['config'] as $num => $pkgconfig) {
 		fwrite($fout, "\n[" . $pkgconfig['description'] . "]\n");
 		if ($pkgconfig['client']) {
 			fwrite($fout, "client = yes" . "\n");
@@ -55,19 +53,33 @@ function stunnel_save() {
 			$cert = lookup_cert($pkgconfig['certificate']);
 			if ($cert != false) {
 				file_put_contents(STUNNEL_ETCDIR . "/{$pkgconfig['certificate']}.pem", 
-					base64_decode($cert['prv']) . base64_decode($cert['crt']) . ca_chain($cert));
+					trim(base64_decode($cert['prv'])) . "\n" .
+					trim(base64_decode($cert['crt'])) . "\n" .
+					ca_chain($cert));
 				fwrite($fout, "cert = " . STUNNEL_ETCDIR . "/{$pkgconfig['certificate']}.pem\n");
+				chmod(STUNNEL_ETCDIR . "/{$pkgconfig['certificate']}.pem", 0600);
 				$in_use_certs[] = "{$pkgconfig['certificate']}.pem";
+				$config['installedpackages']['stunnel']['config'][$num]['certname'] = $cert['descr'];
 			}
+		} else {
+			stunnel_make_default_cert();
 		}
 		if ($pkgconfig['sourceip']) {
 			fwrite($fout, "local = " . $pkgconfig['sourceip'] . "\n");
 		}
 		fwrite($fout, "accept = " . ($pkgconfig['localip'] ? $pkgconfig['localip'] . ":" : "")  . $pkgconfig['localport'] . "\n");
 		fwrite($fout, "connect = " . $pkgconfig['redirectip'] . ":" . $pkgconfig['redirectport'] . "\n");
-		fwrite($fout, "TIMEOUTclose = 0\n\n");
+		fwrite($fout, "debug = " . $pkgconfig['loglevel'] . "\n");
+		if ($pkgconfig['timeoutclose'] != "") {
+			fwrite($fout, "TIMEOUTclose = " . $pkgconfig['timeoutclose'] . "\n");
+		}
+		if ($pkgconfig['protocol']) {
+			fwrite($fout, "protocol = " . $pkgconfig['protocol'] . "\n");
+		}
+		fwrite($fout, base64_decode($pkgconfig['custom_options']) . "\n");
 	}
 	fclose($fout);
+	write_config('stunnel configuration changed');
 
 	// Clean up certs that are no longer in use.
 	foreach (glob(STUNNEL_ETCDIR . "/*.pem") as $file) {
@@ -76,46 +88,46 @@ function stunnel_save() {
 		}
 	}
 
-	conf_mount_ro();
-
+	stunnel_rcfile();
 	restart_service("stunnel");
 }
 
-function stunnel_install() {
-	global $config;
+function stunnel_make_directories() {
 	safe_mkdir(STUNNEL_ETCDIR);
+	safe_mkdir(STUNNEL_CHROOTDIR . "/var/tmp/run/stunnel");
+	system("/usr/sbin/chown -R stunnel:stunnel " . STUNNEL_CHROOTDIR);
+}
 
+function stunnel_make_default_cert() {
 	// Generate a self-signed default certificate if one does not already exist.
 	$stunnel_pem_filename = STUNNEL_ETCDIR . "/stunnel.pem";
 	if (!file_exists($stunnel_pem_filename)) {
 		$cert = array();
 		$cert['refid'] = uniqid();
 		$cert['descr'] = sprintf(gettext("stunnel default (%s)"), $cert['refid']);
+		$cert_hostname = "{$config['system']['hostname']}-{$cert['refid']}";
 
 		$dn = array(
-			'countryName' => "US",
-			'stateOrProvinceName' => "State",
-			'localityName' => "Locality",
 			'organizationName' => "{$g['product_name']} stunnel Self-Signed Certificate",
-			'emailAddress' => "admin@{$config['system']['hostname']}.{$config['system']['domain']}",
-			'commonName' => "{$config['system']['hostname']}-{$cert['refid']}");
+			'commonName' => $cert_hostname,
+			'subjectAltName' => "DNS:{$cert_hostname}");
 		$old_err_level = error_reporting(0); /* otherwise openssl_ functions throw warnings directly to a page screwing menu tab */
-		if (!cert_create($cert, null, 2048, 365, $dn, "self-signed", "sha256")) {
+		if (cert_create($cert, null, 2048, 365, $dn, "self-signed", "sha256")) {
+			// Write the .pem file to the expected default location for stunnel and set up required permissions.
+			file_put_contents(STUNNEL_ETCDIR . "/stunnel.pem",
+				trim(base64_decode($cert['prv'])) . "\n" .
+				trim(base64_decode($cert['crt'])) . "\n");
+			chmod(STUNNEL_ETCDIR . "/stunnel.pem", 0600);
+		} else {
 			while ($ssl_err = openssl_error_string()) {
 				log_error(sprintf(gettext("Error creating stunnel certificate: openssl library returns: %s"), $ssl_err));
 			}
-			error_reporting($old_err_level);
-			return null;
 		}
 		error_reporting($old_err_level);
-
-		// Write the .pem file to the expected default location for stunnel and set up required permissions.
-		file_put_contents(STUNNEL_ETCDIR . "/stunnel.pem", base64_decode($cert['prv']) . base64_decode($cert['crt']));
-		chmod(STUNNEL_ETCDIR . "/stunnel.pem", 0600);
 	}
+}
 
-	@mkdir("/var/tmp/stunnel/var/tmp/run/stunnel", 0755, true);
-	system("/usr/sbin/chown -R stunnel:stunnel /var/tmp/stunnel");
+function stunnel_rcfile() {
 	$_rcfile['file'] = 'stunnel.sh';
 	$_rcfile['start'] = STUNNEL_LOCALBASE . "/bin/stunnel " . STUNNEL_ETCDIR . "/stunnel.conf \n\t";
 	$_rcfile['stop'] = "/usr/bin/killall stunnel \n\t";
@@ -123,8 +135,16 @@ function stunnel_install() {
 	unlink_if_exists("/usr/local/etc/rc.d/stunnel");
 }
 
+function stunnel_install() {
+	global $config;
+	stunnel_make_directories();
+	stunnel_make_default_cert();
+	stunnel_rcfile();
+}
+
 function stunnel_deinstall() {
 	rmdir_recursive("/var/tmp/stunnel");
 	rmdir_recursive(STUNNEL_ETCDIR);
 }
+
 ?>

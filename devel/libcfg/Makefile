@@ -11,10 +11,12 @@ DISTNAME=	${PORTNAME}+-${DISTVERSION}
 MAINTAINER=	rodrigo@FreeBSD.org
 COMMENT=	Library for command line and configuration file parsing
 
+BROKEN=		unfetchable
+
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_aarch64=		fails to link: relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol cfg_default_properties can not be used when making a shared object
+BROKEN_aarch64=		fails to link: relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol cfg_default_properties cannot be used when making a shared object
 
 CONFLICTS_INSTALL=	ossp-cfg
 

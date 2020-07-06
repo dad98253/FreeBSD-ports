@@ -3,6 +3,7 @@
 
 PORTNAME=	gtranslator
 PORTVERSION=	2.91.7
+PORTREVISION=	2
 CATEGORIES=	devel gnome
 MASTER_SITES=	GNOME
 
@@ -22,7 +23,7 @@ RUN_DEPENDS=	iso-codes>=0:misc/iso-codes \
 
 USE_GNOME=	intlhack gnomeprefix gtk30 libgda5 gtksourceview3 libxml2 \
 		introspection:build
-USES=		desktop-file-utils gettext gmake libtool pathfix \
+USES=		desktop-file-utils gettext gmake gnome libtool pathfix \
 		pkgconfig python tar:xz
 USE_PYTHON=	py3kplist
 GNU_CONFIGURE=	yes
@@ -32,6 +33,7 @@ CPPFLAGS+=	-I${LOCALBASE}/include
 LDFLAGS+=	-L${LOCALBASE}/lib
 CONFIGURE_ARGS=	--disable-debug \
 		--with-gda=5.0 \
+		--without-dictionary \
 		--enable-compile-warnings=no
 INSTALL_TARGET=	install-strip
 
@@ -39,23 +41,5 @@ GLIB_SCHEMAS=	org.gnome.gtranslator.gschema.xml \
 		org.gnome.gtranslator.plugins.codeview.gschema.xml \
 		org.gnome.gtranslator.plugins.open-tran.gschema.xml \
 		org.gnome.gtranslator.plugins.translation-memory.gschema.xml
-
-OPTIONS_DEFINE=	DICT
-OPTIONS_DEFAULT=DICT
-DICT_DESC=	Build dictionary plugin
-
-.include <bsd.port.options.mk>
-
-.if ${PORT_OPTIONS:MDICT}
-BUILD_DEPENDS+=	gnome-dictionary>=3.4.0:deskutils/gnome-dictionary
-LIB_DEPENDS+=	libgdict-1.0.so:deskutils/gnome-dictionary
-RUN_DEPENDS+=	gnome-dictionary>=3.4.0:deskutils/gnome-dictionary
-GLIB_SCHEMAS+=	org.gnome.gtranslator.plugins.dictionary.gschema.xml
-CONFIGURE_ARGS+=--with-dictionary
-PLIST_SUB+=	DICT=""
-.else
-CONFIGURE_ARGS+=--without-dictionary
-PLIST_SUB+=	DICT="@comment "
-.endif
 
 .include <bsd.port.mk>

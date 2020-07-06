@@ -10,11 +10,12 @@ EXTRACT_SUFX=	.tgz
 MAINTAINER=	crees@FreeBSD.org
 COMMENT=	Data binding for XML (JAXB) and SQL database (JDO)
 
+BROKEN=		unfetchable
+
 LICENSE=	APACHE20
 
 USES=		cpe
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NO_BUILD=	yes
 
 PLIST_FILES=	%%JAVAJARDIR%%/${PORTNAME}-anttasks.jar \
@@ -27,6 +28,8 @@ PLIST_FILES=	%%JAVAJARDIR%%/${PORTNAME}-anttasks.jar \
 
 PORTDOCS=	*.html *.txt *.css *.dtd *.xsd *.pdf \
 		ora-mar-2k images rss
+
+OPTIONS_DEFINE=	DOCS
 
 do-install:
 .for f in ${PLIST_FILES:T:R}

@@ -3,7 +3,7 @@
 
 PORTNAME=	advancemess
 PORTVERSION=	1.4
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	emulators
 MASTER_SITES=	https://github.com/amadvance/advancemame/releases/download/${DISTNAME}/
 
@@ -16,7 +16,7 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 LIB_DEPENDS=	libexpat.so:textproc/expat2
 RUN_DEPENDS=	advancemame>=1.4:emulators/advancemame
 
-USES=		gmake ncurses
+USES=		gmake ncurses sdl
 USE_SDL=	sdl
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-svgalib --disable-fb --disable-alsa --enable-oss \
@@ -32,7 +32,7 @@ PLIST_FILES=	bin/advmess \
 
 MAKE_JOBS_UNSAFE=	yes
 
-OPTIONS_DEFINE=		FREETYPE SLANG
+OPTIONS_DEFINE=		FREETYPE SLANG DOCS
 OPTIONS_DEFINE_i386=	ASM
 OPTIONS_DEFAULT=	FREETYPE
 OPTIONS_DEFAULT_i386=	ASM

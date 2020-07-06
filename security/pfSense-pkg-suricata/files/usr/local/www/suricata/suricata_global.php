@@ -3,11 +3,11 @@
  * suricata_global.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2006-2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2006-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2003-2004 Manuel Kasper
  * Copyright (c) 2005 Bill Marquette
  * Copyright (c) 2009 Robert Zelaya Sr. Developer
- * Copyright (c) 2018 Bill Meeks
+ * Copyright (c) 2020 Bill Meeks
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,6 +51,7 @@ else {
 	$pconfig['snortcommunityrules'] = $config['installedpackages']['suricata']['config'][0]['snortcommunityrules'] == "on" ? 'on' : 'off';
 	$pconfig['snort_rules_file'] = htmlentities($config['installedpackages']['suricata']['config'][0]['snort_rules_file']);
 	$pconfig['autogeoipupdate'] = $config['installedpackages']['suricata']['config'][0]['autogeoipupdate'] == "off" ? 'off' : 'on';
+	$pconfig['maxmind_geoipdb_key'] = htmlentities($config['installedpackages']['suricata']['config'][0]['maxmind_geoipdb_key']);
 	$pconfig['hide_deprecated_rules'] = $config['installedpackages']['suricata']['config'][0]['hide_deprecated_rules'] == "on" ? 'on' : 'off';
 	$pconfig['enable_etopen_custom_url'] = $config['installedpackages']['suricata']['config'][0]['enable_etopen_custom_url'] == "on" ? 'on' : 'off';
 	$pconfig['enable_etpro_custom_url'] = $config['installedpackages']['suricata']['config'][0]['enable_etpro_custom_url'] == "on" ? 'on' : 'off';
@@ -64,7 +65,7 @@ else {
 
 // Do input validation on parameters
 if (empty($pconfig['autoruleupdatetime']))
-	$pconfig['autoruleupdatetime'] = '00:30';
+	$pconfig['autoruleupdatetime'] = '00:' . str_pad(strval(random_int(0,59)), 2, "00", STR_PAD_LEFT);
 
 if (empty($pconfig['log_to_systemlog_facility']))
 	$pconfig['log_to_systemlog_facility'] = "local1";
@@ -147,19 +148,20 @@ if (!$input_errors) {
 
 		// If deprecated rules should be removed, then do it
 		if ($config['installedpackages']['suricata']['config'][0]['hide_deprecated_rules'] == "on") {
-			log_error(gettext("[Suricata] Hide Deprecated Rules is enabled.  Removing obsoleted rules categories."));
+			syslog(LOG_NOTICE, gettext("[Suricata] Hide Deprecated Rules is enabled.  Removing obsoleted rules categories."));
 			suricata_remove_dead_rules();
 		}
 
 		$config['installedpackages']['suricata']['config'][0]['snort_rules_file'] = html_entity_decode($_POST['snort_rules_file']);
-		$config['installedpackages']['suricata']['config'][0]['oinkcode'] = html_entity_decode($_POST['oinkcode']);
-		$config['installedpackages']['suricata']['config'][0]['etprocode'] = html_entity_decode($_POST['etprocode']);
+		$config['installedpackages']['suricata']['config'][0]['oinkcode'] = trim(html_entity_decode($_POST['oinkcode']));
+		$config['installedpackages']['suricata']['config'][0]['etprocode'] = trim(html_entity_decode($_POST['etprocode']));
 		$config['installedpackages']['suricata']['config'][0]['rm_blocked'] = $_POST['rm_blocked'];
 		$config['installedpackages']['suricata']['config'][0]['autoruleupdate'] = $_POST['autoruleupdate'];
 		$config['installedpackages']['suricata']['config'][0]['etopen_custom_rule_url'] = trim(html_entity_decode($_POST['etopen_custom_rule_url']));
 		$config['installedpackages']['suricata']['config'][0]['etpro_custom_rule_url'] = trim(html_entity_decode($_POST['etpro_custom_rule_url']));
 		$config['installedpackages']['suricata']['config'][0]['snort_custom_url'] = trim(html_entity_decode($_POST['snort_custom_url']));
 		$config['installedpackages']['suricata']['config'][0]['gplv2_custom_url'] = trim(html_entity_decode($_POST['gplv2_custom_url']));
+		$config['installedpackages']['suricata']['config'][0]['maxmind_geoipdb_key'] = trim(html_entity_decode($_POST['maxmind_geoipdb_key']));
 
 		/* Check and adjust format of Rule Update Starttime string to add colon and leading zero if necessary */
 		if ($_POST['autoruleupdatetime']) {
@@ -188,9 +190,7 @@ if (!$input_errors) {
 			install_cron_job("/usr/local/pkg/suricata/suricata_geoipupdate.php", FALSE);
 
 		/* create passlist and homenet file, then sync files */
-		conf_mount_rw();
 		sync_suricata_package_config();
-		conf_mount_ro();
 
 		/* forces page to reload new settings */
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
@@ -316,7 +316,7 @@ $section->addInput(new Form_Input(
 	'Snort Rules Filename',
 	'text',
 	$pconfig['snort_rules_file']
-))->setHelp('Enter the rules tarball filename (filename only, do not include the URL.)<br />Example: snortrules-snapshot-29111.tar.gz');
+))->setHelp('Enter the rules tarball filename (filename only, do not include the URL.)<br />Example: snortrules-snapshot-29151.tar.gz<br />DO NOT specify a Snort3 rules file!  Snort3 rules are incompatible with Suricata and will break your installation!');
 $section->addInput(new Form_Input(
 	'oinkcode',
 	'Snort Oinkmaster Code',
@@ -371,7 +371,11 @@ $section->addInput(new Form_Input(
 	'Update Start Time',
 	'text',
 	$pconfig['autoruleupdatetime']
-))->setHelp('Enter the rule update start time in 24-hour format (HH:MM). Default is 00:30.<br /><br />Rules will update at the interval chosen above starting at the time specified here. For example, using the default start time of 00:30 and choosing 12 Hours for the interval, the rules will update at 00:03 and 12:03 each day.');
+))->setHelp('Enter the rule update start time in 24-hour format (HH:MM).  Default is 00 hours with a randomly chosen minutes value.  ' . 
+			'Rules will update at the interval chosen above starting at the time specified here. ' . 
+			'For example, using a start time of 00:08 and choosing 12 Hours for the interval, ' . 
+			'the rules will update at 00:08 and 12:08 each day. The randomized minutes value should ' . 
+			'be retained to minimize the impact to the rules update site from large numbers of simultaneous requests.');
 $section->addInput(new Form_Checkbox(
 	'live_swap_updates',
 	'Live Rule Swap on Update',
@@ -381,11 +385,20 @@ $section->addInput(new Form_Checkbox(
 ))->setHelp('When enabled, Suricata will perform a live load of the new rules following an update instead of a hard restart. If issues are encountered with live load, uncheck this option to perform a hard restart of all Suricata instances following an update.');
 $section->addInput(new Form_Checkbox(
 	'autogeoipupdate',
-	'GeoIP DB Update',
-	'Enable downloading of free GeoIP Country Database updates. Default is Checked',
+	'GeoLite2 DB Update',
+	'Enable downloading of free GeoLite2 Country IP Database updates. Default is Not Checked',
 	$pconfig['autogeoipupdate'] == 'on' ? true:false,
 	'on'
-))->setHelp('When enabled, Suricata will automatically download updates for the free legacy GeoIP country database on the 8th of each month at midnight.<br /><br />If you have a subscription for more current GeoIP updates, uncheck this option and instead create your own process to place the required database files in /usr/local/share/GeoIP/.');
+))->setHelp('When enabled, Suricata will automatically download updates for the free GeoLite2 country IP database.<br /><br />If you have a subscription for more current GeoIP2 updates, uncheck this option and instead create your own process to place the required database file in /usr/local/share/suricata/GeoLite2/.');
+$section->addInput(new Form_Input(
+	'maxmind_geoipdb_key',
+	gettext('GeoLite2 DB License Key'),
+	'text',
+	$pconfig['maxmind_geoipdb_key'],
+	['placeholder' => 'Enter your MaxMind GeoLite2 License Key']
+))->setHelp('To utilize the free MaxMind GeoLite2 GeoIP functionality, you must <a href="https://www.maxmind.com/en/geolite2/signup" target="_blank">register for a free MaxMind user account</a>. '
+	. '<strong>Use the GeoIP Update version 3.1.1 or newer registration option.</strong>')
+  ->setAttribute('autocomplete', 'off');
 $form->add($section);
 
 $section = new Form_Section('General Settings');
@@ -427,7 +440,7 @@ print $form;
 </div>
 
 <div class="infoblock">
-	<?=print_info_box('<strong>Note:</strong> Changing any settings on this page will affect all Suricata-configured interfaces.', info)?>
+	<?=print_info_box('<strong>Note:</strong> Changing any settings on this page will affect all Suricata-configured interfaces.', 'info')?>
 </div>
 
 <script type="text/javascript">
@@ -506,6 +519,11 @@ events.push(function(){
 		hideInput('log_to_systemlog_facility', hide);
 	}
 
+	function enable_geoip2_upd() {
+		var hide = ! $('#autogeoipupdate').prop('checked');
+		hideInput('maxmind_geoipdb_key', hide);
+	}
+
 	// ---------- Click checkbox handlers ---------------------------------------------------------
 	// When 'enable_vrt_rules' is clicked, toggle the Oinkmaster text control
 	$('#enable_vrt_rules').click(function() {
@@ -562,11 +580,17 @@ events.push(function(){
 		toggle_log_to_systemlog();
 	});
 
+	// When 'autogeoipupdate' is clicked, toggle 'maxmind_geoipdb_key'
+	$('#autogeoipupdate').click(function() {
+		enable_geoip2_upd();
+	});
+
 	// ---------- On initial page load ------------------------------------------------------------
 	enable_snort_vrt();
 	enable_et_rules();
 	enable_etpro_rules();
 	enable_gplv2_rules();
+	enable_geoip2_upd();
 	enable_change_rules_upd($('#autoruleupdate').prop('selectedIndex'));
 	toggle_log_to_systemlog();
 

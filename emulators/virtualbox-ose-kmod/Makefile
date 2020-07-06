@@ -2,9 +2,9 @@
 # $FreeBSD$
 
 PORTNAME=	virtualbox-ose
-PORTVERSION=	5.2.12
+PORTVERSION=	5.2.34
 CATEGORIES=	emulators
-MASTER_SITES=	http://download.virtualbox.org/virtualbox/${PORTVERSION}/
+MASTER_SITES=	https://download.oracle.com/virtualbox/${PORTVERSION}/
 PKGNAMESUFFIX=	-kmod
 DISTNAME=	VirtualBox-${PORTVERSION}
 
@@ -62,8 +62,7 @@ KMK_FLAGS=	HostDrivers-scripts vboxdrv-src VBoxNetFlt-src VBoxNetAdp-src
 .if ${PORT_OPTIONS:MDEBUG}
 KMK_FLAGS+=	BUILD_TYPE=debug
 KMK_BUILDTYPE=	debug
-EXTRA_PATCHES+=	${PATCHDIR}/extrapatch-Config.kmk \
-		${PATCHDIR}/extrapatch-src-VBox-HostDrivers-Support-freebsd-Makefile
+EXTRA_PATCHES+=	${PATCHDIR}/extrapatch-src-VBox-HostDrivers-Support-freebsd-Makefile
 MAKE_ARGS+=	DEBUG_FLAGS="-O1 -g"
 .endif
 
@@ -75,20 +74,16 @@ KMK_ARCH=	freebsd.${ARCH}
 
 .include <bsd.port.pre.mk>
 
-.if ${OSREL:R} >= 11
 SYMBOLSUFFIX=	debug
-.else
-SYMBOLSUFFIX=	symbols
-.endif
 PLIST_SUB+=	SYMBOLSUFFIX=${SYMBOLSUFFIX}
 
 post-patch:
-	@${ECHO} 'VBOX_WITH_VBOXDRV = 1' > ${WRKSRC}/LocalConfig.kmk
-	@${ECHO} 'VBOX_WITH_NETFLT = 1' >> ${WRKSRC}/LocalConfig.kmk
-	@${ECHO} 'VBOX_WITH_NETADP = 1' >> ${WRKSRC}/LocalConfig.kmk
-	@${ECHO} 'VBOX_WITH_ADDITIONS =' >> ${WRKSRC}/LocalConfig.kmk
+	@${ECHO_CMD} 'VBOX_WITH_VBOXDRV = 1' > ${WRKSRC}/LocalConfig.kmk
+	@${ECHO_CMD} 'VBOX_WITH_NETFLT = 1' >> ${WRKSRC}/LocalConfig.kmk
+	@${ECHO_CMD} 'VBOX_WITH_NETADP = 1' >> ${WRKSRC}/LocalConfig.kmk
+	@${ECHO_CMD} 'VBOX_WITH_ADDITIONS =' >> ${WRKSRC}/LocalConfig.kmk
 .if ${PORT_OPTIONS:MVIMAGE}
-	@${ECHO} 'VBOX_WITH_NETFLT_VIMAGE = 1' >> ${WRKSRC}/LocalConfig.kmk
+	@${ECHO_CMD} 'VBOX_WITH_NETFLT_VIMAGE = 1' >> ${WRKSRC}/LocalConfig.kmk
 .endif
 	@${REINPLACE_CMD} -e 's|/usr/local|${LOCALBASE}|g' \
 	    ${WRKSRC}/Config.kmk ${WRKSRC}/configure

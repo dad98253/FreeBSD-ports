@@ -3,8 +3,8 @@
  * pfblockerng.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2015-2016 BBcan177@gmail.com
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2019 BBcan177@gmail.com
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,7 +116,7 @@ foreach (array('existing', 'actual') as $pftype) {
 
 // Default cURL options
 $pfb['curl_defaults'] = array(  CURLOPT_USERAGENT	=> 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 Chrome/43.0.2357.65 Safari/537.36',
-				CURLOPT_SSL_CIPHER_LIST	=> 'TLSv1.2, TLSv1.1, TLSv1',
+				CURLOPT_SSL_CIPHER_LIST	=> 'TLSv1.3, TLSv1.2',
 				CURLOPT_FOLLOWLOCATION	=> true,
 				CURLOPT_SSL_VERIFYPEER	=> true,
 				CURLOPT_SSL_VERIFYHOST	=> true,
@@ -182,6 +182,7 @@ function pfb_global() {
 	$pfb['interval']	= $pfb['config']['pfb_interval']	?: '1';	// Hour cycle for scheduler
 	$pfb['24hour']		= $pfb['config']['pfb_dailystart']	?: '0';	// Start hour of the 'Once a day' schedule
 	$pfb['maxmind_locale']	= $pfb['config']['maxmind_locale']	?: 'en';// MaxMind Localized Language setting
+	$pfb['maxmind_key']	= $pfb['config']['maxmind_key']		?: '';	// Maxmind License Key
 	$pfb['iplocal']		= $config['interfaces']['lan']['ipaddr'];	// Lan IP address
 	$pfb['dnsbl']		= $pfb['dnsblconfig']['pfb_dnsbl'];		// Enabled state of DNSBL
 	$pfb['dnsbl_port']	= $pfb['dnsblconfig']['pfb_dnsport'];		// Lighttpd web server http port setting
@@ -446,13 +447,19 @@ function pfb_determine_list_detail($list='', $header='', $confconfig='', $key=''
 
 
 // Determine if cron task requires updating
-function pfblockerng_cron_exists($crontask, $pfb_min, $pfb_hour) {
+function pfblockerng_cron_exists($crontask, $pfb_min, $pfb_hour, $pfb_mday, $pfb_wday) {
 	global $config;
 
 	if (isset($config['cron']['item'])) {
 		foreach ($config['cron']['item'] as $item) {
 			if (strpos($item['command'], $crontask) !== FALSE) {
 				if ($item['minute'] != $pfb_min) {
+					return FALSE;
+				}
+				if ($item['mday'] != $pfb_mday) {
+					return FALSE;
+				}
+				if ($item['wday'] != $pfb_wday) {
 					return FALSE;
 				}
 				if ($pfb_hour == 'maxmind' && !empty($item['hour'])) {
@@ -869,7 +876,7 @@ server.errorlog			= "/var/log/pfblockerng/dnsbl_error.log"
 server.pid-file			= "/var/run/dnsbl.pid"
 server.modules			= ( "mod_access", "mod_fastcgi", "mod_rewrite" )
 
-server.indexfiles		= ( "index.php" )
+index-file.names		= ( "index.php" )
 mimetype.assign			= ( ".html" => "text/html", ".gif" => "image/gif" )
 url.access-deny			= ( "~", ".inc" )
 fastcgi.server			= ( ".php" => ( "localhost" => ( "socket" => "/var/run/php-fpm.socket", "broken-scriptfilename" => "enable" ) ) )
@@ -877,7 +884,7 @@ fastcgi.server			= ( ".php" => ( "localhost" => ( "socket" => "/var/run/php-fpm.
 debug.log-condition-handling	= "enable"
 
 \$HTTP["host"] =~ ".*" {
-	url.rewrite-once = ( ".*" => "index.php" )
+	url.rewrite-once = ( ".*" => "/index.php" )
 }
 
 \$SERVER["socket"] == "0.0.0.0:{$pfb['dnsbl_port_ssl']}" {
@@ -889,7 +896,7 @@ debug.log-condition-handling	= "enable"
 	ssl.cipher-list		= "AES128+EECDH:AES256+EECDH:AES128+EDH:AES256+EDH:AES128-SHA:AES256-SHA:!aNULL:!eNULL:!DSS"
 
 	\$HTTP["host"] =~ ".*" {
-		url.rewrite-once = ( ".*" => "index.php" )
+		url.rewrite-once = ( ".*" => "/index.php" )
 	}
 }
 
@@ -906,8 +913,18 @@ EOF;
 		if ($pfbupdate) {
 			$log = "Saving pfSense config...\n";
 			pfb_logger("{$log}", 1);
+			if (!is_array($config['nat'])) {
+				$config['nat'] = array();
+			}
+			if (!is_array($config['nat']['rule'])) {
+				$config['nat']['rule'] = array();
+			}
 			$config['nat']['rule'] = $new_nat;
 
+			if (!is_array($config['virtualip'])) {
+				$config['virtualip'] = array();
+			}
+			
 			if (!is_array($config['virtualip']['vip'])) {
 				$config['virtualip']['vip'] = array();
 			}
@@ -1810,7 +1827,7 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 						curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 						curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1.2, TLSv1.1, TLSv1, SSLv3');
 						$log = "\n[ ! ] Downgrading SSL settings (Flex) ";
-						pfb_logger("{$log}", 1);
+						pfb_logger("{$log}", "{$logtype}");
 					}
 					else {
 						$log = curl_error($ch) . " Retry in 5 seconds...\n";
@@ -1824,16 +1841,16 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 				$http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 				if (isset($pfb['rfc7231'][$http_status])) {
-					if ($logtype != 3) {
-						pfb_logger(". {$pfb['rfc7231'][$http_status]}", 1);
+					if ($logtype < 3) {
+						pfb_logger(". {$pfb['rfc7231'][$http_status]}", $logtype);
 					} else {
-						pfb_logger(" {$file_dwn}\t\t{$pfb['rfc7231'][$http_status]}\n", 3);
+						pfb_logger(" {$file_dwn}\t\t{$pfb['rfc7231'][$http_status]}\n", $logtype);
 					}
 				} else {
-					if ($logtype != 3) {
-						pfb_logger(". unknown http status code ", 2);
+					if ($logtype < 3) {
+						pfb_logger(". unknown http status code ", $logtype);
 					} else {
-						pfb_logger(". unknown http status code ", 3);
+						pfb_logger(". unknown http status code ", $logtype);
 					}
 				}
 				curl_close($ch);
@@ -1853,11 +1870,11 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 		unset($retval);
 
 		// Decompress file if required
-		if ($file_type == 'application/x-gzip') {
+		if ($file_type == 'application/x-gzip' || $file_type == 'application/gzip') {
 			if ($logtype == 3) {
 				// Extras - MaxMind downloads
 				@rename("{$file_dwn}.raw", strstr("{$file_dwn}.raw", '.raw', TRUE));
-				exec("/usr/bin/gunzip -dfq {$file_dwn} {$pfb['geoipshare']}");
+				exec("/usr/bin/tar -xzf {$file_dwn} --strip=1 -C {$pfb['geoipshare']} >/dev/null 2>&1");
 				return TRUE;
 			}
 			else {
@@ -1872,11 +1889,14 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 		elseif ($file_type == 'application/zip') {
 
 			// Extras - MaxMind/Alexa downloads
-			if ($logtype == 3) {
+			if ($logtype >= 3) {
 				// Determine if Zip contains multiple files
-				$archive = exec("/usr/bin/tar -tf {$file_dwn}.raw | grep -c ^ 2>&1");
-				if ($archive > 1) {
-					exec("/usr/bin/tar -xf {$file_dwn}.raw --strip=1 -C {$header}");
+				exec("/usr/bin/tar -tf {$file_dwn}.raw 2>&1", $archive_count, $retval);
+				if ($archive_count[0] == 'tar: Failed to set default locale') {
+					unset($archive_count[0]);
+				}
+				if (count($archive_count) > 1) {
+					exec("/usr/bin/tar -xf {$file_dwn}.raw --strip=1 -C {$header} >/dev/null 2>&1");
 				} else {
 					exec("/usr/bin/tar -xOf {$file_dwn}.raw > {$header}");
 				}
@@ -3221,7 +3241,7 @@ function sync_package_pfblockerng($cron='') {
 			if (isset($config['installedpackages']['pfblockerngdnsbl']['config'])) {
 				foreach ($config['installedpackages']['pfblockerngdnsbl']['config'] as $list) {
 					// If only the 'customlist' is defined. Remove the 'List row' data.
-					if (empty($list['row'][0]['url'])) {
+					if (isset($list['row']) && empty($list['row'][0]['url'])) {
 						unset($list['row']);
 					}
 
@@ -3907,11 +3927,44 @@ function sync_package_pfblockerng($cron='') {
 		pfb_logger("{$log}", 1);
 	}
 
+	// Download MaxMind Databases if not found
+	$maxmind_verify = FALSE;
+	if (!empty($pfb['maxmind_key'])) {
+
+		$maxmind_verify = TRUE;
+		if (!file_exists("{$pfb['geoipshare']}/GeoLite2-Country.mmdb") ||
+		    !file_exists("{$pfb['geoipshare']}/GeoLite2-Country-Blocks-IPv4.csv") ||
+		    !file_exists("{$pfb['ccdir']}/A1_ZW_rep_v4.txt") ||
+		    !file_exists("{$pfb['dbdir']}/GeoIP_Locale")) {
+
+			// Check if MaxMind download already in progress
+			exec('/bin/ps -wax', $result_cron);
+			if (!preg_grep("/pfblockerng[.]php\s+dc/", $result_cron)) {
+				$log = "\nMaxMind Database downloading and processing ( approx 4MB ) ... Please wait ...\n";
+				pfb_logger("{$log}", 1);
+				exec("/usr/local/bin/php /usr/local/www/pfblockerng/pfblockerng.php dc >> {$pfb['log']} 2>&1");
+			}
+			else {
+				$log = "\nMaxMind download already in process...\n";
+				pfb_logger("{$log}", 1);
+			}
+		}
+	}
+
+	$maxmind_run_once = TRUE;
 	foreach ($pfb['continents'] as $continent => $pfb_alias) {
 		if (isset($config['installedpackages']['pfblockerng' . strtolower(str_replace(' ', '', $continent))]['config'])) {
 			$continent_config = $config['installedpackages']['pfblockerng' . strtolower(str_replace(' ', '', $continent))]['config'][0];
 			$cc_name = 'pfblockerng' . strtolower(str_replace(' ', '', $continent));
-			if ($continent_config['action'] != 'Disabled' && $pfb['enable'] == 'on') {
+			if (isset($continent_config['action']) && $continent_config['action'] != 'Disabled' && $pfb['enable'] == 'on') {
+
+				// Maxmind License Key verification and user notification
+				if ($maxmind_run_once && !$maxmind_verify) {
+					$mmsg = 'MaxMind now requires a License Key! Review the General tab: MaxMind settings for more information.';
+					pfb_logger("\n\nURGENT:\n    {$mmsg}\n", 1);
+					file_notice('pfBlockerNG MaxMind', $mmsg, 'pfBlockerNG', '/pkg_edit.php?xml=/pfblockerng.xml', 2);
+					$maxmind_run_once = FALSE;
+				}
 
 				// Determine if Continent lists require action (IPv4 and IPv6)
 				$cont_type = array('countries4' => '_v4', 'countries6' => '_v6');
@@ -4078,6 +4131,13 @@ function sync_package_pfblockerng($cron='') {
 		foreach	($list_type as $ip_type	=> $vtype) {
 			if (!empty($config['installedpackages'][$ip_type]['config'])) {
 				foreach	($config['installedpackages'][$ip_type]['config'] as $key => $list) {
+					if (!is_array($list)) {
+						$list = array();
+					}
+					if (!is_array($list['row'])) {
+						$list['row'] = array();
+					}
+					
 					if ($vtype == '_v4') {
 						$list['vtype'] = '_v4';
 					} else {
@@ -4086,12 +4146,7 @@ function sync_package_pfblockerng($cron='') {
 
 					// Collect list array key location
 					$list['key'] = "{$key}";
-					if (!is_array($list)) {
-						$list = array();
-					}
-					if (!is_array($list['row'])) {
-						$list['row'] = array();
-					}
+										
 					// If only the 'customlist' is defined. Remove the 'List row' data.
 					if (empty($list['row'][0]['url'])) {
 						unset($list['row']);
@@ -4110,6 +4165,7 @@ function sync_package_pfblockerng($cron='') {
 			}
 		}
 
+		$maxmind_run_once = TRUE;
 		foreach	($lists	as $list) {
 			if ($runonce_v4 && $list['vtype'] == '_v4') {
 				$runonce_v4 = FALSE;
@@ -4138,6 +4194,16 @@ function sync_package_pfblockerng($cron='') {
 							$custom	= TRUE;
 						} else {
 							$custom	= FALSE;
+						}
+
+						// Maxmind License Key verification
+						if ($maxmind_run_once && strpos($row['url'], '/usr/local/share/GeoIP') !== FALSE) {
+							$mmsg = 'MaxMind now requires a License Key! Review the General tab: MaxMind settings for more information.';
+							if (empty($pfb['maxmind_key'])) {
+								pfb_logger("\n\nURGENT:\n    {$mmsg}.\n", 1);
+								file_notice('pfBlockerNG MaxMind', $mmsg, 'pfBlockerNG', '/pkg_edit.php?xml=/pfblockerng.xml', 2);
+							}
+							$maxmind_run_once = FALSE;
 						}
 
 						// Determine 'list' details (return array $pfbarr)
@@ -4645,6 +4711,10 @@ function sync_package_pfblockerng($cron='') {
 	// Reload config.xml to get any recent changes
 	$config = parse_config(true);
 
+	if (!is_array($config['aliases'])) {
+		$config['aliases'] = array();
+	}
+
 	$exist_aliases = $config['aliases']['alias'];
 	if (isset($config['aliases']['alias'])) {
 		foreach ($config['aliases']['alias'] as $cbalias) {
@@ -4681,12 +4751,12 @@ function sync_package_pfblockerng($cron='') {
 	// Only execute if autorules are defined or if an alias has been removed.
 	if ($pfb['autorules'] || $pfb['enable'] == '' || $pfb['remove']) {
 		$message = '';
-		if (count($pfb['deny_inbound']) > 0 || count($pfb['permit_inbound']) > 0 || count($pfb['match_inbound']) > 0) {
+		if (!empty($pfb['deny_inbound']) || !empty($pfb['permit_inbound']) || !empty($pfb['match_inbound'])) {
 			if (empty($pfb['inbound_interfaces'])) {
 				$message = " Unable to apply rules. Inbound interface option not configured.";
 			}
 		}
-		if (count($pfb['deny_outbound']) > 0 || count($pfb['permit_outbound']) > 0 || count($pfb['match_outbound']) > 0) {
+		if (!empty($pfb['deny_outbound']) || !empty($pfb['permit_outbound']) || !empty($pfb['match_outbound'])) {
 			if (empty($pfb['outbound_interfaces'])) {
 				$message .= "\n Unable to apply rules. Outbound interface option not configured.";
 			}
@@ -5138,7 +5208,7 @@ function sync_package_pfblockerng($cron='') {
 			if (!empty($pfb_suppalias)) {
 				$pfb_suppaliascidr = array();
 				foreach ($pfb_suppalias as $key => $subnet) {
-					if (strpos($subnet, '/24') !== FALSE) {
+					if (strpos($subnet, '/24') !== FALSE && is_ipaddrv4($subnet)) {
 						$pfb_suppaliascidr = subnetv4_expand($subnet);
 						unset($pfb_suppalias[$key]);
 					}
@@ -5335,7 +5405,7 @@ function sync_package_pfblockerng($cron='') {
 		$pfb_who	= 'root';
 
 		// Determine if CRON job requires updating
-		if (!pfblockerng_cron_exists($pfb_cmd, $pfb['min'], $pfb_hour)) {
+		if (!pfblockerng_cron_exists($pfb_cmd, $pfb['min'], $pfb_hour, $pfb_mday, $pfb_wday)) {
 			install_cron_job($pfb_cmd, true, $pfb['min'], $pfb_hour, $pfb_mday, $pfb_month, $pfb_wday, $pfb_who);
 		}
 	}
@@ -5350,13 +5420,13 @@ function sync_package_pfblockerng($cron='') {
 		// MaxMind GeoIP CRON hour is randomized between 0-23 Hour to minimize effect on MaxMind website
 		$pfb_gmin	= '0';
 		$pfb_ghour	= rand(0,23);
-		$pfb_gmday	= '1-7';
+		$pfb_gmday	= '4-10';
 		$pfb_gmonth	= '*';
 		$pfb_gwday	= '*';
 		$pfb_gwho	= 'root';
 
 		// Determine if CRON job requires updating
-		if (!pfblockerng_cron_exists($pfb_gcmd, $pfb_gmin, 'maxmind')) {
+		if (!pfblockerng_cron_exists($pfb_gcmd, $pfb_gmin, 'maxmind', $pfb_gmday, $pfb_gwday)) {
 			install_cron_job($pfb_gcmd, true, $pfb_gmin, $pfb_ghour, $pfb_gmday, $pfb_gmonth, $pfb_gwday, $pfb_gwho);
 		}
 	}
@@ -5518,7 +5588,7 @@ function pfblockerng_php_pre_deinstall_command() {
 	if (!empty($pfb['widgets'])) {
 		$widgetlist = explode(',', $pfb['widgets']);
 		foreach ($widgetlist as $key => $widget) {
-			if (strpos($widget, 'pfblockerng-container') !== FALSE) {
+			if (strpos($widget, 'pfblockerng') !== FALSE) {
 				unset($widgetlist[$key]);
 			}
 		}

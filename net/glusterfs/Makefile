@@ -2,7 +2,7 @@
 
 PORTNAME=	glusterfs
 PORTVERSION=	3.11.1
-PORTREVISION=	4
+PORTREVISION=	6
 CATEGORIES=	net
 MASTER_SITES=	http://bits.gluster.org/pub/gluster/glusterfs/src/
 
@@ -12,10 +12,13 @@ COMMENT=	GlusterFS distributed file system
 LICENSE=	GPLv2 LGPL3
 LICENSE_COMB=	dual
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 LIB_DEPENDS=	libargp.so:devel/argp-standalone liburcu-bp.so:sysutils/liburcu
 
-USES=		bison gettext libtool pkgconfig python:2.7 readline shebangfix \
-		sqlite ssl
+USES=		bison gettext gnome libtool pkgconfig python:2.7 readline \
+		shebangfix sqlite ssl
 
 BROKEN_SSL=	libressl
 
@@ -55,10 +58,6 @@ INSTALL_TARGET=	install-strip
 PLIST_SUB=	GLUSTERLIBDIR="lib/${PORTNAME}/${PORTVERSION}"
 KMODDIR?=	/boot/modules
 
-.include <bsd.port.options.mk>
-
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1101001
-USE_GCC=	yes
-.endif
+OPTIONS_DEFINE=	DOCS
 
 .include <bsd.port.mk>

@@ -9,7 +9,13 @@ INCLUDEDIR=	${PREFIX}/include
 CFLAGS+=	-DBIND_8_COMPAT -I${OPENSSLBASE}/include
 LDFLAGS+=	-lcrypto -L${OPENSSLBASE}/lib
 
-NO_PROFILE=
+MK_PROFILE=	no
+
+dktest: dktest.c
+	${CC} ${CFLAGS} -I. dktest.c -o dktest libdomainkeys.a ${LDFLAGS}
+
+check: dktest
+	./test
 
 makeheader: makeheader.c
 	${CC} ${CFLAGS} makeheader.c -o makeheader

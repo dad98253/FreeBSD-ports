@@ -3,7 +3,7 @@
 
 PORTNAME=	libvslvm
 # If/When moving from experimental to alpha, switch to DISTVERSIONPREFIX to prevent PORTEPOCH
-DISTVERSION=	experimental-20160110
+DISTVERSION=	experimental-20200102
 CATEGORIES=	devel
 MASTER_SITES=	https://github.com/libyal/libvslvm/releases/download/${PORTVERSION:E}/ \
 		LOCAL/antoine
@@ -15,18 +15,17 @@ LICENSE=	LGPL3+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--enable-python --with-libintl-prefix=${LOCALBASE}
-USES=		fuse gettext libtool pathfix pkgconfig python
+CONFIGURE_ARGS=	--enable-python
+CONFIGURE_ENV=	PYTHON_CONFIG=${PYTHON_CMD}-config
+USES=		fuse libtool pathfix pkgconfig python:3.5+
 USE_LDCONFIG=	yes
 INSTALL_TARGET=	install-strip
 WRKSRC=		${WRKDIR}/${PORTNAME}-${PORTVERSION:E}
 
-PORTDOCS=	AUTHORS ChangeLog
+OPTIONS_DEFINE=	NLS
 
-OPTIONS_DEFINE=	DOCS
-
-post-install-DOCS-on:
-	@${MKDIR} ${STAGEDIR}${DOCSDIR}
-	${INSTALL_DATA} ${PORTDOCS:S,^,${WRKSRC}/,} ${STAGEDIR}${DOCSDIR}
+NLS_USES=	gettext
+NLS_CONFIGURE_ON=	--with-libintl-prefix=${LOCALBASE}
+NLS_CONFIGURE_OFF=	--disable-nls
 
 .include <bsd.port.mk>

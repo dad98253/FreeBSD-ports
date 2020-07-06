@@ -19,7 +19,6 @@ BROKEN_armv7=		fails to install: swinglabs-build-impl.xml: Javadoc returned 1
 USES=		dos2unix zip
 NO_WRKSUBDIR=	yes
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 USE_ANT=	yes
 
 ALL_TARGET=	jar
@@ -39,8 +38,8 @@ ALL_TARGET+=	javadoc
 
 .include <bsd.port.pre.mk>
 
-.if ${JAVA_PORT_VERSION:M1.8.*}
-EXTRA_PATCHES=	${PATCHDIR}/extra-patch-swinglabs-build-impl.xml
+.if ${JAVA_PORT_VERSION:M*8*}
+EXTRA_PATCHES+=	${PATCHDIR}/extra-patch-swinglabs-build-impl.xml
 .endif
 
 do-install:

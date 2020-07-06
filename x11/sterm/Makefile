@@ -2,12 +2,12 @@
 # $FreeBSD$
 
 PORTNAME=	sterm
-DISTVERSION=	0.8.1
+DISTVERSION=	0.8.2
 CATEGORIES=	x11
 MASTER_SITES=	http://dl.suckless.org/st/
 DISTNAME=	st-${PORTVERSION}
 
-MAINTAINER=	pkubaj@anongoth.pl
+MAINTAINER=	pkubaj@FreeBSD.org
 COMMENT=	Simple X terminal
 
 LICENSE=	MIT
@@ -16,7 +16,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
 		libfreetype.so:print/freetype2
 
-USES=		pkgconfig
+USES=		pkgconfig xorg
 USE_XORG=	x11 xext xft
 
 PLIST_FILES=	bin/st man/man1/st.1.gz
@@ -40,8 +40,6 @@ SCROLLBACK_EXTRA_PATCHES=	${PATCHDIR}/extra-scrollback-patch-config.def.h \
 SOLARIZED_EXTRA_PATCHES=	${PATCHDIR}/extra-solarized-patch-config.def.h \
 		${PATCHDIR}/extra-solarized-patch-x.c \
 		${PATCHDIR}/extra-solarized-patch-st.h
-
-SUB_FILES=	pkg-message
 
 pre-everything::
 	@${ECHO_MSG} "You can build st with your own config.h using the ST_CONF knob:"

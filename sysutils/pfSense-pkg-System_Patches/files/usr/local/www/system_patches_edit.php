@@ -3,7 +3,7 @@
  * system_patches_edit.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2012-2017 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2012-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,14 +32,7 @@ require_once("patches.inc");
 require_once("pkg-utils.inc");
 require_once('classes/Form.class.php');
 
-if (!is_array($config['installedpackages']['patches'])) {
-	$config['installedpackages']['patches'] = array();
-}
-
-if (!is_array($config['installedpackages']['patches']['item'])) {
-	$config['installedpackages']['patches']['item'] = array();
-}
-
+init_config_arr(array('installedpackages', 'patches', 'item'));
 $a_patches = &$config['installedpackages']['patches']['item'];
 
 $id = $_GET['id'];
@@ -62,7 +55,7 @@ if (isset($id) && $a_patches[$id]) {
 	$pconfig['autoapply'] = isset($a_patches[$id]['autoapply']);
 	$pconfig['uniqid'] = $a_patches[$id]['uniqid'];
 } else {
-	$pconfig['pathstrip'] = 1;
+	$pconfig['pathstrip'] = 2;
 	$pconfig['basedir'] = "/";
 	$pconfig['ignorewhitespace'] = true;
 }
@@ -107,7 +100,7 @@ if ($_POST) {
 			$thispatch['patch'] = base64_encode(str_replace("\r", "", $_POST['patch']));
 		}
 		if (is_github_url($thispatch['location']) && ($_POST['pathstrip'] == 0)) {
-			$thispatch['pathstrip'] = 1;
+			$thispatch['pathstrip'] = 2;
 		} else {
 			$thispatch['pathstrip'] = $_POST['pathstrip'];
 		}

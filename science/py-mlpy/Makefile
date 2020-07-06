@@ -3,7 +3,7 @@
 
 PORTNAME=	mlpy
 PORTVERSION=	3.5.0
-PORTREVISION=	6
+PORTREVISION=	9
 CATEGORIES=	science python
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}%20${PORTVERSION}
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -13,6 +13,9 @@ COMMENT=	High performance Python package for predictive modeling
 
 LICENSE=	GPLv3
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 BUILD_DEPENDS=	${PYNUMPY}
 RUN_DEPENDS:=	${BUILD_DEPENDS}
 LIB_DEPENDS=	libgsl.so:math/gsl
@@ -20,7 +23,7 @@ LIB_DEPENDS=	libgsl.so:math/gsl
 USE_LDCONFIG=	yes
 CFLAGS+=	-I${LOCALBASE}/include -I${PYTHON_SITELIBDIR}/numpy/core
 LDFLAGS+=	-L${LOCALBASE}/lib
-USES=		python
+USES=		python:-3.6
 USE_PYTHON=	distutils autoplist cython
 
 .include <bsd.port.mk>

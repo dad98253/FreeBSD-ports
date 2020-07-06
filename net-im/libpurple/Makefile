@@ -3,6 +3,7 @@
 
 PORTNAME?=	libpurple
 PORTVERSION=	2.13.0
+PORTREVISION=	3
 CATEGORIES?=	net-im
 MASTER_SITES=	SF/pidgin/Pidgin/${PORTVERSION}
 DISTNAME=	pidgin-${PORTVERSION}
@@ -10,7 +11,8 @@ DISTNAME=	pidgin-${PORTVERSION}
 MAINTAINER?=	marcus@FreeBSD.org
 COMMENT?=	Backend library for the Pidgin multi-protocol messaging client
 
-USES+=		cpe gettext gmake libtool localbase pathfix pkgconfig tar:bzip2
+USES+=		cpe gettext gmake gnome libtool localbase pathfix pkgconfig \
+		tar:bzip2
 USE_GNOME?=	gnomeprefix intltool glib20 libxml2
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS?=--disable-gtkui \
@@ -23,7 +25,7 @@ INSTALL_TARGET=	install-strip
 .if !defined(PIDGIN_SLAVE)
 # Pidgin slave ports that require the following functionality, must explicitly
 # set these macros themselves.
-USES+=		iconv python:2.7 shebangfix
+USES+=		iconv shebangfix
 USE_LDCONFIG=	yes
 SHEBANG_FILES=	libpurple/purple-remote \
 		libpurple/purple-url-handler
@@ -74,8 +76,8 @@ PLIST_SUB+=	GTKUI="@comment not installed: "
 .endif
 
 .if defined(WITH_CONSOLEUI)
-OPTIONS_DEFINE+=NCURSES
-NCURSES_DESC=	Build with ncurses from ports
+USES+=		ncurses
+CONFIGURE_ARGS+=--with-ncurses-headers=${NCURSESINC}
 PLIST_SUB+=	CONSOLEUI=""
 .else
 PLIST_SUB+=	CONSOLEUI="@comment not installed: "
@@ -94,13 +96,6 @@ PLIST_SUB+=		TCL:=""
 .else
 CONFIGURE_ARGS+=	--disable-tcl
 PLIST_SUB+=		TCL:="@comment not installed: "
-.endif
-
-.if ${PORT_OPTIONS:MNCURSES}
-USES+=		ncurses:port
-CONFIGURE_ARGS+=--with-ncurses-headers=${LOCALBASE}/include/ncurses/
-.else
-USES+=		ncurses
 .endif
 
 .if ${PORT_OPTIONS:MPERL}
@@ -176,8 +171,8 @@ LIB_DEPENDS+=		libnss3.so:security/nss
 CONFIGURE_ARGS+=	--enable-nss=yes \
 			--with-nspr-includes=${LOCALBASE}/include/nspr \
 			--with-nspr-libs=${LOCALBASE}/lib \
-			--with-nss-includes=${LOCALBASE}/include/nss/nss \
-			--with-nss-libs=${LOCALBASE}/lib/nss
+			--with-nss-includes=${LOCALBASE}/include/nss \
+			--with-nss-libs=${LOCALBASE}/lib
 PLIST_SUB+=		NSS=""
 .else
 CONFIGURE_ARGS+=	--enable-nss=no
@@ -205,11 +200,12 @@ CONFIGURE_ARGS+=	--disable-gtkspell
 .endif
 
 .if ${PORT_OPTIONS:MDBUS}
+USES+=			python
 LIB_DEPENDS+=		libdbus-glib-1.so:devel/dbus-glib
 .if !defined(PIDGIN_SLAVE)
 RUN_DEPENDS+=		${PYTHON_PKGNAMEPREFIX}dbus>=0:devel/py-dbus@${PY_FLAVOR}
 .endif
-CONFIGURE_ARGS+=	--enable-dbus
+CONFIGURE_ARGS+=	--enable-dbus --with-python=${PYTHON_CMD}
 PLIST_SUB+=		DBUS=""
 .else
 CONFIGURE_ARGS+=	--disable-dbus

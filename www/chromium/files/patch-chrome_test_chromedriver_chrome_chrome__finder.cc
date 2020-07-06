@@ -1,20 +1,20 @@
---- chrome/test/chromedriver/chrome/chrome_finder.cc.orig	2017-06-05 19:03:04 UTC
+--- chrome/test/chromedriver/chrome/chrome_finder.cc.orig	2020-02-24 18:39:10 UTC
 +++ chrome/test/chromedriver/chrome/chrome_finder.cc
-@@ -45,7 +45,7 @@ void GetApplicationDirs(std::vector<base::FilePath>* l
+@@ -50,7 +50,7 @@ void GetApplicationDirs(std::vector<base::FilePath>* l
          installation_locations[i].Append(L"Chromium\\Application"));
    }
  }
 -#elif defined(OS_LINUX)
 +#elif defined(OS_LINUX) || defined(OS_BSD)
  void GetApplicationDirs(std::vector<base::FilePath>* locations) {
-   locations->push_back(base::FilePath("/opt/google/chrome"));
-   locations->push_back(base::FilePath("/usr/local/bin"));
-@@ -95,7 +95,7 @@ bool FindChrome(base::FilePath* browser_exe) {
- #elif defined(OS_MACOSX)
-       base::FilePath("Google Chrome.app/Contents/MacOS/Google Chrome"),
-       base::FilePath("Chromium.app/Contents/MacOS/Chromium")
+   // TODO: Respect users' PATH variables.
+   // Until then, we use an approximation of the most common defaults.
+@@ -136,7 +136,7 @@ bool FindChrome(base::FilePath* browser_exe) {
+ #if defined(OS_WIN) || defined(OS_MACOSX)
+     base::FilePath(chrome::kBrowserProcessExecutablePath),
+     base::FilePath(chrome::kBrowserProcessExecutablePathChromium)
 -#elif defined(OS_LINUX)
 +#elif defined(OS_LINUX) || defined(OS_BSD)
-       base::FilePath("google-chrome"),
-       base::FilePath("chrome"),
-       base::FilePath("chromium"),
+     base::FilePath("google-chrome"),
+     base::FilePath(chrome::kBrowserProcessExecutablePath),
+     base::FilePath(chrome::kBrowserProcessExecutablePathChromium),

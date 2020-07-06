@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	moreutils
-PORTVERSION=	0.62
+PORTVERSION=	0.63
 CATEGORIES=	sysutils
 MASTER_SITES=	https://git.joeyh.name/index.cgi/moreutils.git/snapshot/ \
 		LOCAL/sunpoet
@@ -19,9 +19,10 @@ OPTIONS_DEFINE=	MANPAGES
 OPTIONS_DEFAULT=MANPAGES
 OPTIONS_SUB=	yes
 
+USES=		gmake perl5 shebangfix
+
 ALL_TARGET=	errnos.h ${CANNED_MANPAGES:R}
 MAKE_JOBS_UNSAFE=	yes
-USES=		gmake perl5 shebangfix
 
 CANNED_MANPAGES=errno.1 \
 		ifdata.1 \
@@ -60,7 +61,7 @@ post-build:
 do-install:
 	cd ${WRKSRC}/ && ${INSTALL_PROGRAM} ${CANNED_MANPAGES:R} ${STAGEDIR}${PREFIX}/bin/
 	cd ${WRKSRC}/ && ${INSTALL_SCRIPT} ${PERL_MANPAGES:R} ${STAGEDIR}${PREFIX}/bin/
-	cd ${WRKSRC}/ && ${INSTALL_MAN} ${CANNED_MANPAGES} ${PERL_MANPAGES} ${STAGEDIR}${PREFIX}/man/man1/
+	cd ${WRKSRC}/ && ${INSTALL_MAN} ${CANNED_MANPAGES} ${PERL_MANPAGES} ${STAGEDIR}${PREFIX}/share/man/man1/
 
 # maintainer section:
 # require: docbook-xsl, libxml2, libxslt

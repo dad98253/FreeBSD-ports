@@ -2,9 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	ntp
-PORTVERSION=	4.2.8p11
-PORTREVISION=	1
-CATEGORIES=	net ipv6
+PORTVERSION=	4.2.8p15
+CATEGORIES=	net
 MASTER_SITES=	http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ \
 		http://archive.ntp.org/ntp4/ntp-4.2/ \
 		ftp://ftp.netlab.is.tsukuba.ac.jp/pub/network/ntp/ntp4/
@@ -19,9 +18,11 @@ CONFLICTS=	ntp-devel-* openntpd-*
 
 USES=		cpe pathfix shebangfix libedit libtool localbase:ldflags \
 		pkgconfig
+USES+=		autoreconf # until rlimit_memlock changes accepted upstream
 
 GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--enable-leap-smear
+CONFIGURE_ARGS=	--enable-leap-smear --enable-trustedbsd-mac \
+		--with-locfile=freebsd --with-memlock=-1
 
 TEST_TARGET=	check
 
@@ -29,6 +30,8 @@ SHEBANG_FILES=	scripts/ntptrace/ntptrace.in \
 		scripts/ntp-wait/ntp-wait.in \
 		scripts/update-leap/update-leap.in
 perl_OLD_CMD=	@PATH_PERL@
+
+SUB_FILES=	pkg-message
 
 .include "Makefile.inc"
 
@@ -74,6 +77,9 @@ ${D}_CONFIGURE_ENABLE=	${D}
 post-extract:
 	@${TOUCH} ${WRKSRC}/scripts/build/checkHtmlFileDates
 	@${CHMOD} +x ${WRKSRC}/scripts/build/checkHtmlFileDates
+
+post-configure:
+	@${ECHO_CMD} '#define HAVE_CLOSEFROM	1' >> ${WRKSRC}/config.h
 
 post-install:
 	@${MKDIR} ${STAGEDIR}${EXAMPLESDIR}

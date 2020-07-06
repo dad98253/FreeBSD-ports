@@ -2,35 +2,42 @@
 # $FreeBSD$
 
 PORTNAME=	blackbox_exporter
-PORTVERSION=	0.12.0
+PORTVERSION=	0.16.0
 DISTVERSIONPREFIX=v
+PORTREVISION=	1
 CATEGORIES=	net-mgmt
 
 MAINTAINER=	bsam@FreeBSD.org
 COMMENT=	Prometheus exporter for endpoints over HTTP(S), DNS, TCP and ICMP
 
-LICENSE=		APACHE20
+LICENSE=	APACHE20
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-USES=		go
+USES=		go:modules
+
 USE_GITHUB=	yes
 GH_ACCOUNT=	prometheus
-USE_RC_SUBR=    blackbox_exporter
-SUB_FILES=      pkg-message
-SUB_LIST=       GH_TAGNAME=${GH_TAGNAME}
+GH_TUPLE=	golang:net:83d349e8ac1a:golang_net/vendor/golang.org/x/net_83d349e8ac1a
+USE_RC_SUBR=	blackbox_exporter
 
 USERS=		prometheus
 GROUPS=		prometheus
 
-GO_PKGNAME=	github.com/${GH_ACCOUNT}/${PORTNAME}
-GO_TARGET=	github.com/${GH_ACCOUNT}/${PORTNAME}
-
-USE_RC_SUBR=	${PORTNAME}
-
 PORTEXAMPLES=	${WRKSRC}/*.yml
 
-do-install:
-	${INSTALL_PROGRAM} ${WRKDIR}/bin/${PORTNAME} ${STAGEDIR}${PREFIX}/bin
+OPTIONS_DEFINE=	EXAMPLES
+
+SUB_FILES=	pkg-message
+SUB_LIST=	GH_TAGNAME=${GH_TAGNAME}
+PLIST_FILES=	bin/blackbox_exporter \
+		${EXAMPLESDIR}/blackbox.yml \
+		${EXAMPLESDIR}/example.yml
+
+post-extract:
+	${RM} -r ${WRKSRC}/vendor/golang.org/x/net
+	${MV} ${WRKSRC}/vendor/golang.org/x/net_83d349e8ac1a ${WRKSRC}/vendor/golang.org/x/net
+
+post-install:
 	@${MKDIR} ${STAGEDIR}${EXAMPLESDIR}
 	${INSTALL_DATA} ${WRKSRC}/*.yml ${STAGEDIR}${EXAMPLESDIR}
 

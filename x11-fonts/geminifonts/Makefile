@@ -3,7 +3,7 @@
 
 PORTNAME=	gemini
 PORTVERSION=	1.0
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	x11-fonts
 MASTER_SITES=	http://www.brama.com/compute/unix/
 PKGNAMEPREFIX=	koi8-u-
@@ -14,9 +14,9 @@ MAINTAINER=	mi@aldan.algebra.com
 COMMENT=	Ukrainian KOI8 fonts for X11R6 (koi8-u)
 
 BUILD_DEPENDS=	bdftopcf:x11-fonts/bdftopcf \
-		mkfontdir:x11-fonts/mkfontdir
+		mkfontscale>=0:x11-fonts/mkfontscale
 
-USES=		fonts perl5 tar:tgz
+USES=		fonts perl5 tar:tgz xorg
 USE_PERL5=	build
 USE_XORG=	x11
 NO_WRKSUBDIR=	yes

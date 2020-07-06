@@ -2,8 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	mono
-PORTVERSION=	5.10.1.47
-PORTREVISION=	7
+PORTVERSION=	5.10.1.57
+PORTREVISION=	3
 CATEGORIES=	lang
 MASTER_SITES=	https://download.mono-project.com/sources/mono/
 DISTFILES=	${PORTNAME}-${PORTVERSION}${EXTRACT_SUFX}
@@ -20,13 +20,13 @@ BUILD_DEPENDS=	p5-XML-Parser>=0:textproc/p5-XML-Parser \
 		bash:shells/bash \
 		cmake>0:devel/cmake
 LIB_DEPENDS=	libinotify.so:devel/libinotify
-RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pillow>=0:graphics/py-pillow@${PY_FLAVOR} \
+RUN_DEPENDS=	${PY_PILLOW} \
 		ca_root_nss>=0:security/ca_root_nss
 
 CONFLICTS_INSTALL=	czmq-3*
 
 OPTIONS_DEFINE=		MONOLITE NLS X11
-OPTIONS_DEFAULT=	MONOLITE NLS X11
+OPTIONS_DEFAULT=	MONOLITE X11
 OPTIONS_SUB=	yes
 
 MONOLITE_DESC=		Use monolite to bootstrap mcs (otherwise use installed mcs)
@@ -40,7 +40,7 @@ NLS_USES=	gettext
 X11_USES=	display:test
 
 USES=	autoreconf bison compiler:c11 cpe gmake iconv libtool \
-	pathfix perl5 python:2.7 shebangfix tar:bzip2
+	pathfix perl5 python shebangfix tar:bzip2
 USE_PERL5=	build
 GNU_CONFIGURE=	yes
 USE_LDCONFIG=	yes

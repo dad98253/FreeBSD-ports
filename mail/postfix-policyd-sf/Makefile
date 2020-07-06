@@ -15,8 +15,7 @@ PKGNAMESUFFIX=	-sf
 MAINTAINER=	mat@FreeBSD.org
 COMMENT=	Anti-spam plugin for Postfix (written in C)
 
-USE_MYSQL=	yes
-USES=		gmake
+USES=		gmake mysql
 USE_RC_SUBR=	policyd
 
 REALNAME=	${PKGNAME:C/-${PORTVERSION}.*//}
@@ -33,6 +32,8 @@ PLIST_FILES=	sbin/${REALNAME}-cleanup \
 		sbin/${REALNAME}-stats \
 		sbin/${REALNAME} \
 		etc/${REALNAME}.conf.sample
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} -e 's,policyd.pid,postfix-policyd-sf.pid,' \

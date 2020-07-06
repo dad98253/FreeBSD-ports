@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	simian
-PORTVERSION=	2.4.0
+PORTVERSION=	2.5.10
 CATEGORIES=	devel java
 MASTER_SITES=	http://www.harukizaemon.com/simian/
 
@@ -39,7 +39,6 @@ OPTIONS_DEFAULT=	JAVA
 
 .if ${PORT_OPTIONS:MJAVA}
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 PLIST_SUB+=	JAVA=""
 SUB_LIST+=	JAVA=""
 .else

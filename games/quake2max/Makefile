@@ -3,7 +3,7 @@
 
 PORTNAME=	quake2max
 PORTVERSION=	0.45
-PORTREVISION=	12
+PORTREVISION=	13
 CATEGORIES=	games
 MASTER_SITES=	http://www.bfeared.com/library/quake/archive/quakedev/qudos/quake2/engines/Quake2MaX/:src \
 		LOCAL/alepulver/:data
@@ -14,12 +14,15 @@ EXTRACT_ONLY=	${DISTNAME}${EXTRACT_SUFX}
 MAINTAINER=	danfe@FreeBSD.org
 COMMENT=	OpenGL-only Quake II engine modification
 
-LICENSE=	GPLv2
+BROKEN=		unfetchable
+
+LICENSE=	GPLv2+
+LICENSE_FILE=	${WRKSRC}/gnu.txt
 
 EXTRACT_DEPENDS=	unrar:archivers/unrar
 
-USES=		gmake tar:bzip2
-USE_XORG=	xxf86dga
+USES=		gmake tar:bzip2 xorg
+USE_XORG=	x11 xext xxf86vm xxf86dga
 ALL_TARGET=	release
 WRKSRC=		${WRKDIR}/${DISTNAME:S/quake2max/Quake2maX/}
 
@@ -43,12 +46,13 @@ SDLGL_DESC=	Build SDL OpenGL renderer
 
 .if ${PORT_OPTIONS:MGLX} || ${PORT_OPTIONS:MSDLGL}
 LIB_DEPENDS=	libpng.so:graphics/png
-USES+=		jpeg
+USES+=		gl jpeg
 USE_GL=		glu
 .endif
 
 .if ${PORT_OPTIONS:MSDLCLIENT} || ${PORT_OPTIONS:MSDLGL}
-USE_SDL=	yes
+USES+=		sdl
+USE_SDL=	sdl
 .endif
 
 .if ${PORT_OPTIONS:MCLIENT}

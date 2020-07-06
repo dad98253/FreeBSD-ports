@@ -12,19 +12,20 @@ DISTNAME=	${PORTNAME}src
 MAINTAINER=	thierry@FreeBSD.org
 COMMENT=	Java benchmark for scientific and numerical computing
 
-WRKSRC=		${WRKDIR}
+LICENSE=	PD
 
 USES=		zip
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NEED_JAVAC=	yes
 JAVAC_OPTS?=	-O
+NO_ARCH=	yes
 
 LSMDIR=		share/java/scimark2
 SMDIR=		${PREFIX}/${LSMDIR}
 
 SMSH=		${PORTNAME}${PKGNAMESUFFIX}
 
+NO_WRKSUBDIR=	yes
 PLIST_SUB=	SMDIR=${LSMDIR}
 SUB_FILES=	pkg-message
 SUB_LIST=	SMSH=${SMSH}

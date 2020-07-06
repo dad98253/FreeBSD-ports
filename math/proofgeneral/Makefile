@@ -3,7 +3,7 @@
 
 PORTNAME=	proofgeneral
 PORTVERSION=	4.1
-PORTREVISION=	13
+PORTREVISION=	15
 CATEGORIES=	math elisp
 MASTER_SITES=	http://proofgeneral.inf.ed.ac.uk/releases/
 PKGNAMESUFFIX=	${EMACS_PKGNAMESUFFIX}
@@ -12,13 +12,15 @@ DISTNAME=	ProofGeneral-${PORTVERSION}
 MAINTAINER=	beyert@cs.ucr.edu
 COMMENT=	Generic interface for proof assistants
 
+BROKEN=		unfetchable
+
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 BUILD_DEPENDS=	bash:shells/bash
 RUN_DEPENDS=	${LOCALBASE}/share/icons/hicolor/index.theme:misc/hicolor-icon-theme
 
-USES=		emacs gmake perl5 shebangfix tar:tgz
+USES=		emacs gmake gnome perl5 shebangfix tar:tgz
 EMACS_FLAVORS_EXCLUDE=	nox devel_nox
 
 INSTALLS_ICONS=	yes
@@ -28,7 +30,7 @@ NO_ARCH=	yes
 MAKE_ARGS+=	PREFIX="${LOCALBASE}" DEST_PREFIX="${STAGEDIR}${PREFIX}" \
 	MAKE="${MAKE_CMD}" EMACS=emacs EMACS_NAME=emacs \
 	DOCDIR="${STAGEDIR}${DOCSDIR}" MANDIR="${STAGEDIR}${PREFIX}/man/man1" \
-	INFODIR="${STAGEDIR}${PREFIX}/info" \
+	INFODIR="${STAGEDIR}${PREFIX}/${INFO_PATH}" \
 	BINDIR="${STAGEDIR}${PREFIX}/bin" DESKTOP="${STAGEDIR}${PREFIX}/share" \
 	EMACS_SITE_LISPDIR="${EMACS_SITE_LISPDIR}" \
 	ELISPP="${EMACS_SITE_LISPDIR}/ProofGeneral" \

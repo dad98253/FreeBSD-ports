@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	libgee
-PORTVERSION=	0.18.1
+PORTVERSION=	0.20.1
 CATEGORIES=	devel
 MASTER_SITES=	GNOME
 
@@ -18,7 +18,7 @@ PORTSCOUT=	limitw:1,even
 
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--enable-introspection=yes
-USES=		gettext gmake libtool pathfix pkgconfig tar:xz
+USES=		gettext gmake gnome libtool pathfix pkgconfig tar:xz
 USE_GNOME=	glib20 introspection:build
 USE_LDCONFIG=	yes
 INSTALL_TARGET=	install-strip

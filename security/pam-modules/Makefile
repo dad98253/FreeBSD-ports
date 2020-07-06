@@ -3,6 +3,7 @@
 
 PORTNAME=	pam-modules
 PORTVERSION=	2.2
+PORTREVISION=	1
 CATEGORIES=	security
 MASTER_SITES=	ftp://download.gnu.org.ua/pub/release/pam-modules/
 
@@ -27,7 +28,7 @@ GROUPMEMBER_DESC=	Build pam_groupmember
 
 MYSQL_CONFIGURE_ENABLE=	mysql
 MYSQL_DESC=	Build pam_mysql
-MYSQL_USE=	MYSQL
+MYSQL_USES=	mysql
 
 PGSQL_CONFIGURE_ENABLE=	pgsql
 PGSQL_DESC=	Build pam_pgsql

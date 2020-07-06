@@ -2,7 +2,7 @@
 
 PORTNAME=	gtypist
 PORTVERSION=	2.9.5
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	games
 MASTER_SITES=	GNU
 
@@ -36,5 +36,6 @@ post-patch:
 		${WRKSRC}/src/script.c \
 		${WRKSRC}/src/gtypist.c \
 		${WRKSRC}/src/utf8.c
+	${REINPLACE_CMD} -e 's/-lncursesw/-l${NCURSES_IMPL}/g' ${WRKSRC}/configure
 
 .include <bsd.port.mk>

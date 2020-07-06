@@ -3,7 +3,7 @@
 
 PORTNAME=	bouncycastle
 PORTVERSION=	1.45
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	java security
 MASTER_SITES=	http://downloads.bouncycastle.org/java/ \
 		http://polydistortion.net/bc/download/ \
@@ -13,11 +13,9 @@ DISTNAME=	crypto-${JARVERSION}
 MAINTAINER=	ale@FreeBSD.org
 COMMENT=	Cleanroom build of Java Cryptography Extensions
 
-BUILD_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf \
-		${JAVALIBDIR}/mail.jar:java/javamail \
+BUILD_DEPENDS=	${JAVALIBDIR}/mail.jar:java/javamail \
 		${JAVALIBDIR}/junit.jar:java/junit
-RUN_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf \
-		${JAVALIBDIR}/mail.jar:java/javamail
+RUN_DEPENDS=	${JAVALIBDIR}/mail.jar:java/javamail
 
 OPTIONS_DEFINE=	DOCS
 
@@ -25,7 +23,6 @@ CPE_PRODUCT=	legion-of-the-bouncy-castle-java-crytography-api
 CPE_VENDOR=	${PORTNAME}
 USE_JAVA=	yes
 USES=		cpe
-JAVA_VERSION=	1.6+
 JDKMVERSION=	1.6 # ${JAVA_PORT_VERSION:C/^([0-9]\.[0-9])(.*)$/\1/}
 JDKNVERSION=	16 # ${JAVA_PORT_VERSION:C/^([0-9])\.([0-9])(.*)$/\1\2/}
 USE_ANT=	yes

@@ -3,7 +3,7 @@
 
 PORTNAME=	libgksu
 PORTVERSION=	2.0.12
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	sysutils
 MASTER_SITES=	http://people.debian.org/~kov/gksu/
 
@@ -20,7 +20,7 @@ LIB_DEPENDS=	libgtop-2.0.so:devel/libgtop \
 RUN_DEPENDS=	xauth:x11/xauth \
 		sudo:security/sudo
 
-USES=		gettext gmake libtool pathfix pkgconfig
+USES=		gettext gmake gnome libtool pathfix pkgconfig xorg
 USE_GNOME=	glib20 gconf2 intltool
 USE_LDCONFIG=	yes
 USE_XORG=	x11

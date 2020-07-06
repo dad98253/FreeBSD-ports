@@ -1,10 +1,9 @@
 # $FreeBSD$
 
 PORTNAME=	tiffgt
-DISTVERSION=	4.0.9
+DISTVERSION=	4.1.0
 CATEGORIES=	graphics
-MASTER_SITES=	ftp://ftp.remotesensing.org/pub/libtiff/ \
-		http://download.osgeo.org/libtiff/
+MASTER_SITES=	https://download.osgeo.org/libtiff/
 DISTNAME=	tiff-${DISTVERSION}
 
 MAINTAINER=	bofh@FreeBSD.org
@@ -16,7 +15,8 @@ LICENSE_FILE=	${WRKSRC}/COPYRIGHT
 LIB_DEPENDS=	libjbig.so:graphics/jbigkit \
 		libtiff.so:graphics/tiff
 
-USES=		cpe jpeg libtool pathfix
+USES=		cpe gl jpeg libtool pathfix xorg
+
 CPE_PRODUCT=	libtiff
 CPE_VERSION=	${DISTVERSION:C/[a-z]+//}
 CPE_UPDATE=	${DISTVERSION:C/[0-9.]+//}

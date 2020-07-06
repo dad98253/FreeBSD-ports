@@ -2,8 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	deadbeef-mpris2-plugin
+PORTVERSION=	1.12
 DISTVERSIONPREFIX=	v
-DISTVERSION=	1.11
 CATEGORIES=	audio
 
 MAINTAINER=	danfe@FreeBSD.org
@@ -17,7 +17,7 @@ RUN_DEPENDS:=	${BUILD_DEPENDS}
 USE_GITHUB=	yes
 GH_ACCOUNT=	Serranya
 
-USES=		autoreconf libtool pkgconfig
+USES=		autoreconf gnome libtool pkgconfig
 GNU_CONFIGURE=	yes
 USE_GNOME=	glib20
 

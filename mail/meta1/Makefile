@@ -1,11 +1,11 @@
 # $FreeBSD$
 
 PORTNAME=	meta1
-PORTVERSION=	1.1.0a.10.0
-CATEGORIES=	mail ipv6
-MASTER_SITES=	http://www.MeTA1.org/download/.alpha/tlsa2/
+PORTVERSION=	1.1.0a.14.1
+CATEGORIES=	mail
+MASTER_SITES=	http://www.MeTA1.org/download/.alpha/gran/
 PKGNAMESUFFIX?=	${TLS_SUFFIX}${SASL_SUFFIX}${BERKELEYDB_SUFFIX}${PMILTER_SUFFIX}${PKGNAMESUFFIX2}
-DISTNAME=	${PORTNAME}-1.1.Alpha10.0
+DISTNAME=	${PORTNAME}-1.1.Alpha14.1
 
 MAINTAINER=	dinoex@FreeBSD.org
 COMMENT=	Secure and efficient mail gateway
@@ -110,8 +110,13 @@ IGNORE=		option SASL2AUTHD needs option SASL2
 TLS_SUFFIX?=	-notls
 .endif
 
+post-patch:
+	${REINPLACE_CMD} -e 's| mapspec_kind;|;|' \
+		${WRKSRC}/include/sm/mapcnf.h
+
 post-configure:
-	@${CP} ${WRKSRC}/misc/sm.check.sh ${WRKSRC}/misc/sm.setup.sh \
+	@${CP} ${WRKSRC}/misc/sm.check.sh \
+		${WRKSRC}/misc/sm.setup.sh \
 		${WRKDIR}/
 	@${REINPLACE_CMD} -e 's|/etc/meta1|${META1CONFDIR}|g' \
 		-e 's|$${SD}/misc|${PREFIX}/bin|' \

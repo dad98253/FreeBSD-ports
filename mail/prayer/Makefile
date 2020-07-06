@@ -2,12 +2,14 @@
 
 PORTNAME=	prayer
 PORTVERSION=	1.3.5
-PORTREVISION=	3
+PORTREVISION=	4
 CATEGORIES=	mail www
 MASTER_SITES=	ftp://ftp.csx.cam.ac.uk/pub/software/email/prayer/
 
 MAINTAINER=	koue@chaosophia.net
 COMMENT=	Prayer Webmail System
+
+BROKEN=		unfetchable
 
 LICENSE=	GPLv2
 

@@ -3,7 +3,7 @@
 
 PORTNAME=	freedink
 PORTVERSION=	108.4
-PORTREVISION=	3
+PORTREVISION=	4
 CATEGORIES=	games
 MASTER_SITES=	GNU
 PKGNAMESUFFIX=	-engine
@@ -14,7 +14,7 @@ COMMENT=	Dink Smallwood RPG and RPG Construction Set
 LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
 		libcheck.so:devel/check
 
-USES=		gettext gmake pkgconfig
+USES=		gettext gmake pkgconfig sdl
 USE_SDL=	sdl gfx ttf image mixer
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-static --disable-upx

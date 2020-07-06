@@ -2,8 +2,9 @@
 
 PORTNAME=	pdf-tools
 DISTVERSIONPREFIX=	v
-DISTVERSION=	0.80-101
-DISTVERSIONSUFFIX=	-g60d12ce
+DISTVERSION=	0.90-34
+DISTVERSIONSUFFIX=	-g29d9f4f
+PORTREVISION=	5
 CATEGORIES=	print elisp
 PKGNAMESUFFIX=	${EMACS_PKGNAMESUFFIX}
 
@@ -13,21 +14,23 @@ COMMENT=	Emacs support library for PDF files
 LICENSE=	GPLv3+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_powerpc64=	fails to configure: cannot find necessary poppler-private header (see README.org)
+BROKEN_FreeBSD_11_powerpc64=	fails to configure on powerpc64 elfv1: cannot find necessary poppler-private header (see README.org)
+BROKEN_FreeBSD_12_powerpc64=	fails to configure on powerpc64 elfv1: cannot find necessary poppler-private header (see README.org)
 
 BUILD_DEPENDS=	cask${EMACS_PKGNAMESUFFIX}>0:devel/cask@${EMACS_FLAVOR} \
 		tablist${EMACS_PKGNAMESUFFIX}>=0.70.4:devel/tablist@${EMACS_FLAVOR}
-LIB_DEPENDS=	libpng.so:graphics/png \
-		libpoppler.so:graphics/poppler \
-		libpoppler-glib.so:graphics/poppler-glib
-RUN_DEPENDS=	ImageMagick>=6.9.9.28,1:graphics/ImageMagick \
-		tablist${EMACS_PKGNAMESUFFIX}>=0.70:devel/tablist@${EMACS_FLAVOR}
+LIB_DEPENDS=	libMagickCore-6.so:graphics/ImageMagick6 \
+		libpng.so:graphics/png \
+		libpoppler-glib.so:graphics/poppler-glib \
+		libpoppler.so:graphics/poppler
+RUN_DEPENDS=	tablist${EMACS_PKGNAMESUFFIX}>=0.70:devel/tablist@${EMACS_FLAVOR}
 
-USES=		autoreconf:build emacs gettext-runtime gmake
-EMACS_FLAVORS_EXCLUDE=	nox devel_nox
+USES=		autoreconf:build emacs gettext-runtime gmake gnome
 USE_GITHUB=	yes
 GH_ACCOUNT=	politza
 USE_GNOME=	cairo glib20
+
+EMACS_FLAVORS_EXCLUDE=	devel_nox nox
 
 do-build:
 	cd ${WRKSRC}/server && ./autogen.sh && ./configure -q && make

@@ -11,12 +11,16 @@ EXTRACT_SUFX=	.tgz
 MAINTAINER=	danger@FreeBSD.org
 COMMENT=	Hostname to filesystem mapper for Apache 2
 
+BROKEN=		unfetchable
+
 WRKSRC=		${WRKDIR}/${PORTNAME}
 USES=		apache:2.2+
 AP_FAST_BUILD=	yes
 AP_GENPLIST=	yes
 
 PORTDOCS=	LICENSE.txt ChangeLog
+
+OPTIONS_DEFINE=	DOCS
 
 post-install:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

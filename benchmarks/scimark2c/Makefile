@@ -10,10 +10,12 @@ DISTNAME=	${PORTNAME:S/2/${DISTVERSION}/}
 MAINTAINER=	thierry@FreeBSD.org
 COMMENT=	ANSI C version of the SciMark2 benchmark
 
+LICENSE=	PD
+
 USES=		zip
 
+NO_WRKSUBDIR=	yes
 PLIST_FILES=	bin/scimark2
-WRKSRC=		${WRKDIR}
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/scimark2 ${STAGEDIR}${PREFIX}/bin

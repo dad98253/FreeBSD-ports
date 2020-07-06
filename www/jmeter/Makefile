@@ -3,6 +3,7 @@
 
 PORTNAME=	apache-jmeter
 PORTVERSION=	2.11
+PORTREVISION=	3
 CATEGORIES=	www benchmarks java
 MASTER_SITES=	APACHE/jmeter/binaries
 
@@ -14,15 +15,15 @@ LICENSE=	APACHE20
 # These are JAR-files installed by other ports. The list should keep
 # growing until all Java applications install just their own JARs -- not
 # the 3rd-party ones:
-RUN_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf	\
+RUN_DEPENDS=	\
 		${JAVALIBDIR}/avalon-framework.jar:devel/avalon-framework	\
-		${JAVALIBDIR}/commons-codec.jar:java/jakarta-commons-codec	\
-		${JAVALIBDIR}/commons-collections.jar:java/jakarta-commons-collections	\
-		${JAVALIBDIR}/commons-httpclient.jar:java/jakarta-commons-httpclient	\
-		${JAVALIBDIR}/commons-io.jar:devel/jakarta-commons-io \
-		${JAVALIBDIR}/commons-lang.jar:java/jakarta-commons-lang	\
-		${JAVALIBDIR}/commons-logging.jar:java/jakarta-commons-logging	\
-		${JAVALIBDIR}/commons-net.jar:net/jakarta-commons-net	\
+		${JAVALIBDIR}/commons-codec.jar:java/apache-commons-codec	\
+		${JAVALIBDIR}/commons-collections.jar:java/apache-commons-collections	\
+		${JAVALIBDIR}/commons-httpclient.jar:java/apache-commons-httpclient	\
+		${JAVALIBDIR}/commons-io.jar:devel/apache-commons-io \
+		${JAVALIBDIR}/commons-lang.jar:java/apache-commons-lang	\
+		${JAVALIBDIR}/commons-logging.jar:java/apache-commons-logging	\
+		${JAVALIBDIR}/commons-net.jar:net/apache-commons-net	\
 		${JAVALIBDIR}/httpclient.jar:www/httpclient	\
 		${JAVALIBDIR}/httpcore.jar:www/httpcore	\
 		${JAVALIBDIR}/httpmime.jar:www/httpclient	\
@@ -42,7 +43,6 @@ RUN_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf	\
 
 USES=		tar:tgz
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NO_BUILD=	yes
 DATADIR=	${JAVASHAREDIR}/${PORTNAME}
 SUB_FILES=	jmeter.sh

@@ -1,9 +1,10 @@
 # $FreeBSD$
 
 PORTNAME=	obhttpd
-PORTVERSION=	6.0.20161006
-PORTREVISION=	2
+PORTVERSION=	6.6.20191023
 CATEGORIES=	www
+MASTER_SITES=	OPENBSD/LibreSSL:libressl
+DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
 
 MAINTAINER=	koue@chaosophia.net
 COMMENT=	OpenBSD http server
@@ -12,16 +13,19 @@ LICENSE=	BSD3CLAUSE
 
 WRKSRC_SUBDIR=	src
 
+USES=		uidfix
+
+SSL_VERSION=	3.0.2
 USE_GITHUB=	yes
 GH_ACCOUNT=	koue
 GH_PROJECT=	httpd
 
 USE_RC_SUBR=	obhttpd
-USES=		ssl uidfix
 
 CFLAGS+=	-Wall
+CFLAGS+=	-I${WRKDIR}/libressl-${SSL_VERSION}/include
 
-MAKE_ARGS+=	BINDIR=${PREFIX}/sbin MANDIR=${PREFIX}/man/man
+MAKE_ARGS+=	MANDIR=${PREFIX}/man/man
 
 USERS=		www
 GROUPS=		www
@@ -38,32 +42,22 @@ post-patch:
 	${REINPLACE_CMD} -e 's|/etc/httpd.conf|${PREFIX}/etc/obhttpd.conf|g' \
 		${WRKSRC}/usr.sbin/httpd/httpd.h
 
+pre-configure:
+	@(cd ${WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${DISTDIR}/libressl-${SSL_VERSION}.tar.gz ${EXTRACT_AFTER_ARGS})
+	@(cd ${WRKDIR}/libressl-${SSL_VERSION} && ${SETENV} ./configure && ${SETENV} ${MAKE_ENV} ${MAKE})
+
+post-configure:
+	${REINPLACE_CMD} 's|-ltls|${WRKDIR}/libressl-${SSL_VERSION}/tls/.libs/libtls.a|g' \
+		${WRKSRC}/usr.sbin/httpd/Makefile
+	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \
+		 ${WRKSRC}/usr.sbin/httpd/Makefile
+	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
+		${WRKSRC}/usr.sbin/httpd/Makefile
+	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
+		${WRKSRC}/usr.bin/htpasswd/Makefile
+
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/etc/examples/httpd.conf \
 		${STAGEDIR}${PREFIX}/etc/obhttpd.conf.sample
 
-.include <bsd.port.pre.mk>
-
-.if ! ${SSL_DEFAULT:Mlibressl*}
-BUILD_DEPENDS+=		${NONEXISTENT}:security/libressl:stage
-
-do-configure:
-	${REINPLACE_CMD} -e 's|/usr/local|${WRKDIR}/libressl|g' \
-			${WRKSRC}/usr.sbin/httpd/Makefile
-	${REINPLACE_CMD} -e 's|LOCALBASE|LIBRESSLBASE|g' \
-			${WRKSRC}/usr.sbin/httpd/Makefile
-	${REINPLACE_CMD} -e 's|/usr/local|${WRKDIR}/libressl|g' \
-			${WRKSRC}/usr.bin/htpasswd/Makefile
-	${REINPLACE_CMD} -e 's|LOCALBASE|LIBRESSLBASE|g' \
-			${WRKSRC}/usr.bin/htpasswd/Makefile
-
-. ifnmake describe
-STAGEDIR_libressl!=	${MAKE} -V STAGEDIR -C ${PORTSDIR}/security/libressl
-. endif
-
-pre-configure:
-	@(cd ${STAGEDIR_libressl}${LOCALBASE} && ${COPYTREE_SHARE} \
-		. ${WRKDIR}/libressl "! -name *.so*")
-.endif # SSL_DEFAULT
-
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

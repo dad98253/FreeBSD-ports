@@ -11,6 +11,7 @@ MASTER_SITES=	http://www.freewebs.com/trimines/ \
 MAINTAINER=	amdmi3@FreeBSD.org
 COMMENT=	Mine sweeper game that uses triangles instead of squares
 
+USES=		sdl
 USE_SDL=	sdl
 
 PLIST_FILES=	bin/${PORTNAME}
@@ -23,6 +24,8 @@ DESKTOP_ENTRIES="Trimines" \
 		"trimines" \
 		"Game;LogicGame;" \
 		""
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} -e 's|data/|${DATADIR}/|' ${WRKSRC}/src/gfx.c

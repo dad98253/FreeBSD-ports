@@ -2,18 +2,18 @@
 
 PKGNAMESUFFIX=	-utils
 
-MAINTAINER=	asomers@FreeBSD.org
+MAINTAINER=	ken@FreeBSD.org
 COMMENT=	QEMU userland utilities
 
 HAS_CONFIGURE=	yes
-USES=		cpe gmake pkgconfig perl5 python:2.7,build tar:bzip2
-USES+=		gettext-runtime
+USES=		compiler:c11 cpe gettext-runtime gmake gnome perl5 pkgconfig \
+		python:build tar:xz
 USE_GNOME+=	glib20
 MAKE_ENV+=	BSD_MAKE="${MAKE}" PREFIX=${PREFIX}
 CONFLICTS_INSTALL=	qemu-[0-9]* qemu-devel-* qemu-sbruno-*
 
 OPTIONS_SLAVE=	DOCS
-OPTIONS_EXCLUDE=	SAMBA X11 GTK2 OPENGL GNUTLS SASL JPEG PNG CURL \
+OPTIONS_EXCLUDE=	SAMBA X11 GTK3 OPENGL GNUTLS SASL JPEG PNG CURL \
 		CDROM_DMA PCAP USBREDIR GNS3 X86_TARGETS \
 		STATIC_LINK NCURSES VDE
 MASTERDIR=	${.CURDIR}/../qemu
@@ -22,11 +22,9 @@ DESCR=		${.CURDIR}/pkg-descr
 EXTRA_PATCHES=	${.CURDIR}/files/patch-configure
 PKGMESSAGE=
 
-PORTDOCS=	qemu-doc.html qemu-doc.txt
-		
+PORTDOCS=	interop/* specs/*
 
 CONFIGURE_ARGS?=--localstatedir=/var --extra-ldflags=-L\"${LOCALBASE}/lib\" \
-		--disable-libssh2 \
 		--mandir=${MANPREFIX}/man \
 		--prefix=${PREFIX} --cc=${CC} --disable-kvm \
 		--disable-linux-user --disable-linux-aio --disable-xen \
@@ -73,8 +71,7 @@ CONFIGURE_ARGS?=--localstatedir=/var --extra-ldflags=-L\"${LOCALBASE}/lib\" \
 		--disable-glusterfs \
 		--disable-tpm \
 		--disable-numa \
-		--disable-blobs \
-		--without-pixman
+		--disable-blobs
 
 LIB_DEPENDS=
 
@@ -88,5 +85,6 @@ pre-configure:
 post-install:
 	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/qemu-*
 	@${RMDIR} ${STAGEDIR}${DATADIR}
+	@${RM} -rf ${STAGEDIR}${PREFIX}/share
 
 .include "${MASTERDIR}/Makefile"

@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	iagno
-PORTVERSION=	3.22.0
+PORTVERSION=	3.28.0
 CATEGORIES=	games gnome
 MASTER_SITES=	GNOME
 DIST_SUBDIR=	gnome3
@@ -22,7 +22,7 @@ LIB_DEPENDS=	libcanberra.so:audio/libcanberra \
 
 PORTSCOUT=	limitw:1,even
 
-USES=		gettext gmake gnome localbase pathfix pkgconfig tar:xz
+USES=		gettext gmake gnome localbase pathfix pkgconfig tar:xz xorg
 USE_GNOME=	cairo gtk30 intlhack librsvg2 libxml2:build
 USE_XORG=	x11
 INSTALLS_ICONS=	yes

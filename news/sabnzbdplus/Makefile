@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	sabnzbdplus
-PORTVERSION=	2.3.4
+PORTVERSION=	2.3.9
 CATEGORIES=	news
 
 MAINTAINER=	joshruehlig@gmail.com
@@ -10,15 +10,19 @@ COMMENT=	Web-interface based binary newsgrabber in python, with nzb support
 LICENSE=	BSD2CLAUSE BSD3CLAUSE GPLv2+ ISCL MIT PSFL
 LICENSE_COMB=	multi
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 RUN_DEPENDS=	cheetah:devel/py-cheetah@${PY_FLAVOR} \
 		${PYTHON_SITELIBDIR}/pythonutils/configobj.py:devel/py-utils@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}sqlite3>0:databases/py-sqlite3@${PY_FLAVOR}
+
+USES=		python:2.7 shebangfix
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	sabnzbd
 GH_PROJECT=	sabnzbd
 
-USES=		python:2.7 shebangfix
 SHEBANG_FILES=	SABnzbd.py tools/msgfmt.py
 
 NO_ARCH=	yes

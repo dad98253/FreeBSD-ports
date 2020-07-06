@@ -3,7 +3,7 @@
 
 PORTNAME=	grx
 PORTVERSION=	2.4.9
-PORTREVISION=	3
+PORTREVISION=	4
 CATEGORIES=	graphics
 MASTER_SITES=	http://grx.gnu.de/download/
 DISTNAME=	${PORTNAME}${PORTVERSION:S/.//g}
@@ -14,7 +14,7 @@ COMMENT=	2D graphics library
 LICENSE=	LGPL20 MIT
 LICENSE_COMB=	multi
 
-USES=		gmake
+USES=		gmake xorg
 USE_XORG=	x11 xau xcb xdmcp
 HAS_CONFIGURE=	yes
 CONFIGURE_ARGS=	--prefix=${PREFIX} --with-fontpath=${DATADIR}/fonts \
@@ -27,6 +27,7 @@ CPPFLAGS+=	-I${LOCALBASE}/include
 LDFLAGS+=	-L${LOCALBASE}/lib
 
 PLIST_SUB=	VERSION="${PORTVERSION}"
+MAKE_ARGS=	infodir=${PREFIX}/${INFO_PATH}
 
 INFO=		grx
 

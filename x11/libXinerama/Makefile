@@ -2,8 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	libXinerama
-PORTVERSION=	1.1.3
-PORTREVISION=	3
+PORTVERSION=	1.1.4
+PORTREVISION=	2
 PORTEPOCH=	1
 CATEGORIES=	x11
 
@@ -12,9 +12,8 @@ COMMENT=	X11 Xinerama library
 
 LICENSE=	MIT
 
-XORG_CAT=	lib
-USE_XORG=	x11 xext xextproto xineramaproto:both
-USES+=	cpe
+USES=		cpe xorg xorg-cat:lib
+USE_XORG=	x11 xext xorgproto
 CPE_PRODUCT=	libxinerama
 CPE_VENDOR=	x
 

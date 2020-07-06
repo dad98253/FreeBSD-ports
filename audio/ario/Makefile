@@ -16,7 +16,7 @@ BUILD_DEPENDS=	intltoolize:textproc/intltool
 LIB_DEPENDS=	libcurl.so:ftp/curl
 
 GNU_CONFIGURE=	yes
-USES=		gmake libtool pkgconfig
+USES=		gmake gnome libtool pkgconfig
 USE_LDCONFIG=	yes
 USE_GNOME=	gtk30 pango atk cairo gdkpixbuf2 glib20 libxml2
 INSTALLS_ICONS=	yes
@@ -32,7 +32,7 @@ PLAYLISTS_DESC=	Playlists support
 SEARCH_DESC=	Search view support
 TAGLIB_DESC=	Manage ID3 tags and Ogg comments
 
-OPTIONS_DEFAULT=	DBUS LIBMPDCLIENT2 MPDIDLE NLS PLAYLISTS SEARCH TAGLIB
+OPTIONS_DEFAULT=	DBUS LIBMPDCLIENT2 MPDIDLE PLAYLISTS SEARCH TAGLIB
 
 AVAHI_LIB_DEPENDS=	libavahi-client.so:net/avahi-app
 AVAHI_CONFIGURE_ENABLE=	avahi

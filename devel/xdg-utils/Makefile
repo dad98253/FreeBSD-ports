@@ -2,11 +2,12 @@
 # $FreeBSD$
 
 PORTNAME=	xdg-utils
-PORTVERSION=	1.1.1
+PORTVERSION=	1.1.3
+PORTREVISION=	1
 CATEGORIES=	devel
 MASTER_SITES=	http://portland.freedesktop.org/download/
 
-MAINTAINER=	gnome@FreeBSD.org
+MAINTAINER=	desktop@FreeBSD.org
 COMMENT=	Tools to allow all applications to integrate with the free desktop
 
 LICENSE=	MIT
@@ -18,6 +19,7 @@ RUN_DEPENDS=	${LOCALBASE}/share/icons/hicolor/index.theme:misc/hicolor-icon-them
 		xset:x11/xset
 
 USES=		gmake
+
 CONFIGURE_ENV=	XMLTO=${LOCALBASE}/bin/minixmlto
 GNU_CONFIGURE=	yes
 NO_ARCH=	yes

@@ -3,12 +3,15 @@
 
 PORTNAME=	empathy
 PORTVERSION=	3.12.14
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	net-im gnome
 MASTER_SITES=	GNOME
 
 MAINTAINER=	gnome@FreeBSD.org
 COMMENT=	GNOME IM client based around telepathy
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 BUILD_DEPENDS=	iso-codes>=0:misc/iso-codes \
 		ca_root_nss>=0:security/ca_root_nss \
@@ -48,8 +51,8 @@ RUN_DEPENDS=	iso-codes>=0:misc/iso-codes \
 		geoclue>=0:net/geoclue \
 		mc-tool:net-im/telepathy-mission-control
 
-USES=		gettext gmake gnome libtool localbase pathfix \
-		pkgconfig python:2.7 tar:xz
+USES=		compiler:c11 gettext gl gmake gnome libtool localbase pathfix \
+		pkgconfig python:2.7 tar:xz xorg
 USE_GNOME=	cairo evolutiondataserver3 intlhack
 USE_XORG=	x11 xcomposite xdamage xext xfixes xi xrandr
 USE_GL=		egl

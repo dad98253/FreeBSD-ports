@@ -3,8 +3,8 @@
  * pfblockerng_ip.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2015-2018 BBcan177@gmail.com
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2019 BBcan177@gmail.com
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
@@ -27,19 +27,22 @@ require_once('/usr/local/pkg/pfblockerng/pfblockerng.inc');
 global $config, $pfb;
 pfb_global();
 
+init_config_arr(array('installedpackages', 'pfblockerngipsettings', 'config', 0));
 $pfb['iconfig'] = &$config['installedpackages']['pfblockerngipsettings']['config'][0];
 
-if (!is_array($pfb['iconfig'])) {
-	$pfb['iconfig'] = array();
-}
 $pconfig = array();
 $pconfig['enable_dup']		= $pfb['iconfig']['enable_dup']				?: '';
 $pconfig['enable_agg']		= $pfb['iconfig']['enable_agg']				?: '';
-$pconfig['suppression']		= $pfb['iconfig']['suppression']			?: '';
+
+// Default to 'on' for new installation only
+$pconfig['suppression']		= isset($pfb['iconfig']['suppression'])			? $pfb['iconfig']['suppression'] : 'on';
+
 $pconfig['enable_log']		= $pfb['iconfig']['enable_log']				?: '';
 $pconfig['ip_placeholder']	= $pfb['iconfig']['ip_placeholder']			?: '127.1.7.7';
 $pconfig['maxmind_locale']	= $pfb['iconfig']['maxmind_locale']			?: 'en';
+$pconfig['asn_reporting']	= $pfb['iconfig']['asn_reporting']			?: 'disabled';
 $pconfig['database_cc']		= $pfb['iconfig']['database_cc']			?: '';
+$pconfig['maxmind_key']		= $pfb['iconfig']['maxmind_key']			?: '';
 $pconfig['inbound_interface']	= explode(',', $pfb['iconfig']['inbound_interface'])	?: array();
 $pconfig['inbound_deny_action']	= $pfb['iconfig']['inbound_deny_action']		?: 'block';
 $pconfig['outbound_interface']	= explode(',', $pfb['iconfig']['outbound_interface'])	?: array();
@@ -55,8 +58,12 @@ if ($_POST) {
 
 	if (isset($_POST['save'])) {
 
-		$savemsg = '';
-		unset($input_errors);
+		if (isset($input_errors)) {
+			unset($input_errors);
+		}
+		if (isset($savemsg)) {
+			unset($savemsg);
+		}
 
 		// Validate Placeholder IP address
 		if (!is_ipaddrv4($_POST['ip_placeholder'])) {
@@ -70,7 +77,7 @@ if ($_POST) {
 		}
 
 		$maxmind	= $pconfig['maxmind_locale'];
-		$p_maxmind	= htmlspecialchars($_POST['maxmind_locale']);
+		$p_maxmind	= in_array($_POST['maxmind_locale'], array('en', 'fr', 'de', 'pt-BR', 'ja', 'zh-CN', 'es')) ? $_POST['maxmind_locale'] : 'en';
 
 		// Apply MaxMind locale changes if required
 		if ($maxmind != $p_maxmind) {
@@ -87,6 +94,10 @@ if ($_POST) {
 				$input_errors[] = 'MaxMind GeoIP conversion already in process!';
 				$input_errors[] = 'Cannot change Language Locale at this time!';
 			}
+		}
+
+		if (!empty($_POST['maxmind_key']) && !ctype_alnum($_POST['maxmind_key'])) {
+			$input_errors[] = 'MaxMind License key Invalid';
 		}
 
 		$v4suppression = explode("\r\n", $_POST['v4suppression']);
@@ -117,6 +128,8 @@ if ($_POST) {
 		$pfb['iconfig']['ip_placeholder']	= $_POST['ip_placeholder']				?: '127.1.7.7';
 		$pfb['iconfig']['maxmind_locale']	= $_POST['maxmind_locale']				?: '';
 		$pfb['iconfig']['database_cc']		= $_POST['database_cc']					?: '';
+		$pfb['iconfig']['maxmind_key']		= pfb_filter($_POST['maxmind_key'], 1)			?: '';
+		$pfb['iconfig']['asn_reporting']	= $_POST['asn_reporting']				?: 'disabled';
 		$pfb['iconfig']['inbound_interface']	= implode(',', (array)$_POST['inbound_interface'])	?: '';
 		$pfb['iconfig']['inbound_deny_action']	= $_POST['inbound_deny_action']				?: '';
 		$pfb['iconfig']['outbound_interface']	= implode(',', (array)$_POST['outbound_interface'])	?: '';
@@ -209,7 +222,7 @@ $section->addInput(new Form_Checkbox(
 	'Enable',
 	$pconfig['suppression'] === 'on' ? true:false,
 	'on'
-))->setHelp('This will prevent Selected IPs (and RFC1918/Loopback addresses) from being blocked. Only for IPv4 lists (/32 and /24).'
+))->setHelp('Default enabled. This will prevent Selected IPs (and RFC1918/Loopback addresses) from being blocked. Only for IPv4 lists (/32 and /24).'
 	. '<div class="infoblock">'
 	. 'GeoIP blocklist cannot be suppressed.<br /><br />'
 	. 'Alerts can be suppressed using the \'+\' icon in the Alerts tab and IPs are added to the IPv4 suppression custom list.<br />'
@@ -220,11 +233,11 @@ $section->addInput(new Form_Checkbox(
 
 $section->addInput(new Form_Checkbox(
 	'enable_log',
-	'Global Logging',
+	'Force Global IP Logging',
 	'Enable',
 	$pconfig['enable_log'] === 'on' ? true:false,
 	'on'
-))->setHelp('Firewall Rule logging - Enable Global logging to [ Status: System Logs: FIREWALL Log ].<br />'
+))->setHelp('The global logging option is only used to force logging for all IP Aliases, and not to disable the logging of all IP Aliases.<br />'
 		. 'This overrides any logging settings in the GeoIP/IPv4/v6 tabs.'
 );
 
@@ -240,6 +253,29 @@ $section->addInput(new Form_Input(
 );
 
 $section->addInput(new Form_Select(
+	'asn_reporting',
+	'ASN Reporting',
+	$pconfig['asn_reporting'],
+	[	'disabled' => 'Disabled', '24hour' => 'Enabled - ASN entries cached for 24 hours', '12hour' => 'Enabled - ASN entries cached for 12 hours',
+		'4hour' => 'Enabled - ASN entries cached for 4 hours', '1hour' => 'Enabled - ASN entries cached for 1 hour' ]
+))->setHelp('Query for the ASN (BGPview.io API) for each block/reject/permit/match IP entry. ASN values are cached as per the defined selection.')
+  ->setAttribute('style', 'width: auto');
+
+$form->add($section);
+$section = new Form_Section('MaxMind GeoIP configuration');
+
+$section->addInput(new Form_Input(
+	'maxmind_key',
+	gettext('MaxMind License Key'),
+	'text',
+	$pconfig['maxmind_key'],
+	['placeholder' => 'Enter the MaxMind License Key']
+))->setHelp('To utilize the MaxMind GeoIP functionality, you must first register for a free MaxMind user account. Visit the following '
+	. '<a href="https://www.maxmind.com/en/geolite2/signup" target="_blank">Link to Register</a> for a free MaxMind user account. '
+	. '<strong>Utilize the GeoIP Update version 3.1.1 or newer registration option.</strong>')
+  ->setAttribute('autocomplete', 'off');
+
+$section->addInput(new Form_Select(
 	'maxmind_locale',
 	'MaxMind Localized Language',
 	$pconfig['maxmind_locale'],
@@ -252,11 +288,11 @@ $section->addInput(new Form_Select(
 
 $section->addInput(new Form_Checkbox(
 	'database_cc',
-	'MaxMind Updates',
-	'Check to disable MaxMind updates',
+	'MaxMind CSV Updates',
+	'Check to disable MaxMind CSV updates',
 	$pconfig['database_cc'] === 'on' ? true:false,
 	'on'
-))->setHelp('This will disable the MaxMind monthly GeoIP database cron update. This does not affect the MaxMind binary cron update.');
+))->setHelp('This will disable the MaxMind monthly CSV GeoIP database cron update. This does not affect the MaxMind binary cron update that is used for other GeoIP funcionality in the package.');
 
 // Create page anchor for IP Suppression List
 $section->addInput(new Form_StaticText(
@@ -352,7 +388,7 @@ $section->addInput(new Form_Select(
 	'pass_order',
 	'Firewall \'Auto\' Rule Order',
 	$pconfig['pass_order'],
-	[	'order_0' => '| pfB_Block/Reject | All other Rules | (original format)',
+	[	'order_0' => '| pfB_Pass/Match/Block/Reject | All other Rules | (Default format)',
 		'order_1' => '| pfSense Pass/Match | pfB_Pass/Match | pfB_Block/Reject | pfSense Block/Reject |',
 		'order_2' => '| pfB_Pass/Match | pfSense Pass/Match | pfB_Block/Reject | pfSense Block/Reject |',
 		'order_3' => '| pfB_Pass/Match | pfB_Block/Reject | pfSense Pass/Match | pfSense Block/Reject |',
@@ -372,7 +408,7 @@ $section->addInput(new Form_Select(
 	'autorule_suffix',
 	'Firewall \'Auto\' Rule Suffix',
 	$pconfig['autorule_suffix'],
-	[ 'autorule' => 'auto rule', 'standard' => 'Null (no suffix)', 'ar', 'AR' ]
+	[ 'autorule' => 'auto rule', 'standard' => 'Null (no suffix)', 'ar' => 'AR' ]
 ))->setHelp('Default: <strong>auto rule</strong><br />Select \'Auto Rule\' description suffix for auto defined rules. pfBlockerNG must be disabled to modify suffix.')
   ->setAttribute('style', 'width: auto');
 

@@ -1,8 +1,8 @@
---- content/browser/renderer_host/render_message_filter.h.orig	2018-06-13 00:10:17.000000000 +0200
-+++ content/browser/renderer_host/render_message_filter.h	2018-07-20 17:25:54.254096000 +0200
-@@ -114,14 +114,14 @@
-       const url::Origin& cache_storage_origin,
-       const std::string& cache_storage_cache_name) override;
+--- content/browser/renderer_host/render_message_filter.h.orig	2020-05-13 18:39:43 UTC
++++ content/browser/renderer_host/render_message_filter.h
+@@ -79,14 +79,14 @@ class CONTENT_EXPORT RenderMessageFilter
+   // mojom::RenderMessageFilter:
+   void GenerateRoutingID(GenerateRoutingIDCallback routing_id) override;
    void HasGpuProcess(HasGpuProcessCallback callback) override;
 -#if defined(OS_LINUX)
 +#if defined(OS_LINUX) || defined(OS_BSD)

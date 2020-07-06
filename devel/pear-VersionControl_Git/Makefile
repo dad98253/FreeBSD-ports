@@ -5,10 +5,10 @@ PORTNAME=	VersionControl_Git
 PORTVERSION=	0.5.0
 CATEGORIES=	devel pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	OO interface to handle Git repository
 
-LICSENSE=	APACHE20
+LICENSE=	APACHE20
 
 USES=		pear
 

@@ -1,8 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	pfSense-pkg-frr
-PORTVERSION=	0.2
-PORTREVISION=	3
+PORTVERSION=	0.6.6
 CATEGORIES=	net
 MASTER_SITES=	# empty
 DISTFILES=	# empty
@@ -13,7 +12,7 @@ COMMENT=	FRR package for pfSense
 
 LICENSE=	APACHE20
 
-RUN_DEPENDS=	frr5>=0:net/frr5
+RUN_DEPENDS=	frr7>=0:net/frr7
 
 CONFLICTS=	pfSense-pkg-OpenBGPD-[0-9]* \
 		pfSense-pkg-Quagga_OSPF-[0-9]*
@@ -46,6 +45,8 @@ do-install:
 		${STAGEDIR}${PREFIX}/pkg/frr
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_ospf_interfaces.xml \
 		${STAGEDIR}${PREFIX}/pkg/frr
+	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_ospf_areas.xml \
+		${STAGEDIR}${PREFIX}/pkg/frr
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_global_routemaps.xml \
 		${STAGEDIR}${PREFIX}/pkg/frr
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_bgp_communities.xml \
@@ -64,11 +65,15 @@ do-install:
 		${STAGEDIR}${PREFIX}/pkg/frr
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_bgp.xml \
 		${STAGEDIR}${PREFIX}/pkg/frr
+	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/frr_bfd.xml \
+		${STAGEDIR}${PREFIX}/pkg/frr
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/inc/frr_ospf6.inc \
 		${STAGEDIR}${PREFIX}/pkg/frr/inc
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/inc/frr_ospf.inc \
 		${STAGEDIR}${PREFIX}/pkg/frr/inc
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/inc/frr_bgp.inc \
+		${STAGEDIR}${PREFIX}/pkg/frr/inc
+	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/inc/frr_bfd.inc \
 		${STAGEDIR}${PREFIX}/pkg/frr/inc
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/frr/inc/frr_validation.inc \
 		${STAGEDIR}${PREFIX}/pkg/frr/inc

@@ -2,10 +2,9 @@
 # $FreeBSD$
 
 PORTNAME=	stockfish
-DISTVERSION=	9
-DISTVERSIONSUFFIX=	-src
+DISTVERSIONPREFIX=	sf_
+DISTVERSION=	11
 CATEGORIES=	games
-MASTER_SITES=	http://stockfish.s3.amazonaws.com/
 
 MAINTAINER=	execve@gmail.com
 COMMENT=	Open source chess engine
@@ -13,19 +12,23 @@ COMMENT=	Open source chess engine
 LICENSE=	GPLv3
 LICENSE_FILE=	${WRKSRC}/../Copying.txt
 
-NOT_FOR_ARCHS=	sparc64
 BROKEN_aarch64=	Fails to build: cannot detect architecture
 BROKEN_armv6=	Fails to configure: config-sanity: Error 1
 BROKEN_armv7=	Fails to configure: config-sanity: Error 1
 BROKEN_mips64=	Fails to build: cannot detect architecture
+NOT_FOR_ARCHS=	sparc64
 
-USES=		compiler gmake zip
+USES=		compiler:c++11-lang gmake
+USE_GITHUB=	yes
+GH_ACCOUNT=	official-stockfish
+GH_PROJECT=	Stockfish
 
-NO_WRKSUBDIR=	yes
 WRKSRC_SUBDIR=	src
 MYARCH=		${ARCH}
-MYCC=		${COMPILER_TYPE}
+MYCC=		${CHOSEN_COMPILER_TYPE}
 TGTBLD=		build
+
+LDFLAGS+=	-fuse-ld=lld
 
 PLIST_FILES=	bin/stockfish
 PORTDOCS=	Readme.md
@@ -59,6 +62,8 @@ ALL_TARGET=	${TGTBLD} ARCH=${MYARCH} COMP=${MYCC}
 
 post-patch:
 	@${REINPLACE_CMD} -e "s/^PREFIX =/PREFIX ?=/" ${WRKSRC}/Makefile
+	@${REINPLACE_CMD} -e "s/CXX=g++/CXX=g++${GCC_DEFAULT}/" \
+		${WRKSRC}/Makefile
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/stockfish ${STAGEDIR}${PREFIX}/bin

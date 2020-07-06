@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	gnumeric
-PORTVERSION=	1.12.28
-PORTREVISION=	1
+PORTVERSION=	1.12.46
 CATEGORIES=	math gnome
 MASTER_SITES=	GNOME
 DIST_SUBDIR=	gnome3
@@ -14,23 +13,24 @@ COMMENT=	GNOME spreadsheet program
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-BUILD_DEPENDS=	rarian-sk-config:textproc/rarian
-LIB_DEPENDS=	libgoffice-0.10.so:devel/goffice010 \
-		libpsiconv.so:converters/psiconv
-RUN_DEPENDS=	rarian-sk-config:textproc/rarian
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
-USES=		cpe desktop-file-utils gettext gmake libtool pathfix pkgconfig \
-		python:2.7 shebangfix tar:xz
-USE_GNOME=	intlhack libgsf pygobject3
-INSTALLS_OMF=	yes
+BUILD_DEPENDS=	itstool:textproc/itstool \
+		ginstall:sysutils/coreutils
+LIB_DEPENDS=	libgoffice-0.10.so:devel/goffice \
+		libfribidi.so:converters/fribidi \
+		libpsiconv.so:converters/psiconv
+
+USES=		cpe desktop-file-utils gettext gmake gnome libtool \
+		localbase pathfix pkgconfig python:2.7 shebangfix tar:xz
+USE_GNOME=	cairo intlhack gtk30 libgsf pygobject3
 USE_LDCONFIG=	yes
 INSTALLS_ICONS=	yes
 GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--disable-compile-warnings \
+CONFIGURE_ARGS=	\
 		--without-paradox \
 		--enable-introspection
-CPPFLAGS+=	-I${LOCALBASE}/include
-LDFLAGS+=	-L${LOCALBASE}/lib
 INSTALL_TARGET=	install-strip
 
 CPE_VENDOR=	gnome
@@ -40,6 +40,9 @@ GLIB_SCHEMAS=	org.gnome.gnumeric.dialogs.gschema.xml \
 		org.gnome.gnumeric.plugin.gschema.xml
 
 SHEBANG_FILES=	plugins/perl-func/perl_func.pl
+
+BINARY_ALIAS=	python=${PYTHON_CMD} \
+		install=ginstall
 
 PLIST_SUB=	VERSION=${PORTVERSION} \
 		GOFFICE=0.10 \

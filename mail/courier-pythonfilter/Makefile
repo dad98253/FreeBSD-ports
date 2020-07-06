@@ -3,11 +3,15 @@
 
 PORTNAME=	courier-pythonfilter
 PORTVERSION=	1.6
+PORTREVISION=	1
 CATEGORIES=	mail python
 MASTER_SITES=	http://phantom.dragonsdawn.net/~gordon/courier-patches/courier-pythonfilter/
 
 MAINTAINER=	bsd@dino.sk
 COMMENT=	Framework for courier filter development in python
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 BUILD_DEPENDS=	courier-config:mail/courier
 
@@ -42,7 +46,7 @@ WHITELIST_RELAY_DESC=	whitelist_relayclients module
 WHITELIST_AUTH_DESC=	whitelist_auth module
 WHITELIST_BLOCK_DESC=	whitelist_block module
 WHITELIST_DNSWL_DESC=	whitelist_dnswl module
-WHITELIST_SP_DESC=	whitelist_spf module
+WHITELIST_SPF_DESC=	whitelist_spf module
 DELIVEREDTO_DESC=	deliveredto module
 PRIVATEADDR_DESC=	privateaddr module
 SPFCHECK_DESC=	spfcheck module
@@ -56,11 +60,11 @@ QUOTA_DESC=	quota module
 
 OPTIONS_DEFAULT=	DEBUG WHITELIST_RELAY WHITELIST_AUTH
 
+CLAMAV_CLAMD_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pyClamd>=0:security/py-pyclamd@${PY_FLAVOR}
+
 .include <bsd.port.pre.mk>
 
 PYDISTUTILS_INSTALLARGS:=${PYDISTUTILS_INSTALLARGS} --install-scripts=${PYSCRIPTSDIR}
-
-CLAMAV_CLAMD_RUN_DEPENDS=	${PYTHON_SITELIBDIR}/pyclamd.py:security/py-pyclamd@${PY_FLAVOR}
 
 post-extract:
 	${MV} ${WRKSRC}/pythonfilter.conf ${WRKSRC}/pythonfilter.conf.sample

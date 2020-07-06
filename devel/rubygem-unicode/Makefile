@@ -6,10 +6,12 @@ PORTVERSION=	0.4.4.4
 CATEGORIES=	devel rubygems
 MASTER_SITES=	RG
 
-MAINTAINER=	alexey@renatasystems.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	Unicode string manipulation library for Ruby
 
-USE_RUBY=	yes
+LICENSE=	RUBY
+
 USES=		gem
+USE_RUBY=	yes
 
 .include <bsd.port.mk>

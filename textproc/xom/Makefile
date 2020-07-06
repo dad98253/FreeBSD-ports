@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	xom
-PORTVERSION=	1.2.10
+PORTVERSION=	1.2.11
 PORTEPOCH=	1
 CATEGORIES=	textproc java
 MASTER_SITES=	http://www.cafeconleche.org/XOM/
@@ -14,11 +14,10 @@ RUN_DEPENDS=	${JAVALIBDIR}/xml-apis.jar:textproc/xerces-j \
 		${JAVALIBDIR}/xalan.jar:textproc/xalan-j
 
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NO_BUILD=	yes
 WRKSRC=		${WRKDIR}/XOM
 
-OPTIONS_DEFINE=	DOCS
+OPTIONS_DEFINE=	DOCS EXAMPLES
 
 PLIST_FILES=	%%JAVAJARDIR%%/${PORTNAME}.jar
 PORTDOCS=	overview.html apidocs

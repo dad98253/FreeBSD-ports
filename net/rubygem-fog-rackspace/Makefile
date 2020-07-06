@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	fog-rackspace
-PORTVERSION=	0.1.5
+PORTVERSION=	0.1.6
 CATEGORIES=	net rubygems
 MASTER_SITES=	RG
 
@@ -17,8 +17,9 @@ RUN_DEPENDS=	rubygem-fog-core>=1.35:devel/rubygem-fog-core \
 		rubygem-fog-xml>=0.1:textproc/rubygem-fog-xml \
 		rubygem-ipaddress>=0.8:net/rubygem-ipaddress
 
-NO_ARCH=	yes
-USE_RUBY=	yes
 USES=		gem
+USE_RUBY=	yes
+
+NO_ARCH=	yes
 
 .include <bsd.port.mk>

@@ -10,10 +10,7 @@ MASTER_SITES=	http://acs.lbl.gov/software/colt/colt-download/releases/
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Java package for scalable scientific and technical computing
 
-BROKEN_powerpc64=	fails to compile: src/cern/clhep/PhysicalConstants.java:2: unmappable character for encoding ASCII
-
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 WRKSRC=		${WRKDIR}/${PORTNAME}
 
 OPTIONS_DEFINE=	DOCS COMPILE

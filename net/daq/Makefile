@@ -3,7 +3,7 @@
 
 PORTNAME=	daq
 PORTVERSION=	2.2.2
-PORTREVISION=	0
+PORTREVISION=	1
 CATEGORIES=	net
 MASTER_SITES=	https://snort.org/downloads/snortplus/ \
 		ZI
@@ -18,15 +18,16 @@ LIB_DEPENDS=	libdnet.so:net/libdnet \
 		libpcap.so.1:net/libpcap	# avoid base libpcap
 BUILD_DEPENDS=	flex:textproc/flex
 
+USES=		bison gmake libtool localbase
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
-USES=		bison gmake libtool
 USE_LDCONFIG=	yes
 PLIST_SUB=	PORTVERSION="${PORTVERSION}"
 MAKE_JOBS_UNSAFE=	yes
 
-CPPFLAGS+=	-I${LOCALBASE}/include
-LIBS+=		-L${LOCALBASE}/lib
+CONFLICTS=	libdaq-3*
+
+CONFLICTS=	libdaq-3*
 
 post-install:
 	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/*.so.* ${STAGEDIR}${PREFIX}/lib/daq/*.so

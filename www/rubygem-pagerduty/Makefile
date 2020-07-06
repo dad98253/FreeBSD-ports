@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	pagerduty
-PORTVERSION=	2.1.1
+PORTVERSION=	2.1.3
 CATEGORIES=	www rubygems
 MASTER_SITES=	RG
 
@@ -14,9 +14,9 @@ LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
 RUN_DEPENDS=	rubygem-json>=1.7.7:devel/rubygem-json
 
-NO_ARCH=	yes
+USES=		gem
 USE_RUBY=	yes
-USES=		gem shebangfix
-SHEBANG_FILES=	script/setup.sh
+
+NO_ARCH=	yes
 
 .include <bsd.port.mk>

@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	fcitx-configtool
-PORTVERSION=	0.4.8
+PORTVERSION=	0.4.9
 CATEGORIES=	chinese x11
 MASTER_SITES=	http://download.fcitx-im.org/${PORTNAME}/
 DIST_SUBDIR=	fcitx
@@ -17,7 +17,7 @@ BUILD_DEPENDS=	${LOCALBASE}/libdata/pkgconfig/iso-codes.pc:misc/iso-codes \
 LIB_DEPENDS=	libfcitx-config.so:chinese/fcitx
 
 USE_GNOME=	intltool
-USES=		cmake gettext pkgconfig tar:xz
+USES=		cmake gettext gnome pkgconfig tar:xz
 LDFLAGS+=	-lintl
 
 OPTIONS_SINGLE=	UI

@@ -3,6 +3,7 @@
 
 PORTNAME=	gsmartcontrol
 PORTVERSION=	1.1.3
+PORTREVISION=	3
 CATEGORIES=	sysutils
 MASTER_SITES=	SF/${PORTNAME}/${PORTVERSION}
 
@@ -24,7 +25,7 @@ RUN_DEPENDS=	bash:shells/bash \
 		smartctl:sysutils/smartmontools \
 		xterm:x11/xterm
 
-USES=		compiler:c++11-lang libtool pkgconfig tar:bzip2
+USES=		compiler:c++11-lang gnome libtool pkgconfig tar:bzip2
 USE_CXXSTD=	c++11
 USE_GNOME=	atkmm cairo glibmm gtk30 gtkmm30 libsigc++20 pangomm
 INSTALLS_ICONS=	yes
@@ -33,5 +34,15 @@ GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-libglade
 
 OPTIONS_DEFINE=	DOCS
+
+post-patch:
+# Avoid conflict with C++20 <version> by ignoring <...> under WRKSRC
+	@${REINPLACE_CMD} -i .c++20 '/ADDITIONAL_INCLUDES/s/-I/-iquote/g' \
+		${WRKSRC}/configure
+	@${REINPLACE_CMD} -i .c++20 's/-I/-iquote/g' \
+		${WRKSRC}/src/Makefile.in \
+		${WRKSRC}/src/*/Makefile.in
+	@${REINPLACE_CMD} -i .c++20 '/config\.h/y/<>/""/' \
+		${WRKSRC}/src/global_macros.h
 
 .include <bsd.port.mk>

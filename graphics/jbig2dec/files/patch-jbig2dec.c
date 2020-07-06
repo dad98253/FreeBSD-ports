@@ -1,6 +1,6 @@
---- jbig2dec.c.orig	2014-10-31 13:30:04 UTC
+--- jbig2dec.c.orig	2020-02-11 16:28:00 UTC
 +++ jbig2dec.c
-@@ -41,7 +41,10 @@
+@@ -33,7 +33,10 @@
  #endif
  
  #include "os_types.h"
@@ -10,5 +10,5 @@
 +#	define SHA1_DIGEST_SIZE	20
 +#endif
  
- #include "jbig2.h"
- #include "jbig2_priv.h"
+ #ifdef JBIG_EXTERNAL_MEMENTO_H
+ #include JBIG_EXTERNAL_MEMENTO_H

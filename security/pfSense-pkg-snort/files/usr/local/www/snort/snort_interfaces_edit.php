@@ -3,9 +3,9 @@
  * snort_interfaces_edit.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2011-2018 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2011-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (C) 2008-2009 Robert Zelaya
- * Copyright (c) 2018 Bill Meeks
+ * Copyright (c) 2020 Bill Meeks
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,7 @@ elseif (isset($_GET['id']) && is_numericint($_GET['id']))
 	$id = htmlspecialchars($_GET['id']);
 
 if (is_null($id)) {
+	unset($a_rule);
         header("Location: /snort/snort_interfaces.php");
         exit;
 }
@@ -51,13 +52,13 @@ if ($_REQUEST['ajax']) {
 	$type = $_REQUEST['type'];
 
 	if (isset($id) && isset($wlist)) {
-		$a_rule = $config['installedpackages']['snortglobal']['rule'][$id];
+		$rule = $config['installedpackages']['snortglobal']['rule'][$id];
 		if ($type == "homenet") {
-			$list = snort_build_list($a_rule, empty($wlist) ? 'default' : $wlist);
+			$list = snort_build_list($rule, empty($wlist) ? 'default' : $wlist);
 			$contents = implode("\n", $list);
 		}
 		elseif ($type == "passlist") {
-			$list = snort_build_list($a_rule, $wlist, true);
+			$list = snort_build_list($rule, $wlist, true);
 			$contents = implode("\n", $list);
 		}
 		elseif ($type == "suppress") {
@@ -66,14 +67,14 @@ if ($_REQUEST['ajax']) {
 		}
 		elseif ($type == "externalnet") {
 			if (empty($wlist) || $wlist == "default") {
-				$list = snort_build_list($a_rule, $a_rule['homelistname']);
+				$list = snort_build_list($rule, $rule['homelistname']);
 				$contents = "";
 				foreach ($list as $ip)
 					$contents .= "!{$ip}\n";
 				$contents = trim($contents, "\n");
 			}
 			else {
-				$list = snort_build_list($a_rule, $wlist, false, true);
+				$list = snort_build_list($rule, $wlist, false, true);
 				$contents = implode("\n", $list);
 			}
 		}
@@ -110,6 +111,14 @@ $snort_uuid = $pconfig['uuid'];
 // Get the physical configured interfaces on the firewall
 $interfaces = get_configured_interface_with_descr();
 
+// Footnote real interface associated with each configured interface
+foreach ($interfaces as $if => $desc) {
+	$interfaces[$if] = $interfaces[$if] . " (" . get_real_interface($if) . ")";
+}
+
+// Add a special "Unassigned" interface selection at end of list
+$interfaces["Unassigned"] = gettext("Unassigned");
+
 // See if interface is already configured, and use its values
 if (isset($id) && $a_rule[$id]) {
 	/* old options */
@@ -118,6 +127,10 @@ if (isset($id) && $a_rule[$id]) {
 		$pconfig['configpassthru'] = base64_decode($pconfig['configpassthru']);
 	if (empty($pconfig['uuid']))
 		$pconfig['uuid'] = $snort_uuid;
+	if (get_real_interface($pconfig['interface']) == "") {
+		$pconfig['interface'] = gettext("Unassigned");
+		$pconfig['enable'] = "off";
+	}
 }
 // Must be a new interface, so try to pick next available physical interface to use
 elseif (isset($id) && !isset($a_rule[$id])) {
@@ -128,7 +141,20 @@ elseif (isset($id) && !isset($a_rule[$id])) {
 	foreach ($ifaces as $i) {
 		if (!in_array($i, $ifrules)) {
 			$pconfig['interface'] = $i;
-			$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+
+			// If the interface is a VLAN, use the VLAN description
+			// if set, otherwise default to the friendly description.
+			if ($vlan = interface_is_vlan(get_real_interface($i))) {
+				if (strlen($vlan['descr']) > 0) {
+					$pconfig['descr'] = $vlan['descr'];
+				}
+				else {
+					$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+				}
+			}
+			else {
+				$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+			}
 			$pconfig['enable'] = 'on';
 			break;
 		}
@@ -141,6 +167,10 @@ elseif (isset($id) && !isset($a_rule[$id])) {
 }
 
 // Set defaults for empty key parameters
+if (empty($pconfig['enable_pkt_caps']))
+	$pconfig['enable_pkt_caps'] = "off";
+if (empty($pconfig['tcpdump_file_size']))
+	$pconfig['tcpdump_file_size'] = "128";
 if (empty($pconfig['blockoffendersip']))
 	$pconfig['blockoffendersip'] = "both";
 if (empty($pconfig['blockoffenderskill']))
@@ -153,6 +183,8 @@ if (empty($pconfig['alertsystemlog_priority']))
 	$pconfig['alertsystemlog_priority'] = "log_alert";
 if (empty($pconfig['snaplen']))
 	$pconfig['snaplen'] = 1518;
+if (empty($pconfig['ips_mode']))
+	$pconfig['ips_mode'] = 'ips_mode_legacy';
 
 // See if creating a new interface by duplicating an existing one
 if (strcasecmp($action, 'dup') == 0) {
@@ -166,7 +198,20 @@ if (strcasecmp($action, 'dup') == 0) {
 		if (!in_array($i, $ifrules)) {
 			$pconfig['interface'] = $i;
 			$pconfig['enable'] = 'on';
-			$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+
+			// If the interface is a VLAN, use the VLAN description
+			// if set, otherwise default to the friendly description.
+			if ($vlan = interface_is_vlan(get_real_interface($i))) {
+				if (strlen($vlan['descr']) > 0) {
+					$pconfig['descr'] = $vlan['descr'];
+				}
+				else {
+					$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+				}
+			}
+			else {
+				$pconfig['descr'] = convert_friendly_interface_to_friendly_descr($i);
+			}
 			break;
 		}
 	}
@@ -206,9 +251,8 @@ if ($_POST['save'] && !$input_errors) {
 		snort_stop($a_rule[$id], get_real_interface($a_rule[$id]['interface']));
 		write_config("Snort pkg: modified interface configuration for {$a_rule[$id]['interface']}.");
 		$rebuild_rules = false;
-		conf_mount_rw();
 		sync_snort_package_config();
-		conf_mount_ro();
+		unset($a_rule);
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 		header( 'Cache-Control: no-store, no-cache, must-revalidate' );
@@ -240,6 +284,9 @@ if ($_POST['save'] && !$input_errors) {
 		if ($_POST['descr']) $natent['descr'] =  $_POST['descr']; else $natent['descr'] = convert_friendly_interface_to_friendly_descr($natent['interface']);
 		if ($_POST['performance']) $natent['performance'] = $_POST['performance']; else  unset($natent['performance']);
 		if ($_POST['snaplen'] && is_numeric($_POST['snaplen'])) $natent['snaplen'] = $_POST['snaplen'];
+		if ($_POST['ips_mode']) $natent['ips_mode'] = $_POST['ips_mode']; else unset($natent['ips_mode']);
+		if ($_POST['enable_pkt_caps'] == "on") $natent['enable_pkt_caps'] = 'on'; else $natent['enable_pkt_caps'] = 'off';
+		if ($_POST['tcpdump_file_size'] && is_numeric($_POST['tcpdump_file_size'])) $natent['tcpdump_file_size'] = $_POST['tcpdump_file_size'];
 		if ($_POST['blockoffenders7'] == "on") $natent['blockoffenders7'] = 'on'; else $natent['blockoffenders7'] = 'off';
 		if ($_POST['blockoffenderskill'] == "on") $natent['blockoffenderskill'] = 'on'; else $natent['blockoffenderskill'] = 'off';
 		if ($_POST['blockoffendersip']) $natent['blockoffendersip'] = $_POST['blockoffendersip']; else unset($natent['blockoffendersip']);
@@ -270,9 +317,7 @@ if ($_POST['save'] && !$input_errors) {
 				else
 					$snort_start = false;
 				@rename("{$snortlogdir}/snort_{$oif_real}{$a_rule[$id]['uuid']}", "{$snortlogdir}/snort_{$if_real}{$a_rule[$id]['uuid']}");
-				conf_mount_rw();
 				@rename("{$snortdir}/snort_{$a_rule[$id]['uuid']}_{$oif_real}", "{$snortdir}/snort_{$a_rule[$id]['uuid']}_{$if_real}");
-				conf_mount_ro();
 			}
 			$a_rule[$id] = $natent;
 		}
@@ -411,6 +456,17 @@ if ($_POST['save'] && !$input_errors) {
 			$natent['sf_appid_statslog'] = "on";
 			$natent['sf_appid_stats_period'] = "300";
 
+			$natent['ssh_preproc_ports'] = '22';
+			$natent['ssh_preproc_max_encrypted_packets'] = 20;
+			$natent['ssh_preproc_max_client_bytes'] = 19600;
+			$natent['ssh_preproc_max_server_version_len'] = 100;
+			$natent['ssh_preproc_enable_respoverflow'] = 'on';
+			$natent['ssh_preproc_enable_srvoverflow'] = 'on';
+			$natent['ssh_preproc_enable_ssh1crc32'] = 'on';
+			$natent['ssh_preproc_enable_protomismatch'] = 'on';
+
+			$natent['autoflowbitrules'] = 'on';
+
 			$a_rule[] = $natent;
 		}
 
@@ -422,9 +478,7 @@ if ($_POST['save'] && !$input_errors) {
 		write_config("Snort pkg: modified interface configuration for {$natent['interface']}.");
 
 		/* Update snort.conf and snort.sh files for this interface */
-		conf_mount_rw();
 		sync_snort_package_config();
-		conf_mount_ro();
 
 		/* See if we need to restart Snort after an interface re-assignment */
 		if ($snort_start == true) {
@@ -440,6 +494,7 @@ if ($_POST['save'] && !$input_errors) {
 		if ($snort_reload == true)
 			snort_reload_config($natent, "SIGHUP");
 
+		unset($a_rule);
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 		header( 'Cache-Control: no-store, no-cache, must-revalidate' );
@@ -470,6 +525,10 @@ $if_friendly = convert_friendly_interface_to_friendly_descr($a_rule[$id]['interf
 if (empty($if_friendly)) {
 	$if_friendly = "None";
 }
+
+// Finished with config array reference, so release it
+unset($a_rule);
+
 $pgtitle = array(gettext("Services"), gettext("Snort"), gettext("Edit Interface"), gettext("{$if_friendly}"));
 include("head.inc");
 
@@ -479,6 +538,11 @@ if ($input_errors) {
 
 if ($savemsg) {
 	print_info_box($savemsg, 'success');
+}
+
+if ($pconfig['enable'] == 'on' && $pconfig['ips_mode'] == 'ips_mode_inline' && (!isset($config['system']['disablechecksumoffloading']) || !isset($config['system']['disablesegmentationoffloading']) || !isset($config['system']['disablelargereceiveoffloading']))) {
+	print_info_box(gettext('IPS inline mode requires that Hardware Checksum, Hardware TCP Segmentation and Hardware Large Receive Offloading ' .
+				'all be disabled on the ') . '<b>' . gettext('System > Advanced > Networking ') . '</b>' . gettext('tab.'));
 }
 
 $form = new Form(new Form_Button(
@@ -539,16 +603,47 @@ $section->addInput(new Form_Select(
 		'log_warning' => gettext('LOG_WARNING'), 'log_notice' => gettext('LOG_NOTICE'), 'log_info' => gettext('LOG_INFO'), 'log_debug' => gettext('LOG_DEBUG') )
 ))->setHelp('Select system log Priority (Level) to use for reporting. Default is LOG_ALERT.');
 $section->addInput(new Form_Checkbox(
+	'enable_pkt_caps',
+	'Enable Packet Captures',
+	'Checking this option will automatically capture packets that generate a Snort alert into a tcpdump compatible file',
+	$pconfig['enable_pkt_caps'] == 'on' ? true:false,
+	'on'
+));
+$section->addInput(new Form_Input(
+	'tcpdump_file_size',
+	'Packet Capture File Size',
+	'number',
+	$pconfig['tcpdump_file_size']
+))->setHelp('Enter a value in megabytes for the packet capture file size limit. Default is 128 megabytes. When the limit is reached, the current packet capture file in directory ' . SNORTLOGDIR . '/snort_' . get_real_interface($pconfig['interface']) . $pconfig['uuid'] . ' is rotated and a new file opened.');
+
+$form->add($section);
+
+$section = new Form_Section('Block Settings');
+$section->addInput(new Form_Checkbox(
 	'blockoffenders7',
 	'Block Offenders',
-	'Checking this option will automatically block hosts that generate a Snort alert',
+	'Checking this option will automatically block hosts that generate a Snort alert.  Default is Not Checked.',
 	$pconfig['blockoffenders7'] == 'on' ? true:false,
 	'on'
 ));
+$group = new Form_Group('IPS Mode');
+$group->add(new Form_Select(
+	'ips_mode',
+	'IPS Mode',
+	$pconfig['ips_mode'],
+	array( "ips_mode_legacy" => "Legacy Mode", "ips_mode_inline" => "Inline Mode" )
+))->setHelp('Select blocking mode operation.  Legacy Mode inspects copies of packets while Inline Mode inserts the Snort inspection ' . 
+		'engine into the network stack between the NIC and the OS. Default is Legacy Mode.');
+$group->setHelp('Legacy Mode uses the PCAP engine to generate copies of packets for inspection as they traverse the interface.  Some "leakage" of packets will occur before ' . 
+		'Snort can determine if the traffic matches a rule and should be blocked.  Inline mode instead intercepts and inspects packets before they are handed ' . 
+		'off to the host network stack for further processing.  Packets matching DROP rules are simply discarded (dropped) and not passed to the host ' . 
+		'network stack.  No leakage of packets occurs with Inline Mode.  WARNING:  Inline Mode only works with NIC drivers which properly support Netmap!  If the ' . 
+		'hardware NIC driver does not support Netmap, using Inline Mode can result in a firewall system crash!  If problems are experienced with Inline Mode, switch to Legacy Mode instead.');
+$section->add($group);
 $section->addInput(new Form_Checkbox(
 	'blockoffenderskill',
 	'Kill States',
-	'Checking this option will kill firewall states for the blocked IP.  Default is checked.',
+	'Checking this option will kill firewall established states for the blocked IP.  Default is checked.',
 	$pconfig['blockoffenderskill'] == 'on' ? true:false,
 	'on'
 ));
@@ -560,6 +655,28 @@ $section->addInput(new Form_Select(
 ))->setHelp('Select which IP extracted from the packet you wish to block.  Default is BOTH.');
 
 $form->add($section);
+
+// Add Inline IPS rule edit warning modal pop-up
+$modal = new Modal('Important Information About IPS Inline Mode Blocking', 'ips_warn_dlg', 'large', 'Close');
+
+$modal->addInput(new Form_StaticText (
+	null,
+	'<span class="help-block">' . 
+	gettext('When using Inline IPS Mode blocking, you must manually change the rule action ') . 
+	gettext('from ALERT to DROP for every rule which you wish to block traffic when triggered.') . 
+	'<br/><br/>' . 
+	gettext('The default action for rules is ALERT.  This will produce alerts but will not ') . 
+	gettext('block traffic when using Inline IPS Mode for blocking. ') . 
+	'<br/><br/>' . 
+	gettext('Use the "dropsid.conf" feature on the SID MGMT tab to select rules whose action ') . 
+	gettext('should be changed from ALERT to DROP.  If you run the Snort Subscriber Rules and have ') . 
+	gettext('an IPS policy selected on the CATEGORIES tab, then rules defined as DROP by the ') . 
+	gettext('selected IPS policy will have their action automatically changed to DROP when the ') . 
+	gettext('"IPS Policy Mode" selector is configured for "Policy".') . 
+	'</span>'
+));
+
+$form->add($modal);
 
 $section = new Form_Section('Detection Performance Settings');
 $section->addInput(new Form_Select(
@@ -575,7 +692,7 @@ $section->addInput(new Form_Checkbox(
 	'Split ANY-ANY',
 	'Enable splitting of ANY-ANY port group.  Default is Not Checked.',
 	$pconfig['fpm_split_any_any'] == 'on' ? true:false,
-	'yes'
+	'on'
 ));
 $section->addInput(new Form_Checkbox(
 	'fpm_search_optimize',
@@ -652,7 +769,7 @@ $group->add(new Form_Button(
 	'fa-file-text-o'
 ))->removeClass('btn-primary')->addClass('btn-info')->addClass('btn-sm')->setAttribute('data-target', '#whitelist')->setAttribute('data-toggle', 'modal');
 $group->setHelp('The default Pass List adds local networks, WAN IPs, Gateways, VPNs and VIPs.  Create an Alias to customize.' . '<br />' .
-		'This option will only be used when block offenders is on.');
+		'This option will only be used when block offenders is on and IPS Mode is set to Legacy Mode.');
 $section->add($group);
 
 $form->add($section);
@@ -775,7 +892,13 @@ events.push(function(){
 		var hide = ! $('#blockoffenders7').prop('checked');
 		hideCheckbox('blockoffenderskill', hide);
 		hideSelect('blockoffendersip', hide);
+		hideSelect('ips_mode', hide);
 		hideClass('passlist', hide);
+		if ($('#ips_mode').val() == 'ips_mode_inline') {
+			hideCheckbox('blockoffenderskill', true);
+			hideSelect('blockoffendersip', true);
+			hideClass('passlist', true);
+		}
 	}
 
 	function toggle_system_log() {
@@ -784,12 +907,20 @@ events.push(function(){
 		hideSelect('alertsystemlog_priority', hide);
 	}
 
+	function toggle_enable_pkt_caps() {
+		var hide = ! $('#enable_pkt_caps').prop('checked');
+		hideInput('tcpdump_file_size', hide);
+	}
+
 	function enable_change() {
 		var hide = ! $('#enable').prop('checked');
 		disableInput('alertsystemlog', hide);
 		disableInput('alertsystemlog_facility', hide);
 		disableInput('alertsystemlog_priority', hide);
+		disableInput('enable_pkt_caps', hide);
+		disableInput('tcpdump_file_size', hide);
 		disableInput('blockoffenders7', hide);
+		disableInput('ips_mode', hide);
 		disableInput('blockoffenderskill', hide);
 		disableInput('blockoffendersip', hide);
 		disableInput('performance', hide);
@@ -865,10 +996,31 @@ events.push(function(){
 		enable_blockoffenders();
 	});
 
+	// When 'enable_pkt_caps' is clicked, disable/enable associated form controls
+	$('#enable_pkt_caps').click(function() {
+		toggle_enable_pkt_caps();
+	});
+
+	$('#ips_mode').on('change', function() {
+		if ($('#ips_mode').val() == 'ips_mode_inline') {
+			hideCheckbox('blockoffenderskill', true);
+			hideSelect('blockoffendersip', true);
+			hideClass('passlist', true);
+			$('#ips_warn_dlg').modal('show');
+		}
+		else {
+			hideCheckbox('blockoffenderskill', false);
+			hideSelect('blockoffendersip', false);
+			hideClass('passlist', false);
+			$('#ips_warn_dlg').modal('hide');
+		}
+	});
+
 	// ---------- On initial page load ------------------------------------------------------------
 	enable_change();
 	enable_blockoffenders();
 	toggle_system_log();
+	toggle_enable_pkt_caps();
 });
 //]]>
 </script>

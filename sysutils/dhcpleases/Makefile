@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	dhcpleases
-PORTVERSION=	0.3
-PORTREVISION=	1
+PORTVERSION=	0.5
 CATEGORIES=	sysutils
 MASTER_SITES=	# empty
 DISTFILES=	# none

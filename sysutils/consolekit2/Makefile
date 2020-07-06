@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	consolekit
-PORTVERSION=	1.2.0
+PORTVERSION=	1.2.1
+PORTREVISION=	1
 CATEGORIES=	sysutils gnome
 MASTER_SITES=	https://github.com/ConsoleKit2/ConsoleKit2/releases/download/${PORTVERSION}/
 PKGNAMESUFFIX=	2
@@ -18,7 +19,8 @@ LIB_DEPENDS=	libdbus-1.so:devel/dbus \
 		libpolkit-gobject-1.so:sysutils/polkit
 
 WRKSRC=		${WRKDIR}/ConsoleKit2-${PORTVERSION}
-USES=		gettext gmake libtool localbase pathfix pkgconfig tar:bzip2
+USES=		gettext gmake gnome libtool localbase pathfix pkgconfig \
+		tar:bzip2 xorg
 USE_CSTD=	gnu99
 USE_XORG=	x11
 USE_GNOME=	glib20 libxslt introspection:build
@@ -38,5 +40,12 @@ CONFIGURE_ARGS=	--with-pid-file=/var/run/${PORTNAME}.pid \
 		--disable-libudev \
 		--without-systemdsystemunitdir
 INSTALL_TARGET=	install-strip
+
+post-install:
+.for script in ck-system-hibernate ck-system-hybridsleep \
+	ck-system-restart ck-system-stop ck-system-suspend
+	cd ${STAGEDIR}${PREFIX}/lib/ConsoleKit/scripts && \
+		${MV} ${script} ${script}.sample
+.endfor
 
 .include <bsd.port.mk>

@@ -3,7 +3,7 @@
  * haproxy_upgrade_config.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2013 PiBa-NL
  * All rights reserved.
  *
@@ -384,7 +384,7 @@ function haproxy_upgrade_config() {
 						if (!$httpfrontend && $server['ssl'] == 'yes') {
 							// https frontend used to automatically switch to using the check-ssl setting..
 							unset($server['ssl']);
-							$server['checkssl'] = true;
+							$server['checkssl'] = 'yes';
 						}
 					}
 				}

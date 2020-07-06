@@ -3,7 +3,7 @@
 
 PORTNAME=	opendbx
 PORTVERSION=	1.4.6
-PORTREVISION=	5
+PORTREVISION=	6
 CATEGORIES=	databases
 MASTER_SITES=	http://www.linuxnetworks.de/opendbx/download/
 
@@ -30,7 +30,7 @@ SYBASE_DESC=	Sybase database support
 DRIVER_DESC=	Database drivers
 
 OPTIONS_SUB=	YES
-MYSQL_USE=	MYSQL=YES
+MYSQL_USES=	mysql
 MYSQL_CPPFLAGS=	-I${LOCALBASE}/include/mysql
 MYSQL_LDFLAGS=	-L${LOCALBASE}/lib/mysql
 
@@ -45,7 +45,6 @@ MSSQL_LIB_DEPENDS=	libsybdb.so:databases/freetds
 SYBASE_LIB_DEPENDS=	libct.so:databases/freetds
 
 NLS_USES=		gettext
-NLS_CONFIGURE_DISABLE=	nls
 
 .include <bsd.port.options.mk>
 

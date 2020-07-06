@@ -3,7 +3,7 @@
 
 PORTNAME=	mydns
 PORTVERSION=	1.1.0
-PORTREVISION=	7
+PORTREVISION=	8
 CATEGORIES=	dns databases
 MASTER_SITES=	http://mydns.bboy.net/download/
 
@@ -46,11 +46,11 @@ CONFIGURE_ARGS+=--without-mysql \
 		--with-pgsql-lib=${LOCALBASE}/lib
 PKGNAMESUFFIX=	-pg
 .else
+USES+=		mysql
 CONFIGURE_ARGS+=--without-pgsql \
 		--with-mysql-include=${LOCALBASE}/include/mysql \
 		--with-mysql-lib=${LOCALBASE}/lib/mysql
 PKGNAMESUFFIX=	-mysql
-USE_MYSQL=	yes
 .endif
 
 .if ${PORT_OPTIONS:MNLS}

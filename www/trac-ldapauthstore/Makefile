@@ -7,7 +7,7 @@ MASTER_SITES=	LOCAL/matthew
 PKGNAMEPREFIX=	trac-
 DISTNAME=	${PORTNAME}plugin-${PORTVERSION}
 
-MAINTAINER=	matthew@FreeBSD.org
+MAINTAINER=	joneum@FreeBSD.org
 COMMENT=	Trac AccountManager plugin using LDAP authentication store
 
 LICENSE=	BSD3CLAUSE
@@ -22,7 +22,7 @@ NO_ARCH=	yes
 PORTSCOUT=	ignore:1
 SVN_REVISION=	15146
 
-USES=		python:-2.7
+USES=		python:2.7
 USE_PYTHON=	distutils autoplist
 
 # Maintainter targets below this point

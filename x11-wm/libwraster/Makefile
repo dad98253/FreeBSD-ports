@@ -2,6 +2,7 @@
 
 PORTNAME=	libwraster
 PORTVERSION=	0.95.8
+PORTREVISION=	1
 CATEGORIES=	x11-wm windowmaker
 MASTER_SITES=	http://windowmaker.org/pub/source/release/
 DISTNAME=	WindowMaker-${PORTVERSION}
@@ -16,9 +17,9 @@ LIB_DEPENDS=	libgif.so:graphics/giflib \
 		libjbig.so:graphics/jbigkit \
 		libtiff.so:graphics/tiff \
 		libwebp.so:graphics/webp \
-		libMagickWand-6.so:graphics/ImageMagick
+		libMagickWand-6.so:graphics/ImageMagick6
 
-USES=		jpeg libtool localbase pathfix pkgconfig
+USES=		jpeg libtool localbase pathfix pkgconfig xorg
 USE_LDCONFIG=	yes
 USE_XORG=	x11 xext xft xinerama xmu xpm
 BUILD_WRKSRC=	${WRKSRC}/wrlib

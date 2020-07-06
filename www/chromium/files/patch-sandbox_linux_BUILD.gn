@@ -1,6 +1,6 @@
---- sandbox/linux/BUILD.gn.orig	2018-06-13 00:10:23.000000000 +0200
-+++ sandbox/linux/BUILD.gn	2018-07-20 21:32:57.834564000 +0200
-@@ -12,12 +12,12 @@
+--- sandbox/linux/BUILD.gn.orig	2020-03-16 18:39:54 UTC
++++ sandbox/linux/BUILD.gn
+@@ -12,12 +12,12 @@ if (is_android) {
  }
  
  declare_args() {
@@ -16,7 +16,7 @@
  }
  
  if (is_nacl_nonsfi) {
-@@ -396,7 +396,7 @@
+@@ -370,7 +370,7 @@ component("sandbox_services") {
      public_deps += [ ":sandbox_services_headers" ]
    }
  
@@ -25,7 +25,7 @@
      cflags = [ "-fgnu-inline-asm" ]
  
      sources -= [
-@@ -404,6 +404,8 @@
+@@ -378,6 +378,8 @@ component("sandbox_services") {
        "services/init_process_reaper.h",
        "services/scoped_process.cc",
        "services/scoped_process.h",
@@ -34,10 +34,10 @@
        "services/yama.cc",
        "services/yama.h",
        "syscall_broker/broker_channel.cc",
-@@ -420,6 +422,10 @@
-       "syscall_broker/broker_permission_list.h",
-       "syscall_broker/broker_process.cc",
+@@ -396,6 +398,10 @@ component("sandbox_services") {
        "syscall_broker/broker_process.h",
+       "syscall_broker/broker_simple_message.cc",
+       "syscall_broker/broker_simple_message.h",
 +    ]
 +    sources += [
 +      "services/libc_interceptor.cc",

@@ -2,7 +2,7 @@
 
 PORTNAME=	pfSense-pkg-pfBlockerNG-devel
 PORTVERSION=	2.2.5
-PORTREVISION=	9
+PORTREVISION=	33
 CATEGORIES=	net
 MASTER_SITES=	# empty
 DISTFILES=	# empty
@@ -13,15 +13,18 @@ COMMENT=	pfSense package pfBlockerNG
 
 LICENSE=	APACHE20
 
-RUN_DEPENDS=	${LOCALBASE}/bin/geoiplookup:net/GeoIP \
+RUN_DEPENDS=	${LOCALBASE}/bin/mmdblookup:net/libmaxminddb \
 		${LOCALBASE}/bin/grepcidr:net-mgmt/grepcidr \
 		${LOCALBASE}/bin/iprange:net-mgmt/iprange \
 		${LOCALBASE}/bin/mwhois:net/whois \
-		${LOCALBASE}/sbin/lighttpd:www/lighttpd
+		${LOCALBASE}/bin/jq:textproc/jq \
+		${LOCALBASE}/sbin/lighttpd:www/lighttpd \
+		${PYTHON_PKGNAMEPREFIX}sqlite3>0:databases/py-sqlite3@${PY_FLAVOR} \
+		${PYTHON_PKGNAMEPREFIX}maxminddb>0:net/py-maxminddb@${PY_FLAVOR}
 
 CONFLICTS=	pfSense-pkg-pfBlockerNG
 
-USES=		php:flavors
+USES=		php:flavors python
 USE_PHP=	intl
 IGNORE_WITH_PHP=	56 70 71
 NO_BUILD=	yes
@@ -40,6 +43,7 @@ do-install:
 	${MKDIR} ${STAGEDIR}${PREFIX}/www/widgets/widgets
 	${MKDIR} ${STAGEDIR}${PREFIX}/www/widgets/include
 	${MKDIR} ${STAGEDIR}${PREFIX}/www/widgets/javascript
+	${MKDIR} ${STAGEDIR}${PREFIX}/www/wizards
 	${MKDIR} ${STAGEDIR}${DATADIR}
 	${INSTALL_DATA} -m 0644 ${FILESDIR}${PREFIX}/pkg/pfblockerng.xml \
 		${STAGEDIR}${PREFIX}/pkg
@@ -79,6 +83,8 @@ do-install:
 		${STAGEDIR}${PREFIX}/www/pfblockerng
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/pfblockerng/pfblockerng_sync.php \
 		${STAGEDIR}${PREFIX}/www/pfblockerng
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/pfblockerng/pfblockerng_safesearch.php \
+		${STAGEDIR}${PREFIX}/www/pfblockerng
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/pfblockerng/pfblockerng_threats.php \
 		${STAGEDIR}${PREFIX}/www/pfblockerng
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/pfblockerng/pfblockerng_log.php \
@@ -89,11 +95,23 @@ do-install:
 		${STAGEDIR}${PREFIX}/www/widgets/include
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/widgets/javascript/pfblockerng.js \
 		${STAGEDIR}${PREFIX}/www/widgets/javascript
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/wizards/pfblockerng_wizard.xml \
+		${STAGEDIR}${PREFIX}/www/wizards/pfblockerng_wizard.xml
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/wizards/pfblockerng_wizard.inc \
+		${STAGEDIR}${PREFIX}/www/wizards/pfblockerng_wizard.inc
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/dnsbl_tld \
 		${STAGEDIR}${PREFIX}/pkg/pfblockerng
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/shallalist_global_usage \
 		${STAGEDIR}${PREFIX}/pkg/pfblockerng
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/ut1_global_usage \
+		${STAGEDIR}${PREFIX}/pkg/pfblockerng
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/pfb_dnsbl.firefoxdoh.conf \
+		${STAGEDIR}${PREFIX}/pkg/pfblockerng
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/pfb_dnsbl.safesearch.conf \
+		${STAGEDIR}${PREFIX}/pkg/pfblockerng
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/pfb_dnsbl.youtube_restrict.conf \
+		${STAGEDIR}${PREFIX}/pkg/pfblockerng
+	${INSTALL_DATA} ${FILESDIR}${PREFIX}/pkg/pfblockerng/pfb_dnsbl.youtube_restrictmoderate.conf \
 		${STAGEDIR}${PREFIX}/pkg/pfblockerng
 	${INSTALL_DATA} -m 0755 ${FILESDIR}${PREFIX}/pkg/pfblockerng/pfblockerng.sh \
 		${STAGEDIR}${PREFIX}/pkg/pfblockerng

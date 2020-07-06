@@ -1,9 +1,10 @@
 # $FreeBSD$
 
 PORTNAME=	ruby-build
-PORTVERSION=	20180601
+PORTVERSION=	20200401
 DISTVERSIONPREFIX=	v
 CATEGORIES=	devel ruby
+DIST_SUBDIR=	rbenv
 
 MAINTAINER=	ruby@FreeBSD.org
 COMMENT=	Compile and install different ruby versions
@@ -20,8 +21,8 @@ RUN_DEPENDS=	autoconf>0:devel/autoconf \
 USE_GITHUB=	yes
 GH_ACCOUNT=	rbenv
 
-NO_BUILD=	yes
 NO_ARCH=	yes
+NO_BUILD=	yes
 
 PLIST_FILES=	bin/ruby-build \
 		libexec/rbenv-install \
@@ -29,8 +30,8 @@ PLIST_FILES=	bin/ruby-build \
 PORTDATA=	*
 
 OPTIONS_DEFINE=	RBENV
+OPTIONS_DEFAULT=RBENV
 RBENV_DESC=	Install rbenv for installation support
-OPTIONS_DEFAULT=	RBENV
 RBENV_RUN_DEPENDS=	rbenv:devel/rbenv
 
 do-install:

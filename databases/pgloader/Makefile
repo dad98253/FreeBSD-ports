@@ -3,12 +3,15 @@
 
 PORTNAME=	pgloader
 PORTVERSION=	2.3.1
-PORTREVISION=	3
+PORTREVISION=	5
 CATEGORIES=	databases
 MASTER_SITES=	http://pgfoundry.org/frs/download.php/1814/
 
 MAINTAINER=	pea@raveland.org
 COMMENT=	Import CSV data and Large Object to PostgreSQL
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 NO_BUILD=	yes
 USES=		python:2.7 shebangfix

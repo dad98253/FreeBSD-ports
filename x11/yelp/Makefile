@@ -2,8 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	yelp
-PORTVERSION=	3.22.0
-PORTREVISION=	1
+PORTVERSION=	3.28.1
+PORTREVISION=	2
 CATEGORIES=	x11 gnome
 MASTER_SITES=	GNOME
 DIST_SUBDIR=	gnome3
@@ -11,7 +11,7 @@ DIST_SUBDIR=	gnome3
 MAINTAINER=	gnome@FreeBSD.org
 COMMENT=	Help browser for the GNOME 3 desktop
 
-LICENSE=	GPLv2
+LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 BUILD_DEPENDS=	yelp-xsl>=0:textproc/yelp-xsl \
@@ -25,7 +25,7 @@ RUN_DEPENDS=	yelp-xsl>=0:textproc/yelp-xsl
 PORTSCOUT=	limitw:1,even
 
 USES=		compiler:c11 desktop-file-utils gettext gmake gnome \
-		libtool pathfix pkgconfig sqlite tar:xz
+		libtool pathfix pkgconfig sqlite tar:xz xorg
 USE_XORG=	x11 ice
 USE_GNOME=	cairo gtk30 intlhack libxml2 libxslt
 GNU_CONFIGURE=	yes

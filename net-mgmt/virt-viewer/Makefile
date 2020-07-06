@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	virt-viewer
-PORTVERSION=	6.0
+PORTVERSION=	8.0
 PORTREVISION=	1
 CATEGORIES=	net-mgmt
-MASTER_SITES=	http://virt-manager.org/download/sources/${PORTNAME}/
+MASTER_SITES=	https://virt-manager.org/download/sources/${PORTNAME}/
 
 MAINTAINER=	novel@FreeBSD.org
 COMMENT=	Provides a graphical viewer for a guest OS display
@@ -26,8 +26,8 @@ OPTIONS_SUB=	yes
 GNU_CONFIGURE=	yes
 CONFIGURE_ENV+=	DATADIRNAME=share
 CONFIGURE_ARGS=	--with-spice-gtk
-USES=		autoreconf libtool desktop-file-utils gmake pkgconfig \
-		shared-mime-info cpe
+USES=		autoreconf cpe desktop-file-utils gettext-tools gmake gnome \
+		libtool pkgconfig shared-mime-info
 USE_GNOME=	gtk30
 INSTALLS_ICONS=	yes
 CPE_VENDOR=	redhat

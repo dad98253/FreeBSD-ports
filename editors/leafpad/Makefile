@@ -13,7 +13,7 @@ COMMENT=	GTK+ based simple text editor
 LICENSE=	GPLv2
 
 USE_GNOME=	gtk20 intlhack
-USES=		desktop-file-utils gettext gmake pkgconfig
+USES=		desktop-file-utils gettext gmake gnome pkgconfig
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--enable-chooser
 INSTALLS_ICONS=	yes
@@ -21,6 +21,8 @@ CPPFLAGS+=	-I${LOCALBASE}/include
 LDFLAGS+=	-lpthread -L${LOCALBASE}/lib
 
 PORTDOCS=	AUTHORS COPYING ChangeLog INSTALL README
+
+OPTIONS_DEFINE=	DOCS
 
 post-extract:
 	@${CHMOD} a+x ${WRKSRC}/install-sh

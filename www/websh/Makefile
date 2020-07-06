@@ -3,7 +3,7 @@
 
 PORTNAME=	websh
 PORTVERSION=	3.6.0b5
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	www tcl
 MASTER_SITES=	APACHE/tcl/${PORTNAME}/source
 EXTRACT_SUFX=	-src.tar.gz
@@ -28,6 +28,8 @@ PORTDOCS=	*
 PORTEXAMPLES=	*
 
 CONFIGURE_ARGS+=--with-httpdinclude=`apxs -q includedir`
+
+OPTIONS_DEFINE=	DOCS EXAMPLES
 
 CPPFLAGS+=	-I ${LOCALBASE}/include/apr-1
 .if !defined(NO_WERROR) && ${CC} == "cc" || ${CC:T:Mgcc*} != ""

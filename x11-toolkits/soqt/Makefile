@@ -2,40 +2,30 @@
 # $FreeBSD$
 
 PORTNAME=	SoQt
-PORTVERSION=	1.5.0
-PORTREVISION=	6
+PORTVERSION=	1.6.0
+PORTEPOCH=		1
 CATEGORIES=	x11-toolkits
-MASTER_SITES=	https://bitbucket.org/Coin3D/coin/downloads/
-DIST_SUBDIR=	KDE
+# cannot use GITHUB - submodules required
+MASTER_SITES=	https://bitbucket.org/Coin3D/soqt/downloads/
+DISTNAME=	soqt-${PORTVERSION}-src
 
-MAINTAINER=	ports@FreeBSD.org
-COMMENT=	Qt4 toolkit library for Coin
+MAINTAINER=	cmt@FreeBSD.org
+COMMENT=	Qt5-fork of the SoQt toolkit library for Coin
 
-LICENSE=	GPLv2
-LICENSE_FILE=	${WRKSRC}/LICENSE.GPL
+LICENSE=	BSD3CLAUSE
 
 LIB_DEPENDS=	libCoin.so:graphics/Coin
 
-USES=		gmake libtool pathfix pkgconfig qmake:no_env qt:4
-USE_QT=		corelib opengl moc_build
+USES=		cmake compiler:c++11-lang dos2unix gl libtool \
+		localbase:ldflags pathfix pkgconfig qmake:no_env qt:5 xorg zip
+USE_QT=		buildtools core gui opengl qmake widgets
 USE_GL=		gl
-GNU_CONFIGURE=	yes
-CONFIGURE_ENV=	QTDIR="${PREFIX}" MOC="${MOC}"
-CONFIGURE_ARGS=	--with-pthread=yes --with-coin=${LOCALBASE} \
-		--with-qt=${QT_LIBDIR} \
-		--enable-debug=no
-INSTALL_TARGET=	install-strip
+USE_XORG=	ice sm x11 xext xi
 USE_LDCONFIG=	yes
 
-CPPFLAGS+=	-I${QT_INCDIR}/Qt -I${QT_INCDIR} -I${LOCALBASE}/include
-LDFLAGS+=	-L${QT_LIBDIR} -L${LOCALBASE}/lib
+CPPFLAGS+=	-I${QT_INCDIR}/QtCore -I${QT_INCDIR}
+LDFLAGS+=	-L${QT_LIBDIR}
 
-post-patch:
-	@${REINPLACE_CMD} -e \
-		'/LDFLAGS/s| $$sim_ac_coin_ldflags|| ; \
-		 /CXXFLAGS/s| -fno-for-scope||' ${WRKSRC}/configure
-
-post-install:
-	@${TOUCH} ${STAGEDIR}${PREFIX}/include/Inventor/Qt/engines/.keep_me
+WRKSRC=		${WRKDIR}/soqt
 
 .include <bsd.port.mk>

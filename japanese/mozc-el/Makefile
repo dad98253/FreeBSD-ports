@@ -1,7 +1,7 @@
 # Created by: TAKANO, Yuji
 # $FreeBSD$
 
-PORTREVISION=	3
+PORTREVISION=	1
 PKGNAMESUFFIX=	-el${EMACS_PKGNAMESUFFIX}
 
 COMMENT=	Emacs input method for Mozc

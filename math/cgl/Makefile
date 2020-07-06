@@ -2,8 +2,9 @@
 
 PORTNAME=	cgl
 DISTVERSIONPREFIX=	releases/
-DISTVERSION=	0.59.10
+DISTVERSION=	0.60.3
 CATEGORIES=	math
+PKGNAMEPREFIX=	coin-or-
 
 MAINTAINER=	yuri@FreeBSD.org
 COMMENT=	Collection of cut generators for COIN-OR packages that use cuts
@@ -14,7 +15,7 @@ LIB_DEPENDS=	libblas.so:math/blas \
 		libClp.so:math/clp \
 		liblapack.so:math/lapack
 
-USES=		gmake libtool pkgconfig
+USES=		compiler:c++11-lang gmake libtool pkgconfig
 GNU_CONFIGURE=	yes
 USE_GITHUB=	yes
 GH_ACCOUNT=	coin-or

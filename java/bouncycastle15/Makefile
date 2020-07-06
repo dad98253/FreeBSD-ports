@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	bouncycastle
-PORTVERSION=	1.60
+PORTVERSION=	1.61
+PORTREVISION=	1
 CATEGORIES=	java security
 MASTER_SITES=	http://www.bouncycastle.org/download/ \
 		http://polydistortion.net/bc/download/
@@ -14,11 +15,9 @@ COMMENT=	Cleanroom build of Java Cryptography Extensions
 
 LICENSE=	MIT
 
-BUILD_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf \
-		${JAVALIBDIR}/mail.jar:java/javamail \
+BUILD_DEPENDS=	${JAVALIBDIR}/mail.jar:java/javamail \
 		${JAVALIBDIR}/junit.jar:java/junit
-RUN_DEPENDS=	${JAVALIBDIR}/activation.jar:java/jaf \
-		${JAVALIBDIR}/mail.jar:java/javamail
+RUN_DEPENDS=	${JAVALIBDIR}/mail.jar:java/javamail
 
 OPTIONS_DEFINE=	DOCS ZIPSRC
 OPTIONS_DEFAULT=	ZIPSRC
@@ -31,7 +30,6 @@ CPE_PRODUCT=	legion-of-the-bouncy-castle-java-crytography-api
 CPE_VENDOR=	${PORTNAME}
 USE_JAVA=	yes
 USES=		cpe
-JAVA_VERSION=	1.6+
 JDKMVERSION=	1.5
 JDKNVERSION=	15
 USE_ANT=	yes

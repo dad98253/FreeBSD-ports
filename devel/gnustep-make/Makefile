@@ -3,11 +3,11 @@
 
 PORTNAME=	gnustep-make
 PORTVERSION=	2.7.0
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	devel gnustep
 MASTER_SITES=	GNUSTEP/core
 
-MAINTAINER=	theraven@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	GNUstep makefile package
 
 LICENSE=	GPLv3

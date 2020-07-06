@@ -3,8 +3,8 @@
  * pfblockerng_log.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2015-2018 BBcan177@gmail.com
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2019 BBcan177@gmail.com
  * All rights reserved.
  *
  * Portions of this code are based on original work done for the
@@ -78,7 +78,7 @@ function getlogs($logdir, $log_extentions = array('log')) {
 $pfb_logtypes = array(	'defaultlogs'	=> array('name'		=> 'Log Files',
 						'logdir'	=> "{$pfb['logdir']}/",
 						'logs'		=> array('pfblockerng.log', 'error.log', 'ip_block.log', 'ip_permit.log', 'ip_match.log',
-									'dnsbl.log', 'extras.log', 'dnsbl_parsed_error.log', 'maxmind_ver'),
+									'dnsbl.log', 'extras.log', 'dnsbl_parsed_error.log', 'maxmind_ver', 'wizard.log'),
 						'download'	=> TRUE,
 						'clear'		=> TRUE
 						),
@@ -192,6 +192,22 @@ function pfb_htmlspecialchars($line) {
 	return htmlspecialchars($line, ENT_NOQUOTES);
 }
 
+// Function to validate file/path
+function pfb_validate_filepath($validate, $pfb_logtypes) {
+
+	$allowed_path = array();
+	foreach ($pfb_logtypes as $type) {
+		$allowed_path[$type['logdir']] = '';
+	}
+
+	$path = pathinfo($validate, PATHINFO_DIRNAME) . '/';
+	$file = basename($validate);
+
+	if ($path == '/var/unbound/' && $file != 'pfb_dnsbl.conf') {
+		return FALSE;
+	}
+	return isset($allowed_path[$path]);
+}
 
 $pconfig = array();
 if ($_POST) {
@@ -202,6 +218,10 @@ if ($_POST) {
 if ($_REQUEST['ajax']) {
 	clearstatcache();
 	$pfb_logfilename = htmlspecialchars($_REQUEST['file']);
+	if (!pfb_validate_filepath($pfb_logfilename, $pfb_logtypes)) {
+		print ("|0|" . gettext('Invalid filename/path') . ".|");
+		exit;
+	}
 
 	// Load log
 	if ($_REQUEST['action'] == 'load') {
@@ -222,7 +242,11 @@ if ($_REQUEST['ajax']) {
 
 // Download/Clear logfile
 if ($pconfig['logFile'] && ($pconfig['download'] || $pconfig['clear'])) {
-	$s_logfile = $pconfig['logFile'];
+	$s_logfile = htmlspecialchars($pconfig['logFile']);
+	if (!pfb_validate_filepath($s_logfile, $pfb_logtypes)) {
+		print ("|0|" . gettext('Invalid filename/path') . ".|");
+		exit;
+	}
 
 	// Clear selected file
 	if ($pconfig['clear']) {
@@ -257,13 +281,6 @@ if ($pconfig['logFile'] && ($pconfig['download'] || $pconfig['clear'])) {
 $pgtitle = array(gettext('Firewall'), gettext('pfBlockerNG'), gettext('Log Browser'));
 $pglinks = array('', '/pfblockerng/pfblockerng_general.php', '@self');
 include_once('head.inc');
-
-if (isset($input_errors)) {
-	print_input_errors($input_errors);
-}
-if (isset($savemsg)) {
-	print_info_box($savemsg);
-}
 
 // Define default Alerts Tab href link (Top row)
 $get_req = pfb_alerts_default_page();

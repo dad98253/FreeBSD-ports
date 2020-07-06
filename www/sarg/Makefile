@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	sarg
-PORTVERSION=	2.3.11
+PORTVERSION=	2.4.0
 CATEGORIES=	www
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}-${PORTVERSION}
 
@@ -41,9 +41,5 @@ LDAP_CONFIGURE_WITH=	ldap
 ICONV_USES=		iconv
 ICONV_CONFIGURE_WITH=	iconv
 ICONV_LDFLAGS=		${ICONV_LIB}
-
-post-patch:
-	@${REINPLACE_CMD} -e '/test .*==/ s/==/=/' \
-		${WRKSRC}/configure
 
 .include <bsd.port.mk>

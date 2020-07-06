@@ -3,7 +3,7 @@
  * frr_zebra.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2017 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2017-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,9 @@ function frr_get_routemap_list($exitaction = false, $yesno = false) {
 	 * for those, offer a "yes" or "no" choice. */
 	if ($yesno) {
 		$list[] = array("name" => "No", "value" => "no");
-		$list[] = array("name" => "Yes", "value" => "yes");
+		$list[] = array("name" => "IPv4", "value" => "ipv4");
+		$list[] = array("name" => "IPv6", "value" => "ipv6");
+		$list[] = array("name" => "IPv4+IPv6", "value" => "yes");
 	} else {
 		$list[] = array("name" => "None", "value" => "none");
 	}
@@ -208,7 +210,7 @@ function frr_zebra_generate_accesslists() {
 					break;
 				default:
 					/* If this block is reached, the ACL Type was not valid, so skip this entry. */
-					continue;
+					continue 2;
 			}
 			if (empty($hostspec)) {
 				/* Nothing to do here, there was no valid source or destination for this line/type, so omit the entire line. */
@@ -407,8 +409,8 @@ function frr_zebra_generate_routemaps() {
 		}
 
 		/* Weight */
-		if (frr_validate_ulong($rm['metric_value'])) {
-			$rmconf .= "  match metric {$rm['metric_value']}\n";
+		if (frr_validate_ulong($rm['weight'])) {
+			$rmconf .= "  set weight {$rm['weight']}\n";
 		}
 
 		/* Local Preference */
@@ -521,14 +523,17 @@ function frr_zebra_generate_nullroutes() {
 		/* If FRR is not configured or the route handling list is empty, stop. */
 		return null;
 	}
-	$nullroutes = "\n# Null Routes\n";
 	/* Check FRR configuration network list for null route entries */
 	foreach ($config['installedpackages']['frr']['config'][0]['row'] as $redistr) {
 		if (isset($redistr['nullroute']) && is_subnet($redistr['routevalue'])) {
 			$nullroutes .= "ip route {$redistr['routevalue']} Null0\n";
 		}
 	}
-	return $nullroutes;
+	if (!empty($nullroutes)) {
+		return "\n# Null Routes\n" . $nullroutes;
+	} else {
+		return null;
+	}
 }
 
 /* Static Routes for zebra configuration based on GUI config */
@@ -540,7 +545,6 @@ function frr_zebra_generate_staticroutes() {
 		/* If FRR is not configured or the route handling list is empty, stop. */
 		return null;
 	}
-	$staticroutes = "\n# Static Routes\n";
 	/* Check FRR configuration network list for null route entries */
 	foreach ($config['installedpackages']['frr']['config'][0]['row'] as $redistr) {
 		if (isset($redistr['nullroute']) || !is_subnet($redistr['routevalue'])) {
@@ -569,14 +573,18 @@ function frr_zebra_generate_staticroutes() {
 					break;
 				default:
 					/* Invalid target!*/
-					continue;
+					continue 2;
 			}
 			if (!empty($target)) {
 				$staticroutes .= "ip route {$redistr['routevalue']} {$target}\n";
 			}
 		}
 	}
-	return $staticroutes;
+	if (!empty($staticroutes)) {
+		return "\n# Static Routes\n" . $staticroutes;
+	} else {
+		return null;
+	}
 }
 
 /* Generate a convenience list of accept filters */
@@ -617,6 +625,8 @@ function frr_zebra_generate_acceptfilters() {
 /* Make zebra config */
 function frr_generate_config_zebra() {
 	global $config, $frr_config_base, $frr_auto_config_warning;
+	unlink_if_exists("{$frr_config_base}/zebra.conf");
+	unlink_if_exists("{$frr_config_base}/staticd.conf");
 	/* Populate FRR Global Settings */
 	if (is_array($config['installedpackages']['frr']['config'])) {
 		$frr_conf = &$config['installedpackages']['frr']['config'][0];
@@ -624,7 +634,7 @@ function frr_generate_config_zebra() {
 
 	if (isset($config['installedpackages']['frrglobalraw']['config'][0]['zebra']) &&
 	    !empty($config['installedpackages']['frrglobalraw']['config'][0]['zebra'])) {
-		// if there is a raw config specifyed in tthe config.xml use that instead of the assisted config
+		// if there is a raw config specified in the config.xml use that instead of the assisted config
 		$zebraconffile = str_replace("\r", "", base64_decode($config['installedpackages']['frrglobalraw']['config'][0]['zebra']));
 	} else {
 		/* If there is no raw configuration and no GUI configuration, stop. */
@@ -653,12 +663,50 @@ function frr_generate_config_zebra() {
 		/* Route Maps */
 		/* Per-protocol applications of Route Maps*/
 		$zebraconffile .= frr_zebra_generate_routemaps();
-		/* Null Routes */
-		$zebraconffile .= frr_zebra_generate_nullroutes();
-		/* Static Routes */
-		$zebraconffile .= frr_zebra_generate_staticroutes();
 		/* Default Accept Filters */
 		$zebraconffile .= frr_zebra_generate_acceptfilters();
 	}
 	file_put_contents("{$frr_config_base}/zebra.conf", $zebraconffile);
+
+	if (isset($config['installedpackages']['frrglobalraw']['config'][0]['staticd']) &&
+	    !empty($config['installedpackages']['frrglobalraw']['config'][0]['staticd'])) {
+		// if there is a raw config specified in the config.xml use that instead of the assisted config
+		$staticdconffile = str_replace("\r", "", base64_decode($config['installedpackages']['frrglobalraw']['config'][0]['staticd']));
+	} else {
+		/* If there is no raw configuration and no GUI configuration, stop. */
+		if (empty($frr_conf)) {
+			log_error("FRR staticd: No config data found.");
+			return;
+		}
+		if (empty($frr_conf['enable'])) {
+			/* FRR master switch is off. */
+			return;
+		}
+		$staticdconffile = $frr_auto_config_warning;
+		/* Null Routes */
+		$staticdconffile .= frr_zebra_generate_nullroutes();
+		/* Static Routes */
+		$staticdconffile .= frr_zebra_generate_staticroutes();
+
+	}
+	if (!empty($staticdconffile) && ($staticdconffile != $frr_auto_config_warning)) {
+		file_put_contents("{$frr_config_base}/staticd.conf", $staticdconffile);
+	}
+}
+
+/* The following function checks for the presence of and writes the contents of "/var/etc/frr/$module.conf" into the $module . "running" field within the config.xml file  */
+function write_frr_running_config() {
+	global $config, $frr_config_base, $frr_modules;
+	$modules = array('zebra', 'staticd', 'bgpd', 'ospfd', 'ospf6d', 'bfdd');
+
+	foreach ($frr_modules as $module) {
+		$moduleRunningFile = "{$frr_config_base}/{$module}.conf";
+		if (file_exists($moduleRunningFile) && (filesize($moduleRunningFile) > 0)) {
+			$moduleRunning = fopen("$moduleRunningFile", "r");
+			$config['installedpackages']['frrglobalraw']['config'][0][$module . "running"] = base64_encode(fread($moduleRunning, filesize($moduleRunningFile)));
+		} else {
+			$config['installedpackages']['frrglobalraw']['config'][0][$module . "running"] = base64_encode("# file {$module}.conf does not exist or is empty.");
+		}
+	}
+	write_config(gettext("FRR: Wrote running configuration to pfSense config file."), false, true);
 }

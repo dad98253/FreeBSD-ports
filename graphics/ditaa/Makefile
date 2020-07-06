@@ -7,7 +7,7 @@ CATEGORIES=	graphics java
 MASTER_SITES=	SF
 DISTNAME=	${PORTNAME}${DISTVERSION}
 
-MAINTAINER=	graudeejs@gmail.com
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Convert ASCII art diagrams into proper bitmap graphics
 
 LICENSE=	GPLv2
@@ -15,7 +15,6 @@ LICENSE_FILE=	${WRKDIR}/COPYING
 
 USES=		zip
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 
 NO_BUILD=	yes
 NO_ARCH=	yes

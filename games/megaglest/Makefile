@@ -3,7 +3,7 @@
 
 PORTNAME=	megaglest
 PORTVERSION=	3.13.0
-PORTREVISION=	5
+PORTREVISION=	9
 CATEGORIES=	games
 
 MAINTAINER=	monwarez@mailoo.org
@@ -15,12 +15,12 @@ LICENSE_FILE=	${WRKSRC}/docs/gnu_gpl_3.0.txt
 LIB_DEPENDS=	libcurl.so:ftp/curl \
 		libpng.so:graphics/png \
 		libftgl.so:graphics/ftgl \
+		libircclient.so:irc/libircclient \
 		libvorbis.so:audio/libvorbis \
 		libfontconfig.so:x11-fonts/fontconfig \
 		libfreetype.so:print/freetype2 \
 		libminiupnpc.so:net/miniupnpc
-BUILD_DEPENDS=	${LOCALBASE}/include/libircclient.h:irc/libircclient \
-		${LOCALBASE}/include/miniupnpc/miniupnpc.h:net/miniupnpc
+BUILD_DEPENDS=	${LOCALBASE}/include/miniupnpc/miniupnpc.h:net/miniupnpc
 RUN_DEPENDS=	${LOCALBASE}/${DATADIR_REL}/tutorials/2_basic_tutorial/2_basic_tutorial.xml:games/megaglest-data
 
 USE_GITHUB=	yes
@@ -29,30 +29,26 @@ GH_PROJECT=	megaglest-source
 
 SUB_FILES=	pkg-message
 
-USES=		cmake compiler:c++11-lib display:build dos2unix jpeg lua \
-		openal:al,alut pkgconfig
+USES=		cmake:insource compiler:c++11-lib display:build dos2unix jpeg lua \
+		openal:al,alut pkgconfig ssl localbase:ldflags sdl gl xorg
 USE_GL=		glew gl glu
 USE_SDL=	sdl2
 USE_XORG=	sm ice x11 xext
 USE_CXXSTD=	c++11
-LLD_UNSAFE=	yes
 
-CFLAGS+=	-I${LOCALBASE}/include
-LDFLAGS+=	-L${LOCALBASE}/lib -lssl -lcrypto
+LDFLAGS+=	-lssl -lcrypto
+LDFLAGS_i386=	-Wl,-znotext
 
 OPTIONS_DEFINE=	EDITOR DOCS VIEWER
 OPTIONS_SUB=	yes
 EDITOR_DESC=	Install MegaGlest Editor
 VIEWER_DESC=	Install Megaglest G3D viewer
 
-EDITOR_CMAKE_ON=	-DBUILD_MEGAGLEST_MAP_EDITOR=On
-EDITOR_CMAKE_OFF=	-DBUILD_MEGAGLEST_MAP_EDITOR=Off
+EDITOR_CMAKE_BOOL=	BUILD_MEGAGLEST_MAP_EDITOR
 EDITOR_USE=		WX=3.0
 
-VIEWER_CMAKE_ON=	-DBUILD_MEGAGLEST_MODEL_IMPORT_EXPORT_TOOLS=On \
-					-BUILD_MEGAGLEST_MODEL_VIEWER=On
-VIEWER_CMAKE_OFF=	-DBUILD_MEGAGLEST_MODEL_IMPORT_EXPORT_TOOLS=Off \
-					-DBUILD_MEGAGLEST_MODEL_VIEWER=Off
+VIEWER_CMAKE_BOOL=	BUILD_MEGAGLEST_MODEL_IMPORT_EXPORT_TOOLS \
+			BUILD_MEGAGLEST_MODEL_VIEWER
 VIEWER_USE=		WX=3.0
 
 post-patch:

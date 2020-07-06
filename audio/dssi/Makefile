@@ -3,7 +3,7 @@
 
 PORTNAME=	dssi
 PORTVERSION=	1.1.1
-PORTREVISION=	6
+PORTREVISION=	8
 CATEGORIES=	audio
 MASTER_SITES=	SF
 
@@ -21,7 +21,7 @@ LIB_DEPENDS=	libdssialsacompat.so:audio/libdssialsacompat \
 		libjack.so:audio/jack
 RUN_DEPENDS=	${LOCALBASE}/include/ladspa.h:audio/ladspa
 
-USES=		gmake pathfix pkgconfig localbase libtool
+USES=		gmake pathfix pkgconfig localbase libtool xorg
 GNU_CONFIGURE=	yes
 USE_XORG=	x11
 
@@ -33,12 +33,8 @@ EXAMPLES_FILES1=dssi_analyse_plugin dssi_list_plugins \
 		dssi_osc_send dssi_osc_update
 EXAMPLES_FILES2=LTS_qt trivial_sampler_qt
 
-OPTIONS_DEFINE=	DOCS EXAMPLES QT4
-OPTIONS_DEFAULT=QT4
+OPTIONS_DEFINE=	DOCS EXAMPLES
 OPTIONS_SUB=	yes
-
-QT4_USES=	qmake:no_env qt:4
-QT4_USE=	QT=corelib,gui,moc_build
 
 post-patch:
 	@${REINPLACE_CMD} -e \
@@ -49,8 +45,6 @@ post-patch:
 		's|-ldl$$||' ${WRKSRC}/jack-dssi-host/Makefile.in
 	@${REINPLACE_CMD} -e \
 		'/alsa >=/s|$$PKG_CONFIG|${FALSE}|' ${WRKSRC}/configure
-
-post-patch-QT4-off:
 	@${REINPLACE_CMD} -e \
 		'/QtCore >=/s|$$PKG_CONFIG|${FALSE}|' ${WRKSRC}/configure
 
@@ -62,10 +56,6 @@ post-install:
 	${INSTALL_DATA} ${PORTDOCS:S|^|${WRKSRC}/|} ${STAGEDIR}${DOCSDIR}
 	@${MKDIR} ${STAGEDIR}${EXAMPLESDIR}
 	${INSTALL_PROGRAM} ${EXAMPLES_FILES1:S|^|${EXAMPLESSRCDIR}/|} \
-		${STAGEDIR}${EXAMPLESDIR}
-
-post-install-QT4-on:
-	${INSTALL_PROGRAM} ${EXAMPLES_FILES2:S|^|${EXAMPLESSRCDIR}/|} \
 		${STAGEDIR}${EXAMPLESDIR}
 
 .include <bsd.port.mk>

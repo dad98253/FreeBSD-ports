@@ -1,7 +1,8 @@
 # $FreeBSD$
 
 PORTNAME=	nokogiri
-PORTVERSION=	1.8.2
+PORTVERSION=	1.10.9
+PORTREVISION=	0
 CATEGORIES=	textproc rubygems
 MASTER_SITES=	RG
 
@@ -11,14 +12,18 @@ COMMENT=	HTML, XML, SAX, and Reader parser
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE.md
 
-BUILD_DEPENDS=	rubygem-pkg-config>=1.1.7:devel/rubygem-pkg-config
-RUN_DEPENDS:=	${BUILD_DEPENDS}
-LIB_DEPENDS=	libgcrypt.so:security/libgcrypt
+BUILD_DEPENDS=	${RUN_DEPENDS}
+LIB_DEPENDS=	libgcrypt.so:security/libgcrypt \
+		libgpg-error.so:security/libgpg-error
+# Do not add mini_portile2 to RUN_DEPENDS. Read ext/nokogiri/extconf.rb
+# and https://lists.freebsd.org/pipermail/svn-ports-all/2019-March/209423.html
+RUN_DEPENDS=	rubygem-pkg-config>=1.1.7:devel/rubygem-pkg-config
 
-CONFIGURE_ARGS=	--use-system-libraries
+USES=		gem gnome pkgconfig gettext-runtime
 USE_GNOME=	libxml2 libxslt
 USE_RUBY=	yes
-USES=		gem gnome pkgconfig
+
+CONFIGURE_ARGS=	--use-system-libraries
 
 PLIST_FILES=	bin/nokogiri
 

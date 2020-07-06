@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	HTML_QuickForm
-PORTVERSION=	3.2.14
+PORTVERSION=	3.2.16
 CATEGORIES=	devel www pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	Provide methods for creating, validating, and processing HTML forms
 
 LICENSE=	PHP301

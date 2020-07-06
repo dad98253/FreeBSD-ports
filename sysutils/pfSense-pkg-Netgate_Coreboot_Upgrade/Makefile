@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	pfSense-pkg-Netgate_Coreboot_Upgrade
-PORTVERSION=	0.24
+PORTVERSION=	0.29
 CATEGORIES=	sysutils
 MASTER_SITES=	# empty
 
@@ -12,7 +12,7 @@ LICENSE=	APACHE20
 
 BUILD_DEPENDS=	e2fsprogs-libuuid>=0:misc/e2fsprogs-libuuid \
 		gmake:devel/gmake
-RUN_DEPENDS=	flashrom:sysutils/flashrom \
+RUN_DEPENDS=	flashrom>=1.1:sysutils/flashrom \
 		e2fsprogs-libuuid>=0:misc/e2fsprogs-libuuid
 
 NO_MTREE=	yes
@@ -26,7 +26,7 @@ GH_TAGNAME=	4.7:coreboot e0b3841:vboot
 COREBOOT_DFF2_ROM=ADI_DFF2-01.00.00.17-nodebug.rom
 COREBOOT_RCC_ROM=ADI_RCC-01.00.00.18-nodebug-16m.rom
 COREBOOT_RCCVE_ROM=ADI_RCCVE-01.00.00.17-nodebug.rom
-COREBOOT_PLCCB_ROM=ADI_PLCC-01.00.00.07.bin
+COREBOOT_PLCCB_ROM=ADI_PLCC-01.00.00.11.bin
 
 PLIST_SUB=	COREBOOT_DFF2_ROM=${COREBOOT_DFF2_ROM} \
 		COREBOOT_RCC_ROM=${COREBOOT_RCC_ROM} \
@@ -55,6 +55,7 @@ post-extract:
 	${REINPLACE_CMD} -e "s,%%COREBOOT_PLCCB_ROM%%,${COREBOOT_PLCCB_ROM},g" \
 		${WRKSRC}/adi_smbios_util/config.h
 	${LN} -sf ${WRKSRC_coreboot} ${WRKSRC}/coreboot
+	${PATCH} -p0 -d ${WRKSRC_coreboot} < ${FILESDIR}/fix-build-clang10
 
 do-build:
 	${CC} ${CFLAGS} -o ${WRKSRC}/adi_flash_util \

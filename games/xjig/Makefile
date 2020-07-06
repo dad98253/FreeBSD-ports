@@ -3,15 +3,15 @@
 
 PORTNAME=	xjig
 PORTVERSION=	2.4
-PORTREVISION=	3
+PORTREVISION=	5
 CATEGORIES=	games
 MASTER_SITES=	XCONTRIB/games
 
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Jigsaw puzzle game for X11
 
-USES=		compiler tar:tgz
-USE_XORG=	x11 xproto xext
+USES=		compiler tar:tgz xorg
+USE_XORG=	x11 xorgproto xext
 MAKEFILE=	Makefile.Linux
 PLIST_FILES=	bin/xjig man/man1/xjig.1.gz
 

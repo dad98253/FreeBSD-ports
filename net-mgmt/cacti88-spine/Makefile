@@ -8,7 +8,7 @@ MASTER_SITES=	http://www.cacti.net/downloads/${PORTNAME}/
 PKGNAMEPREFIX=	cacti88-
 DISTNAME=	cacti-${PORTNAME}-${PORTVERSION}
 
-MAINTAINER=	egypcio@googlemail.com
+MAINTAINER=	egypcio@FreeBSD.org
 COMMENT=	Multithreaded poller for Cacti written in C
 
 LICENSE=	LGPL21+
@@ -16,7 +16,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 
 BUILD_DEPENDS=	help2man:misc/help2man
 LIB_DEPENDS=	libnetsnmp.so:net-mgmt/net-snmp \
-		libpkg.so:ports-mgmt/pkg
+		libpkg.so:${PKG_ORIGIN}
 
 GNU_CONFIGURE=	YES
 CONFIGURE_ARGS+=--with-mysql=${LOCALBASE} --with-snmp=${LOCALBASE}

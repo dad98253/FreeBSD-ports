@@ -2,9 +2,9 @@
 # $FreeBSD$
 
 PORTNAME=	piwigo
-DISTVERSION=	2.9.4
+DISTVERSION=	2.10.2
 CATEGORIES=	www
-MASTER_SITES=	http://piwigo.org/download/dlcounter.php?code=${PORTVERSION}&/
+MASTER_SITES=	https://piwigo.org/download/dlcounter.php?code=${PORTVERSION}&/
 
 MAINTAINER=	tremere@cainites.net
 COMMENT=	PHP based Web Gallery
@@ -12,40 +12,40 @@ COMMENT=	PHP based Web Gallery
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/doc/COPYING
 
-NO_BUILD=	yes
-NO_ARCH=	yes
 USES=		cpe php:web zip
 USE_PHP=	calendar ctype dom exif filter gd gettext hash iconv json \
-		mbstring mcrypt mysqli openssl pcre pdf pdo posix \
-		session simplexml sockets spl tokenizer xml xmlreader \
-		xmlwriter zlib
+		mbstring mcrypt mysqli openssl pcre pdf pdo posix session \
+		simplexml sockets spl tokenizer xml xmlreader xmlwriter zlib
+
+NO_ARCH=	yes
+NO_BUILD=	yes
+SUB_FILES=	pkg-deinstall pkg-message
+SUB_LIST+=	CHOWN="${CHOWN}" \
+		CP="${CP}" \
+		MKDIR="${MKDIR}" \
+		TOUCH="${TOUCH}" \
+		WWWGRP="${WWWGRP}" \
+		WWWOWN="${WWWOWN}"
+
 WRKSRC=		${WRKDIR}/${PORTNAME}
 
-SUB_FILES=	pkg-deinstall pkg-message
-SUB_LIST+=	CP="${CP}" \
-		MKDIR="${MKDIR}" \
-		CHOWN="${CHOWN}" \
-		TOUCH="${TOUCH}" \
-		WWWOWN="${WWWOWN}" \
-		WWWGRP="${WWWGRP}"
-
-OPTIONS_DEFINE=	IMAGICK X11 DOCS EXAMPLES
-OPTIONS_DEFAULT=IMAGICK
-IMAGICK_DESC=	${IMAGEMAGICK_DESC}
-
+PLIST_SUB+=	CHOWN="${CHOWN}" \
+		WWWGRP="${WWWGRP}" \
+		WWWOWN="${WWWOWN}"
 PORTDOCS=	README_ca.txt README_en.txt README_fr.txt
 
-PLIST_SUB+=	WWWOWN="${WWWOWN}" \
-		WWWGRP="${WWWGRP}" \
-		CHOWN="${CHOWN}"
+OPTIONS_DEFINE=		DOCS EXAMPLES IMAGICK X11
+OPTIONS_DEFAULT=	IMAGICK
+
+IMAGICK_DESC=	${IMAGEMAGICK_DESC}
 
 .include <bsd.port.pre.mk>
 
 .if ${PORT_OPTIONS:MIMAGICK}
 .if ${PORT_OPTIONS:MX11}
-RUN_DEPENDS+=	${LOCALBASE}/bin/convert:graphics/ImageMagick
+RUN_DEPENDS+=	${LOCALBASE}/bin/convert:graphics/ImageMagick6
 .else
-RUN_DEPENDS+=	${LOCALBASE}/bin/convert:graphics/ImageMagick-nox11
+RUN_DEPENDS+=	${LOCALBASE}/bin/convert:graphics/ImageMagick6-nox11
 .endif
 .endif
 

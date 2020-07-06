@@ -6,12 +6,12 @@ PORTVERSION=	0.8.3
 CATEGORIES=	x11
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}-${PORTVERSION}
 
-MAINTAINER=	graudeejs@gmail.com
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	STAnd-aLONE system tray
 
 LICENSE=	GPLv2
 
-USES=		tar:bzip2
+USES=		tar:bzip2 xorg
 USE_XORG=	xpm
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-native-kde \

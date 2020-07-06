@@ -1,8 +1,8 @@
-# Created by: José García Juanino <jjuanino@gmail.com>
+# Created by: Jos? Garc?a Juanino <jjuanino@gmail.com>
 # $FreeBSD$
 
 PORTNAME=	bup
-PORTVERSION=	0.29.1
+PORTVERSION=	0.29.3
 CATEGORIES=	archivers python
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
@@ -12,13 +12,18 @@ COMMENT=	Very efficient backup system based on the git packfile format
 LICENSE=	LGPL21
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pylibacl>=0:security/py-pylibacl@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}xattr>=0:devel/py-xattr@${PY_FLAVOR} \
 		git>=1.5.3.1:devel/git \
 		par2cmdline>=0.4:archivers/par2cmdline
 BUILD_DEPENDS=	bash:shells/bash git>=1.5.3.1:devel/git
 
-PLIST_SUB=	MANDIR=${PREFIX}/man
+USES=		python:2.7 gmake
+
+PLIST_SUB=	MANDIR=${PREFIX}/share/man
 
 OPTIONS_DEFINE=	TORNADO DOCS
 OPTIONS_DEFAULT=	DOC
@@ -31,13 +36,9 @@ DOCS_VARS_OFF=		PANDOC=""
 
 TEST_TARGET=		test
 MAKE_ARGS=	PANDOC="${PANDOC}"
-USES=		python:2.7 gmake
 USE_GITHUB=	yes
-
-.include <bsd.port.pre.mk>
 
 post-install:
 	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/bup/bup/*.so
-	test -z ${DOCS} || ${GZIP_CMD} ${STAGEDIR}${MANDIRS}/man1/bup*.1
 
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

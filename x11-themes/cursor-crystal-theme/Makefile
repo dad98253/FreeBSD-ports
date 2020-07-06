@@ -9,12 +9,12 @@ MASTER_SITES=	http://www.notmart.org/files/ \
 		http://pinguin.stttelkom.ac.id/gentoo/distfiles/
 DISTNAME=	Crystalcursors
 
-MAINTAINER=	dbn@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	KDE Crystal style X cursor theme
 
 LICENSE=	LGPL21
 
-BUILD_DEPENDS=	convert:graphics/ImageMagick \
+BUILD_DEPENDS=	convert:graphics/ImageMagick6 \
 		xcursorgen:x11/xcursorgen
 
 USES=		gmake tar:bzip2

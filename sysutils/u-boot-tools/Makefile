@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	u-boot-tools
-DISTVERSION=	2018.03
+DISTVERSION=	2019.10
 CATEGORIES=	sysutils
 MASTER_SITES=	ftp://ftp.denx.de/pub/u-boot/
 DISTNAME=	u-boot-${PORTVERSION}
@@ -12,7 +12,9 @@ COMMENT=	U-boot related tools
 
 LICENSE=	GPLv2
 
-USES=	tar:bzip2 gmake python:2.7,build ssl
+BROKEN_powerpc64=	fails to build: include/config_distro_bootcmd.h:279:3: sandbox EFI support is only supported on ARM and x86
+
+USES=		bison compiler:c11 gmake python:2.7,build ssl tar:bzip2
 
 CONFLICTS=	uboot-mkimage
 ALL_TARGET=	tools-only

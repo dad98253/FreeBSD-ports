@@ -3,18 +3,29 @@
 
 PORTNAME=	python
 PORTVERSION=	${PYTHON_PORTVERSION}
-CATEGORIES=	lang python ipv6
+PORTREVISION=	5
+CATEGORIES=	lang python
 MASTER_SITES=	PYTHON/ftp/python/${PORTVERSION}
 PKGNAMESUFFIX=	${PYTHON_SUFFIX}
 DISTNAME=	Python-${PORTVERSION}
 DIST_SUBDIR=	python
+
+# Resolve sinpi name clash with libm (IEEE-754 violation)
+PATCH_SITES=	https://github.com/python/cpython/commit/
+PATCHFILES=	f57cd8288dbe6aba99c057f37ad6d58f8db75350.patch:-p1 \
+		37fe316479e0b6906a74b0c0a5e495c55037fdfd.patch:-p1 \
+		09d8172837b6985c4ad90ee025f6b5a554a9f0ac.patch:-p1
 
 MAINTAINER=	python@FreeBSD.org
 COMMENT=	Interpreted object-oriented programming language
 
 LICENSE=	PSFL
 
+DEPRECATED=	Deprecated upstream
+EXPIRATION_DATE=	2020-09-13
+
 USES=		cpe ncurses pathfix pkgconfig readline:port shebangfix ssl tar:xz
+USE_CSTD=	c99
 PATHFIX_MAKEFILEIN=	Makefile.pre.in
 USE_LDCONFIG=	yes
 GNU_CONFIGURE=	yes
@@ -36,7 +47,6 @@ TEST_TARGET=		buildbottest
 TEST_ARGS=		TESTOPTS=-j${MAKE_JOBS_NUMBER}
 
 MAKE_ARGS+=		INSTALL_SHARED="${INSTALL_LIB}"				# Strip shared library
-MAKE_JOBS_UNSAFE=	yes							# Parser/pgen build bug. See Issue: 200622, 201974
 
 SUB_FILES=		pkg-message
 SUB_LIST=		PYTHON_SUFFIX=${PYTHON_SUFFIX}
@@ -119,15 +129,6 @@ PLIST_SUB+=	NO_NIS="@comment "
 DISABLED_EXTENSIONS+=	nis
 .else
 PLIST_SUB+=	NO_NIS=""
-.endif
-
-post-patch:
-# readline shared library is present on base before FreeBSD 11 - r268461
-# force setup.py ignore base and use readline from ports
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1100000
-	@${REINPLACE_CMD} -e \
-		"s|lib_dirs,\ \'readline\'|[\'${LOCALBASE}/lib\',\ \'.\'],\ \'readline\'|" \
-		${WRKSRC}/setup.py
 .endif
 
 post-install:

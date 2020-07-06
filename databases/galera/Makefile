@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	galera
-PORTVERSION?=	25.3.23
+PORTVERSION?=	25.3.28
 DISTVERSIONPREFIX?=	release_
 PORTREVISION=	1
 CATEGORIES=	databases
@@ -12,12 +12,9 @@ COMMENT=	Synchronous multi-master replication engine
 
 LICENSE=	GPLv2
 
-BROKEN_SSL=		openssl-devel
-BROKEN_SSL_REASON_openssl-devel=	check that SSL devel headers are installed and usable
 BROKEN_aarch64=		fails to compile: gu_int128.h: use of undeclared identifier '__bswap64_var'
 BROKEN_armv6=		fails to compile: gu_int128.h: use of undeclared identifier '__bswap64_var'
 BROKEN_armv7=		fails to compile: gu_int128.h: use of undeclared identifier '__bswap64_var'
-BROKEN_powerpc64=	fails to configure: Checking for C library pthread... no
 NOT_FOR_ARCHS=		i386
 # On i386 older versions of clang produce:
 #   cannot compile this atomic library call yet ... __atomic_add_fetch
@@ -33,12 +30,13 @@ BUILD_DEPENDS=	checkmk:devel/check \
 		${LOCALBASE}/include/boost/shared_ptr.hpp:devel/boost-libs
 LIB_DEPENDS=	libboost_date_time.so:devel/boost-libs
 
-USES=		python:build scons ssl
+USES=		compiler:c++11-lang python:build scons ssl
 
 USE_LDCONFIG=	yes
 
 USE_GITHUB=	yes
-GH_ACCOUNT=	codership
+GH_TUPLE?=	codership:galera:${DISTVERSIONPREFIX}${PORTVERSION}${DISTVERSIONSUFFIX} \
+		codership:wsrep-API:eab2d5d5a31672c0b7d116ef1629ff18392fd7d0:dummy/wsrep/src
 
 LDFLAGS+=	-lboost_program_options -lboost_system
 MAKE_ARGS+=	revno=${GH_TAGNAME} system_asio=0 tests=0

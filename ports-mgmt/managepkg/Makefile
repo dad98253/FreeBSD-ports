@@ -11,13 +11,15 @@ EXTRACT_SUFX=	.gz
 
 MAINTAINER=	fehlner@gmx.de
 COMMENT=	Script for maintaining ports
+
+BROKEN=		unfetchable
 # Any ideas for a better comment?
 
 EXTRACT_CMD=	${GZCAT}
 EXTRACT_BEFORE_ARGS=
 EXTRACT_AFTER_ARGS=	> ${WRKSRC}/${PORTNAME}
-WRKSRC=	${WRKDIR}
 NO_BUILD=	yes
+NO_WRKSUBDIR=	yes
 PLIST_FILES=	sbin/managepkg
 
 do-install:

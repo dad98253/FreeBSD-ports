@@ -2,10 +2,17 @@
 # $FreeBSD$
 
 PORTNAME=	bitcoin
-PORTVERSION=	0.16.1
-DISTVERSIONPREFIX=	v
-PORTREVISION?=	0
+PORTVERSION=	0.19.0.1
+PORTREVISION?=	2
 CATEGORIES=	net-p2p finance
+MASTER_SITES=	https://bitcoincore.org/bin/bitcoin-core-${PORTVERSION}/ \
+		LOCAL/swills:icon
+DISTFILES=	${DISTNAME}${EXTRACT_SUFX} bitcoin128.png:icon
+DIST_SUBDIR=	${PORTNAME}
+EXTRACT_ONLY=	${_DISTFILES:N*.png}
+
+PATCH_SITES=	https://github.com/${PORTNAME}/${PORTNAME}/commit/
+PATCHFILES+=	a64e97dd476b.patch:-p1 # https://github.com/bitcoin/bitcoin/pull/17654
 
 MAINTAINER=	kbowling@FreeBSD.org
 COMMENT?=	Virtual Peer-to-Peer Currency Client (QT)
@@ -15,10 +22,8 @@ LICENSE=	MIT
 LIB_DEPENDS=	libboost_date_time.so:devel/boost-libs \
 		libevent.so:devel/libevent
 
-BROKEN_powerpc64=	fails to compile: util.cpp: undefined reference to boost::program_options::to_internal
-
 USES=		autoreconf compiler:c++11-lib gmake libtool pkgconfig qt:5 shebangfix ssl
-USE_GITHUB=	yes
+
 GNU_CONFIGURE=	yes
 
 SLAVE_PORT?=	no
@@ -31,7 +36,6 @@ USE_QT=		core gui network widgets \
 BUILD_DEPENDS+=	protoc:devel/protobuf
 LIB_DEPENDS+=	libprotobuf.so:devel/protobuf
 
-TESTS_USES=	qt:5
 TESTS_USE=		QT=testlib
 TESTS_PLIST_FILES=	bin/test_bitcoin-qt \
 			bin/test_bitcoin
@@ -40,7 +44,7 @@ TESTS_PLIST_FILES=	bin/test_bitcoin-qt \
 OPTIONS_DEFINE?=	DBUS DEBUG HARDENING QRCODES TESTS UPNP ZMQ
 OPTIONS_RADIO?=		WALLET
 OPTIONS_RADIO_WALLET?=	WALLET_BDB48 WALLET_BDBMODERN
-OPTIONS_DEFAULT?=	DBUS HARDENING QRCODES UPNP WALLET_BDBMODERN
+OPTIONS_DEFAULT?=	DBUS HARDENING QRCODES UPNP WALLET_BDBMODERN ZMQ
 OPTIONS_SUB=		yes
 
 HARDENING_DESC=	Attempt to harden binaries (PIE for ASLR, NX Stack)
@@ -52,7 +56,6 @@ WALLET_BDBMODERN_DESC=	Wallet using modern BDB 5.x or 6.x
 ZMQ_DESC=	Block and transaction broadcasting with ZeroMQ
 
 DBUS_CONFIGURE_WITH=	dbus
-DBUS_USES=	qt:5
 DBUS_USE=		QT=dbus
 
 DEBUG_CONFIGURE_ENABLE=		debug
@@ -112,18 +115,12 @@ CPPFLAGS+=	-I${BDB_INCLUDE_DIR}
 LIBS+=		-L${BDB_LIB_DIR}
 .endif
 
-.if ${OSVERSION} < 1100000
-CONFIGURE_ARGS+=--disable-asm
-.endif
-
 .if defined(SLAVE_PORT) && ${SLAVE_PORT} == "no"
 
 post-install:
-	${REINPLACE_CMD} -e 's,=/usr,=${PREFIX},' \
-		${WRKSRC}/contrib/debian/bitcoin-qt.desktop
-	${INSTALL} ${WRKSRC}/contrib/debian/bitcoin-qt.desktop \
+	${INSTALL} ${FILESDIR}/bitcoin-qt.desktop \
 		${STAGEDIR}${PREFIX}/share/applications
-	${INSTALL} ${WRKSRC}/share/pixmaps/bitcoin128.png \
+	${INSTALL} ${DISTDIR}/${DIST_SUBDIR}/bitcoin128.png \
 		${STAGEDIR}${PREFIX}/share/pixmaps/
 
 .endif

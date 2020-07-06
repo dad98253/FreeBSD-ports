@@ -3,6 +3,7 @@
 
 PORTNAME=	rxvt-unicode
 PORTVERSION=	9.22
+PORTREVISION=	1
 CATEGORIES=	x11
 MASTER_SITES=	http://dist.schmorp.de/rxvt-unicode/%SUBDIR%/
 MASTER_SITE_SUBDIR=	. Attic
@@ -15,7 +16,7 @@ LICENSE=	GPLv2
 BUILD_DEPENDS=	${LOCALBASE}/libdata/pkgconfig/fontconfig.pc:x11-fonts/fontconfig
 RUN_DEPENDS=	${LOCALBASE}/bin/fc-cache:x11-fonts/fontconfig
 
-USES=			cpe pkgconfig shebangfix tar:bzip2 terminfo
+USES=			cpe pkgconfig shebangfix tar:bzip2 terminfo xorg
 USE_XORG=		xpm xft xrender
 GNU_CONFIGURE=		yes
 CPPFLAGS+=		-I${LOCALBASE}/include
@@ -73,10 +74,10 @@ PATCH_DEPENDS+=	p5-Encode-HanExtra>=0:chinese/p5-Encode-HanExtra \
 CONFIGURE_ARGS+=	--disable-perl
 USES+=			perl5
 USE_PERL5=		build
-PLIST_SUB=		PERL="@comment "
+PLIST_SUB+=		PERL="@comment "
 .else
 USES+=			perl5
-PLIST_SUB=		PERL=""
+PLIST_SUB+=		PERL=""
 .endif
 
 # disable XIM (X Input Method) protocol support
@@ -142,6 +143,7 @@ CONFIGURE_ARGS+=	--enable-smart-resize
 .if !${PORT_OPTIONS:MGDK_PIXBUF}
 CONFIGURE_ARGS+=	--disable-pixbuf
 .else
+USES+=			gnome
 USE_GNOME+=		gdkpixbuf2
 CONFIGURE_ARGS+=	--enable-pixbuf
 .endif

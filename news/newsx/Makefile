@@ -3,9 +3,9 @@
 
 PORTNAME=	newsx
 PORTVERSION=	1.6
-PORTREVISION=	3
+PORTREVISION=	4
 CATEGORIES=	news
-MASTER_SITES=	http://www.kvaleberg.org/pub/
+MASTER_SITES=	LOCAL/thierry
 
 MAINTAINER=	thierry@FreeBSD.org
 COMMENT=	Program to fetch news from and post news to a remote NNTP server
@@ -15,7 +15,8 @@ LICENSE=	GPLv2
 .if defined(WITH_CNEWS)
 BUILD_DEPENDS=	${LOCALBASE}/news/lib/libcnews.a:news/cnews
 .elif !defined(WITHOUT_INN_2-X)
-BUILD_DEPENDS=	${LOCALBASE}/news/lib/libinn.a:news/inn
+BUILD_DEPENDS=	${LOCALBASE}/news/lib/libinn.so:news/inn
+RUN_DEPENDS=	${LOCALBASE}/news/lib/libinn.so:news/inn
 .endif
 
 GNU_CONFIGURE=	yes
@@ -26,7 +27,7 @@ OPTIONS_DEFINE=	DOCS
 
 .if !defined(WITH_CNEWS)
 .if !defined(WITHOUT_INN_2-X)
-CPPFLAGS+=	-I${LOCALBASE}/news/include
+CPPFLAGS+=	-I${LOCALBASE}/news/include/inn
 .endif
 .endif
 

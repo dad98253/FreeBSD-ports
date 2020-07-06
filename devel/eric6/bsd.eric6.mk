@@ -6,11 +6,11 @@
 # german/eric6, russian/eric6, devel/es-eric6
 
 PORTNAME=	eric6
-PORTVERSION=	18.06
+PORTVERSION=	19.04
 MASTER_SITES=	SF/eric-ide/${PORTNAME}/stable/${PORTVERSION}
 WRKSRC=		${WRKDIR}/${PORTNAME}-${PORTVERSION}
 
-MAINTAINER=	dbn@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Full featured Python and Ruby editor and IDE based on Qt
 
 LICENSE=	GPLv3

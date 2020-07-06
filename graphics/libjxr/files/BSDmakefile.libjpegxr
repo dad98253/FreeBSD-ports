@@ -1,6 +1,6 @@
 LIB=		jpegxr
 SHLIB_MAJOR=	1
-NO_PROFILE=	nope
+MK_PROFILE=	no
 LIBDIR=		${PREFIX}/lib
 INCLUDEDIR=	${PREFIX}/include/jxrlib
 INCS= 		guiddef.h windowsmediaphoto.h wmsal.h wmspecstring.h	\
@@ -16,6 +16,5 @@ SRCS=		encode.c segenc.c strenc.c strFwdTransform.c strPredQuantEnc.c	\
 
 CFLAGS+=	-I. -I${.CURDIR:H}/common/include -I${.CURDIR:H}/image/sys
 CFLAGS+=	-D__ANSI__ -DDISABLE_PERF_MEASUREMENT
-CFLAGS+=	-Wno-extra-tokens
 
 .include <bsd.lib.mk>

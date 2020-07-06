@@ -3,6 +3,7 @@
 
 PORTNAME=	datalegreya
 PORTVERSION=	0.2017.03.29
+PORTREVISION=	1
 CATEGORIES=	x11-fonts math textproc
 
 MAINTAINER=	thierry@FreeBSD.org
@@ -15,7 +16,7 @@ USE_GITHUB=	yes
 GH_ACCOUNT=	figs-lab
 GH_TAGNAME=	bb0872f
 
-USES=		fonts
+USES=		fonts xorg
 USE_XORG=	x11
 NO_ARCH=	yes
 NO_BUILD=	yes

@@ -2,41 +2,51 @@
 
 PORTNAME=	liteide
 DISTVERSIONPREFIX=	x
-DISTVERSION=	33.3
+DISTVERSION=	36.3
 CATEGORIES=	devel editors
 
-MAINTAINER=	dg@syrec.org
+MAINTAINER=	dmgk@FreeBSD.org
 COMMENT=	Simple, open source, cross-platform Go IDE
 
 LICENSE=	LGPL21+
 LICENSE_FILE=	${WRKSRC}/LICENSE.LGPL
 
-WRKSRC_SUBDIR=	liteidex
+USES=		gl go:modules,no_targets,run qmake qt:5
 
-USES=		qmake
-USE_LDCONFIG=	${PREFIX}/lib/${PORTNAME}
 USE_GITHUB=	yes
 GH_ACCOUNT=	visualfc
-LDFLAGS+=	-Wl,--as-needed
+GH_TUPLE=	visualfc:gocode:f7c4f435e405:visualfc_gocode \
+		visualfc:gotools:b7edd68214b:visualfc_gotools
 
-PORTDOCS=	CONTRIBUTORS README.md
+USE_GL=		gl
+USE_LDCONFIG=	${PREFIX}/lib/${PORTNAME}
+USE_QT=		buildtools_build core gui network printsupport widgets xml
 
-ICON_SIZES=	16 24 32 48 64 128
+SUB_FILES=	liteide
 
-OPTIONS_DEFINE=		DEBUG DOCS
-OPTIONS_SINGLE=		QT
-OPTIONS_SINGLE_QT=	QT4 QT5
-OPTIONS_DEFAULT=	QT5
-OPTIONS_SUB=		yes
+WRKSRC_SUBDIR=	liteidex
+
+PORTDOCS=	README.md
+
+OPTIONS_DEFINE=	DEBUG DOCS
+OPTIONS_SUB=	yes
 
 DEBUG_CONFIGURE_ENABLE=	debug
 
-QT4_USES=	qt:4
-QT4_USE=	QT=corelib,gui,network,webkit,xml,moc_build,rcc_build,uic_build
-QT5_USES=	qt:5
-QT5_USE=	QT=core,gui,network,printsupport,widgets,xml,buildtools_build
+ICON_SIZES=	16 24 32 48 64 128
+
+post-build:
+	cd ${WRKSRC_visualfc_gocode} && \
+		${SETENV} ${MAKE_ENV} ${GO_ENV} ${GO_CMD} install ${GO_BUILDFLAGS}
+	cd ${WRKSRC_visualfc_gotools} && \
+		${SETENV} ${MAKE_ENV} ${GO_ENV} ${GO_CMD} install ${GO_BUILDFLAGS}
 
 post-install:
+	@${MKDIR} ${STAGEDIR}${PREFIX}/libexec/liteide
+	${MV} ${STAGEDIR}${PREFIX}/bin/liteide ${STAGEDIR}${PREFIX}/libexec/liteide
+	${INSTALL_SCRIPT} ${WRKDIR}/liteide ${STAGEDIR}${PREFIX}/bin
+	${INSTALL_PROGRAM} ${GO_WRKDIR_BIN}/gocode ${STAGEDIR}${PREFIX}/libexec/liteide
+	${INSTALL_PROGRAM} ${GO_WRKDIR_BIN}/gotools ${STAGEDIR}${PREFIX}/libexec/liteide
 	@${MKDIR} ${STAGEDIR}${PREFIX}/share/applications
 	${INSTALL_DATA} ${WRKSRC}/liteide.desktop ${STAGEDIR}${PREFIX}/share/applications
 	(cd ${WRKSRC}/deploy && ${COPYTREE_SHARE} . ${STAGEDIR}${DATADIR})
@@ -49,6 +59,6 @@ post-install:
 .endfor
 
 post-install-DOCS-on:
-	(cd ${WRKSRC:H} && ${COPYTREE_SHARE} "${PORTDOCS}" ${STAGEDIR}${DOCSDIR})
+	cd ${WRKSRC:H} && ${COPYTREE_SHARE} "${PORTDOCS}" ${STAGEDIR}${DOCSDIR}
 
 .include <bsd.port.mk>

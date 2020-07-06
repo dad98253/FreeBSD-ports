@@ -5,7 +5,8 @@ PORTNAME=	vlock
 PORTVERSION=	2.2.3
 PORTREVISION=	3
 CATEGORIES=	security
-MASTER_SITES=	http://cthulhu.c3d2.de/~toidinamai/vlock/archive/
+MASTER_SITES=	http://cthulhu.c3d2.de/~toidinamai/vlock/archive/ \
+		LOCAL/martymac
 
 MAINTAINER=	martymac@FreeBSD.org
 COMMENT=	Locks a terminal
@@ -24,7 +25,7 @@ CONFIGURE_ARGS=	--enable-plugins --enable-pam \
 USES=	gmake
 USE_CSTD=	gnu99
 
-OPTIONS_DEFINE=	ROOTPWD VLOCKSCRIPTS CACASAVER
+OPTIONS_DEFINE=	ROOTPWD VLOCKSCRIPTS CACASAVER DOCS
 OPTIONS_DEFAULT=	ROOTPWD
 OPTIONS_SUB=	yes
 ROOTPWD_DESC=	Enable unlock using root password

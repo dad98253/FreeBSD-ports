@@ -2,8 +2,7 @@
 
 PORTNAME=	deluge
 PORTVERSION=	1.3.15
-PORTREVISION=	1
-PORTEPOCH=	1
+PORTEPOCH=	2
 CATEGORIES=	net-p2p python
 
 MAINTAINER=	rm@FreeBSD.org
@@ -11,12 +10,16 @@ COMMENT=	Bittorrent client using Python, GTK2, and libtorrent-rasterbar
 
 LICENSE=	GPLv3
 
+DEPRECATED=	Old, uses EOLed python27
+EXPIRATION_DATE=	2020-03-01
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}dbus>=0.83:devel/py-dbus@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}game>=1.8.1:devel/py-game@${PY_FLAVOR} \
+		${PYGAME} \
 		${PYTHON_PKGNAMEPREFIX}notify>=0.1.1:devel/py-notify@${PY_FLAVOR} \
 		xdg-utils>=1.0.2:devel/xdg-utils \
 		deluge:net-p2p/deluge-cli
+
+USES=		gnome metaport python:2.7
 USE_GNOME=	librsvg2 pygtk2
-USES=		python:-2.7 metaport
 
 .include <bsd.port.mk>

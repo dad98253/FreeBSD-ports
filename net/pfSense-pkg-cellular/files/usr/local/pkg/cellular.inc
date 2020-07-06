@@ -3,7 +3,7 @@
  * cellular.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2017 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2017-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (C) 2016 Voleatech GmbH, Fabian Schweinfurth
  * All rights reserved.
  *
@@ -27,7 +27,7 @@ require_once('services.inc');
 
 $shortcut_section = "cellular";
 
-define('PYTHON_BIN', '/usr/local/bin/python2.7');
+define('PYTHON_BIN', '%%PYTHON_CMD%%');
 define('INTERFACE_BIN', '/usr/local/sbin/cellular');
 
 

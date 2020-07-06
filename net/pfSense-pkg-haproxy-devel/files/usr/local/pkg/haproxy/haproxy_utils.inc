@@ -3,7 +3,7 @@
  * haproxy_utils.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2013-2015 PiBa-NL
  * All rights reserved.
  *
@@ -100,25 +100,6 @@ if(!function_exists('is_arrayset')){
 		}
 		return true;
 	}
-}
-
-function &getarraybyref(&$array) {
-	if (!isset($array)) {
-		return false;
-	}
-	if (!is_array($array)) {
-		$array = array();
-	}
-	$item = &$array;
-	$arg = func_get_args();
-	for($i = 1; $i < count($arg); $i++) {
-		$itemindex = $arg[$i];
-		if (!is_array($item[$itemindex])) {
-			$item[$itemindex] = array();
-		}
-		$item = &$item[$itemindex];
-	}
-	return $item;
 }
 
 function haproxy_compareByName($a, $b) {
@@ -297,7 +278,7 @@ function haproxy_cert_signed_by($cert, $signedbycert) {
 
 function haproxy_recalculate_certifcate_chain(){
 	// and set "selfsigned" for certificates that where used to sign themselves
-	// recalculate the "caref" for all certificates where it is currently unkown.
+	// recalculate the "caref" for all certificates where it is currently unknown.
 
 	$allcertificates = haproxy_get_certificates('ca,server,user',true);
 	$items_recalculated = 0;

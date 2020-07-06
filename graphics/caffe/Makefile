@@ -2,7 +2,7 @@
 
 PORTNAME=	caffe
 PORTVERSION=	1.0
-PORTREVISION=	12
+PORTREVISION=	32
 CATEGORIES=	graphics
 
 MAINTAINER=	eric@camachat.org
@@ -14,7 +14,6 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 CONFLICTS_INSTALL=	caffe2-*
 
 BUILD_DEPENDS=	${PYNUMPY} \
-		${LOCALBASE}/include/cblas.h:math/cblas \
 		bash:shells/bash
 LIB_DEPENDS=	libsnappy.so:archivers/snappy \
 		libleveldb.so:databases/leveldb \
@@ -31,13 +30,14 @@ LIB_DEPENDS=	libsnappy.so:archivers/snappy \
 RUN_DEPENDS=	${PYNUMPY} \
 		${PYTHON_PKGNAMEPREFIX}protobuf>=2.5.0:devel/py-protobuf@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}scikit-image>=0.12:graphics/py-scikit-image@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}pillow>=1.7:graphics/py-pillow@${PY_FLAVOR} \
+		${PY_PILLOW} \
 		${PYTHON_PKGNAMEPREFIX}networkx>=1.8:math/py-networkx@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}matplotlib>=1.1:math/py-matplotlib@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}PyWavelets>=0.4:math/py-PyWavelets@${PY_FLAVOR}
 
+USES=		compiler:c++11-lib fortran gmake pkgconfig python:2.7
+USE_CXXSTD=	c++11
 USE_LDCONFIG=	yes
-USES=		gmake python:2.7 fortran compiler:c++11-lib pkgconfig
 USE_PYTHON=	flavors cython
 
 CXXFLAGS+=	-DGTEST_USE_OWN_TR1_TUPLE=1
@@ -53,12 +53,20 @@ PLIST_SUB=	PYTHON_SITELIBDIR=${PYTHON_SITELIBDIR} DATADIR=${DATADIR}
 GH_ACCOUNT=	BVLC
 USE_GITHUB=	yes
 
+.include <bsd.port.pre.mk>
+
+.if ${CHOSEN_COMPILER_TYPE} == clang
+TRUE_CXX=	clang++
+.else
+TRUE_CXX=	g++${GCC_DEFAULT}
+.endif
+
 post-extract:
 	@${CP} -v ${.CURDIR}/files/Makefile.config ${WRKSRC}/
 
 post-patch:
 	@${REINPLACE_CMD} \
-	-e "s|%%CXX%%|clang++|g" \
+	-e "s|%%CXX%%|${TRUE_CXX}|g" \
 	-e "s|%%LOCALBASE%%|${LOCALBASE}|g" \
 	-e "s|%%DATADIR%%|${DATADIR}|g" \
 	-e "s|%%PYTHON_INCLUDEDIR%%|${PYTHON_INCLUDEDIR}|g" \
@@ -74,4 +82,4 @@ post-install:
 	@${STRIP_CMD} ${STAGEDIR}/${PREFIX}/bin/* ${STAGEDIR}/${PREFIX}/lib/*.so.* \
 	${STAGEDIR}/${PYTHON_SITELIBDIR}/${PORTNAME}/*.so
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

@@ -3,7 +3,7 @@
 
 PORTNAME=	qsf
 PORTVERSION=	1.2.7
-PORTREVISION=	2
+PORTREVISION=	3
 CATEGORIES=	mail
 MASTER_SITES=	SF
 
@@ -31,7 +31,7 @@ CONFIGURE_ARGS+=	--without-gdbm
 .endif
 
 .if ${PORT_OPTIONS:MMYSQL}
-USE_MYSQL=	yes
+USES+=		mysql
 .else
 CONFIGURE_ARGS+=	--without-mysql
 .endif

@@ -3,28 +3,26 @@
 
 PORTNAME=	gearmand
 PORTVERSION=	1.1.8
-PORTREVISION=	13
+PORTREVISION=	22
 CATEGORIES=	devel
 MASTER_SITES=	http://launchpad.net/gearmand/1.2/${PORTVERSION}/+download/
 PKGNAMESUFFIX=	-devel
 
-MAINTAINER=	bdrewery@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Gearman C Server and Library
-
-BROKEN_sparc64=		fails to build: cannot link with boost
-BROKEN_powerpc64=	fails to build: checking for the Boost program_options library... no
 
 BUILD_DEPENDS=	boost-libs>=0:devel/boost-libs \
 		${PYTHON_PKGNAMEPREFIX}sphinx>=0:textproc/py-sphinx@${PY_FLAVOR}
 LIB_DEPENDS=	libevent.so:devel/libevent \
-		libuuid.so:misc/e2fsprogs-libuuid
+		libuuid.so:misc/e2fsprogs-libuuid \
+		libboost_program_options.so:devel/boost-libs
 
 CONFLICTS=	p5-Gearman-Server-1.* gearmand-1.0.*
 
 USERS=		gearmand
 GROUPS=		gearmand
 
-USES=		pathfix perl5 gmake gperf libtool python:build
+USES=		compiler:c++11-lang pathfix perl5 gmake gperf libtool python:build
 USE_PERL5=	build
 GNU_CONFIGURE=	yes
 USE_LDCONFIG=	yes
@@ -78,7 +76,7 @@ CONFIGURE_ARGS+=	--disable-libmemcached
 .endif
 
 .if ${PORT_OPTIONS:MMYSQL}
-USE_MYSQL=		yes
+USES+=			mysql
 CONFIGURE_ARGS+=	--with-mysql=yes
 .else
 CONFIGURE_ARGS+=	--with-mysql=no

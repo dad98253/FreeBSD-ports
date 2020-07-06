@@ -2,33 +2,35 @@
 # $FreeBSD$
 
 PORTNAME=	ical
-PORTVERSION=	2.2
-PORTREVISION=	4
+PORTVERSION=	3.0.4
 CATEGORIES=	deskutils tk
-MASTER_SITES=	ftp://ftp.sunet.se/pub/vendor/sco/skunkware/src/shellutil/
+MASTER_SITES=	https://launchpad.net/ical-tcl/+download/ \
+		http://opal.com/jr/ical/
 
-PATCH_SITES=	http://www.isi.edu/~johnh/SOFTWARE/ICAL/
-PATCHFILES=	ical-2.3.1-upvar.patch
-
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	fbsd@opal.com
 COMMENT=	Calendar application
 
 LICENSE=	GPLv2
 
-USES=		tk
-GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--with-tclconfig=${TCL_LIBDIR} \
-		--with-tclhdir=${TCL_INCLUDEDIR} \
-		--with-tclsh=${TCLSH} \
-		--with-tkconfig=${TK_LIBDIR} \
-		--with-tkhdir=${TK_INCLUDEDIR}
-MAKE_ENV+=	STAGEDIR=${STAGEDIR}
+LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
+		libfreetype.so:print/freetype2
 
-post-patch:
-	@${REINPLACE_CMD} -e 's,tcl->result,Tcl_GetStringResult(tcl),' \
-		${WRKSRC}/ical.C
+USES=		autoreconf:build gmake tk xorg
+USE_XORG=	x11 xext xft xrender xscrnsaver
+GNU_CONFIGURE=	yes
+CONFIGURE_ARGS=	--with-tkconfig=${TK_LIBDIR} \
+		--with-tclconfig=${TCL_LIBDIR} \
+		--with-tclsh=${TCLSH}
+MAKE_ENV=	STAGEDIR=${STAGEDIR}
+SUB_FILES=	pkg-message
+SUB_LIST+=	VERSION=${PORTVERSION}
+WRKSRC=		${WRKDIR}/${PORTNAME}-tcl
+
+USER_TCL=	${HOME}/.tk/${PORTNAME}/user.tcl
+DIST_VER=	${DISTNAME:S/${PORTVERSION}/${VERSION}/}
 
 post-install:
-	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/${DISTNAME}
+	@${RM} ${STAGEDIR}/${PREFIX}/lib/ical/v${PORTVERSION}/contrib/*.patch
+	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/${PORTNAME}
 
 .include <bsd.port.mk>

@@ -3,7 +3,7 @@
  * openvpn-client-export.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (C) 2008 Shrew Soft Inc
  * All rights reserved.
  *
@@ -28,8 +28,8 @@ require_once("util.inc");
 require_once("pfsense-utils.inc");
 
 global $current_openvpn_version, $current_openvpn_version_rev, $legacy_openvpn_version, $legacy_openvpn_version_rev;
-$current_openvpn_version = "2.4.6";
-$current_openvpn_version_rev = "02";
+$current_openvpn_version = "2.4.9";
+$current_openvpn_version_rev = "01";
 $legacy_openvpn_version = "2.3.18";
 $legacy_openvpn_version_rev = "02";
 
@@ -59,9 +59,9 @@ function openvpn_client_export_prefix($srvid, $usrid = null, $crtid = null) {
 	$port = $settings['local_port'];
 
 	$filename_addition = "";
-	if ($usrid && is_numeric($usrid)) {
+	if (isset($usrid) && is_numeric($usrid)) {
 		$filename_addition = "-" . $config['system']['user'][$usrid]['name'];
-	} elseif ($crtid && is_numeric($crtid) && function_exists("cert_get_cn")) {
+	} elseif (isset($crtid) && is_numeric($crtid) && function_exists("cert_get_cn")) {
 		$filename_addition = "-" . str_replace(' ', '_', cert_get_cn($config['cert'][$crtid]['crt']));
 	}
 	return "{$host}-{$prot}-{$port}{$filename_addition}";
@@ -181,7 +181,7 @@ EOF;
 	}
 	
 	// determine basic variables
-	$remotes = openvpn_client_export_build_remote_lines($settings, $useaddr, $interface, $expformat, $nl);
+	$remotes = openvpn_client_export_build_remote_lines($settings, $useaddr, $interface, $expformat, $nl, $legacy);
 	$cipher = $settings['crypto'];
 	$digest = !empty($settings['digest']) ? $settings['digest'] : "SHA1";
 
@@ -204,11 +204,11 @@ EOF;
 
 	if ($legacy == 0) {
 		if ($settings['ncp_enable'] == "disabled") {
-			$conf .= "ncp-disable\n";
+			$conf .= "ncp-disable{$nl}";
 		} else {
 			/* If the ncp-ciphers list is empty, don't specify a list so OpenVPN's default will be used. */
 			if (!empty($settings['ncp-ciphers'])) {
-				$conf .= "ncp-ciphers " . str_replace(',', ':', $settings['ncp-ciphers']) . "\n";
+				$conf .= "ncp-ciphers " . str_replace(',', ':', $settings['ncp-ciphers']) . "{$nl}";
 			}
 		}
 	}
@@ -308,7 +308,9 @@ EOF;
 			$conf .= "pkcs11-id '{$pkcs11id}'{$nl}";
 		} elseif ($usetoken) {
 			$conf .= "ca {$cafile}{$nl}";
-			$conf .= "cryptoapicert \"SUBJ:{$user['name']}\"{$nl}";
+			$crt = openssl_x509_parse(base64_decode($cert['crt']));
+			$subj = implode(', ', $crt['subject']);
+			$conf .= "cryptoapicert \"SUBJ:{$subj}\"{$nl}";
 		} elseif (substr($expformat, 0, 6) != "inline") {
 			$conf .= "pkcs12 {$prefix}.p12{$nl}";
 		}
@@ -358,10 +360,13 @@ EOF;
 	// add optional settings
 	$compression = "";
 	switch ($settings['compression']) {
+		case 'none':
+			$settings['compression'] = '';
 		case 'lz4':
 		case 'lz4-v2':
 		case 'lzo':
 		case 'stub':
+		case 'stub-v2':
 			$compression .= "compress {$settings['compression']}";
 			break;
 		case 'noadapt':
@@ -545,9 +550,13 @@ function openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $veri
 		case "x64-win6":
 			$client_install_exe = "openvpn-install-{$legacy_openvpn_version}-I6{$legacy_openvpn_version_rev}-x86_64.exe";
 			break;
-		case "24":
+		case "Win7":
+			$client_install_exe = "openvpn-install-{$current_openvpn_version}-I6{$current_openvpn_version_rev}-Win7.exe";
+			break;
+		case "Win10":
 		default:
-			$client_install_exe = "openvpn-install-{$current_openvpn_version}-I6{$current_openvpn_version_rev}.exe";
+			$client_install_exe = "openvpn-install-{$current_openvpn_version}-I6{$current_openvpn_version_rev}-Win10.exe";
+			break;
 	}
 
 	$ovpndir = "/usr/local/share/openvpn";
@@ -575,10 +584,10 @@ function openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $veri
 	// and put the required installer exe in place
 	exec("/bin/cp {$tempdir}/{$client_install_exe} {$tempdir}/openvpn-install.exe");
 
-	/* OpenVPN 2.4 installer stub is 32-bit, but could need to read a 64-bit registry.
+	/* OpenVPN Win7/Win10 installer stub is 32-bit, but could need to read a 64-bit registry.
 	 * Using the 64-bit-aware openvpn-postinstall works fine even on 32-bit Windows 10.
 	 */
-	if ($openvpn_version == "24" || stristr($openvpn_version, "x64")) {
+	if (in_array($openvpn_version, array('Win7', 'Win10', 'x64-xp', 'x64-win6'))) {
 		rename("{$tempdir}/openvpn-postinstall64.exe", "{$tempdir}/openvpn-postinstall.exe");
 	}
 
@@ -836,7 +845,8 @@ function openvpn_client_export_sharedkey_config($srvid, $useaddr, $proxy, $nokey
 
 	/* TODO: Protocol could move to after remote. If client is 2.4, can be copied direct from server. Perhaps leverage openvpn_client_export_build_remote_lines() */
 	$conf .= "proto {$proto}\n";
-	$conf .= "remote {$server_host} {$server_port}\n";
+	$remoteproto = strtolower($settings['protocol']);
+	$conf .= "remote {$server_host} {$server_port} {$remoteproto}\n";
 
 	if ($settings['local_network']) {
 		list($ip, $mask) = explode('/', $settings['local_network']);
@@ -934,7 +944,7 @@ function openvpn_client_export_sharedkey_config($srvid, $useaddr, $proxy, $nokey
 	}
 }
 
-function openvpn_client_export_build_remote_lines($settings, $useaddr, $interface, $expformat, $nl) {
+function openvpn_client_export_build_remote_lines($settings, $useaddr, $interface, $expformat, $nl, $legacy=false) {
 	global $config;
 	$remotes = array();
 	if (($useaddr == "serveraddr") || ($useaddr == "servermagic") || ($useaddr == "servermagichost")) {
@@ -973,7 +983,8 @@ function openvpn_client_export_build_remote_lines($settings, $useaddr, $interfac
 			$remotes[] = "remote {$dest['host']} {$dest['port']} {$dest['proto']}";
 		}
 	} else {
-		$remotes[] = "remote {$server_host} {$settings['local_port']} {$proto}";
+		$remoteproto = $legacy ? $proto : strtolower($settings['protocol']);
+		$remotes[] = "remote {$server_host} {$settings['local_port']} {$remoteproto}";
 	}
 
 	return implode($nl, $remotes);
@@ -992,12 +1003,11 @@ function openvpn_client_export_find_port_forwards($targetip, $targetport, $targe
 
 	foreach ($config['nat']['rule'] as $natent) {
 		$dest = array();
-		if (!isset($natent['disabled']) && ($natent['target'] == $targetip) && ($natent['local-port'] == $targetport) && ($natent['protocol'] == $targetproto)) {
-			$dest['proto'] = $natent['protocol'];
-
-			// Could be multiple ports... But we can only use one.
-			$dports = is_port($natent['destination']['port']) ? array($natent['destination']['port']) : filter_expand_alias_array($natent['destination']['port']);
-			$dest['port'] = $dports[0];
+		if (!isset($natent['disabled']) &&
+		   ($natent['target'] == $targetip) &&
+		   ($natent['local-port'] == $targetport) &&
+		   ($natent['protocol'] == strtolower(substr($targetproto, 0, 3)))) {
+			$dest['proto'] = $targetproto;
 
 			// Could be network or address ...
 			$natif = (!$natent['interface']) ? "wan" : $natent['interface'];
@@ -1034,7 +1044,15 @@ function openvpn_client_export_find_port_forwards($targetip, $targetport, $targe
 				}
 			}
 
-			$destinations[] = $dest;
+			$dports = is_port($natent['destination']['port'])
+			    ? array($natent['destination']['port'])
+			    : filter_expand_alias_array($natent['destination']['port']);
+
+			// Could be multiple ports, we add all of them
+			foreach ($dports as $dport) {
+				$dest['port'] = $dport;
+				$destinations[] = $dest;
+			}
 		}
 	}
 
@@ -1042,20 +1060,14 @@ function openvpn_client_export_find_port_forwards($targetip, $targetport, $targe
 }
 
 function openvpn_client_export_find_hostname($interface) {
-	global $config;
-	if (is_array($config['dyndnses']['dyndns'])) {
-		foreach ($config['dyndnses']['dyndns'] as $ddns) {
+	global $config, $dyndns_split_domain_types;
+	init_config_arr(array('dyndnses', 'dyndns'));
+	init_config_arr(array('dnsupdates', 'dnsupdate'));
+	foreach (array($config['dyndnses']['dyndns'], $config['dnsupdates']['dnsupdate']) as $ddnslist) {
+		foreach ($ddnslist as $ddns) {
 			if (($ddns['interface'] == $interface) && isset($ddns['enable']) && !empty($ddns['host']) && !is_numeric($ddns['host']) && is_hostname($ddns['host'])) {
-				return $ddns['host'];
+				return $ddns['host'] . ((in_array($ddns['type'], $dyndns_split_domain_types)) ? '.' . $ddns['domainname'] : '');
 			}
 		}
 	}
-	if (is_array($config['dnsupdates']['dnsupdate'])) {
-		foreach ($config['dnsupdates']['dnsupdate'] as $ddns) {
-			if (($ddns['interface'] == $interface) && isset($ddns['enable']) && !empty($ddns['host']) && !is_numeric($ddns['host']) && is_hostname($ddns['host'])) {
-				return $ddns['host'];
-			}
-		}
-	}
-
 }

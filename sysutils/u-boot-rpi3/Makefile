@@ -1,8 +1,13 @@
 # $FreeBSD$
 
-MAINTAINER=	uboot@FreeBSD.org
 MASTERDIR=	${.CURDIR}/../u-boot-master
-PORTREVISION=	1
+
+U_BOOT_SLAVE_PORTREVISION_2019.10=	1
+
+EXTRA_PATCHES=	${.CURDIR}/files/
+PATCHFILES+=	939129/raw
+# Allow variable reservation of lowest pages for increased PSCI stub size.
+PATCHFILES+=	1245351/raw 1245352/raw
 
 MODEL=		rpi3
 BOARD_CONFIG=	rpi_3_defconfig
@@ -11,6 +16,7 @@ UBOOT_ARCH=	aarch64
 
 DEPENDS=	${LOCALBASE}/share/rpi-firmware/bootcode.bin:sysutils/rpi-firmware
 
-EXTRA_PATCHES=	${.CURDIR}/files/
+CONFIG_FRAGMENT=	${.CURDIR}/files/rpi3_fragment
+FRAGMENT_NAME=	rpi3_fragment
 
 .include "${MASTERDIR}/Makefile"

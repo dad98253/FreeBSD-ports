@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PKGNAMESUFFIX=	-gssapi
-PORTREVISION=	7
+PORTREVISION=	1
 
 COMMENT=	SASL GSSAPI authentication plugin
 

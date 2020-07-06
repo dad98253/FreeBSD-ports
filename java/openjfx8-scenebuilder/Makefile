@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	openjfx8
-DISTVERSION=	8u172-b11
+DISTVERSION=	8u202-b07
 CATEGORIES=	java x11-toolkits devel
 MASTER_SITES=	https://github.com/t6/openjfx/releases/download/release/ \
 		http://hg.openjdk.java.net/openjfx/8u/rt/archive/${DISTVERSION}${EXTRACT_SUFX}?dummy=/
@@ -11,6 +11,9 @@ MAINTAINER=	tobik@FreeBSD.org
 COMMENT=	JavaFX Scene Builder
 
 LICENSE=	BSD3CLAUSE
+
+DEPRECATED=	depends on expiring java/openjfx8-devel
+EXPIRATION_DATE=	2020-11-30
 
 BUILD_DEPENDS=	openjfx8-devel>0:java/openjfx8-devel
 RUN_DEPENDS=	openjfx8-devel>0:java/openjfx8-devel

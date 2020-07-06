@@ -2,18 +2,15 @@
 # $FreeBSD$
 
 PORTNAME=	uploadprogress
-PORTVERSION=	1.0.3
-PORTREVISION=	1
+DISTVERSION=	1.1.3
 CATEGORIES=	devel pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	daniel@morante.net
 COMMENT=	Provides track progress of a file upload
 
 LICENSE=	PHP301
+LICENSE_FILE=	${WRKSRC}/LICENSE
 
 USES=		php:pecl
-IGNORE_WITH_PHP=	70 71 72
-
-CONFIGURE_ARGS=	--enable-uploadprogress
 
 .include <bsd.port.mk>

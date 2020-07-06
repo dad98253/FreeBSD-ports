@@ -3,6 +3,7 @@
 PORTNAME=	bamtools
 DISTVERSIONPREFIX=	v
 DISTVERSION=	2.5.1
+PORTREVISION=	1
 CATEGORIES=	biology
 
 MAINTAINER=	jwb@FreeBSD.org
@@ -12,7 +13,7 @@ LICENSE=	MIT
 
 LIB_DEPENDS+=	libjsoncpp.so:devel/jsoncpp
 
-USES=		cmake:outsource
+USES=		cmake
 USE_LDCONFIG=	yes
 USE_GITHUB=	yes
 GH_ACCOUNT=	pezmaster31

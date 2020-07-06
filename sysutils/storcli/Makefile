@@ -1,10 +1,10 @@
 # $FreeBSD$
 
 PORTNAME=	storcli
-DISTVERSION=	7.504
+DISTVERSION=	7.1211
 CATEGORIES=	sysutils
-MASTER_SITES=	https://docs.broadcom.com/docs-and-downloads/docs-and-downloads/raid-controllers/
-DISTNAME=	007.0504.0000.0000_Unified_StorCLI
+MASTER_SITES=	https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/
+DISTNAME=	007.1211.0000.0000_Unified_StorCLI
 
 MAINTAINER=	takefu@airport.fm
 COMMENT=	SAS MegaRAID FreeBSD StorCLI
@@ -30,7 +30,7 @@ BINSRC=		${WRKSRC}/Unified_storcli_all_os/FreeBSD
 .include <bsd.port.pre.mk>
 
 .if !exists(${DISTDIR}/${DISTNAME}${EXTRACT_SUFX})
-DOWNLOAD_URL=	https://docs.broadcom.com/docs/${DISTNAME}${EXTRACT_SUFX}
+DOWNLOAD_URL=	https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${DISTNAME}${EXTRACT_SUFX}
 
 IGNORE?=	You must manually fetch the distribution file\
 	(${DISTNAME}${EXTRACT_SUFX}) from ${DOWNLOAD_URL},\
@@ -38,11 +38,16 @@ IGNORE?=	You must manually fetch the distribution file\
 .endif
 
 post-extract:
-	@${TAR} xf ${WRKSRC}/Unified_storcli_all_os${EXTRACT_SUFX} -C${WRKSRC}
 	@${TAR} xf ${BINSRC}/storcli${ARCH:S/i386//:S/amd64/64/}.tar -C${WRKSRC}
 	@${REINPLACE_CMD} 's#\(StorCli\).*StorCli64#\1#'\
 		${BINSRC}/FreeBSD_readme.txt
-	@${FMT} 75 79 ${BINSRC}/FreeBSD_readme.txt > ${WRKDIR}/pkg-message
+	@${ECHO} "[" > ${WRKDIR}/pkg-message
+	@${ECHO} "{" >> ${WRKDIR}/pkg-message
+	@${ECHO} "  message: <<EOM" >> ${WRKDIR}/pkg-message
+	@${FMT} 75 79 ${BINSRC}/FreeBSD_readme.txt >> ${WRKDIR}/pkg-message
+	@${ECHO} "EOM">>  ${WRKDIR}/pkg-message
+	@${ECHO} "}" >> ${WRKDIR}/pkg-message
+	@${ECHO} "]" >> ${WRKDIR}/pkg-message
 
 do-install:
 	${INSTALL_SCRIPT} ${WRKSRC}/storcli${ARCH:S/i386//:S/amd64/64/}\

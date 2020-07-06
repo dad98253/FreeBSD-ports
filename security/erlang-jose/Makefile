@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	jose
-PORTVERSION=	1.8.4
+PORTVERSION=	1.10.1
 CATEGORIES=	security
 PKGNAMEPREFIX=	erlang-
 
@@ -18,7 +18,6 @@ ERL_APP_NAME=	erlang-jose
 DOCSDIR=	${PREFIX}/share/doc/${ERL_APP_NAME}
 NO_ARCH=	yes
 
-ERL_BUILD_DEPS=	converters/erlang-base64url
-ERL_RUN_DEPS:=	${ERL_BUILD_DEPS}
+OPTIONS_DEFINE=	DOCS
 
 .include <bsd.port.mk>

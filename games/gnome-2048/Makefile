@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	gnome-2048
-PORTVERSION=	3.22.0
+PORTVERSION=	3.26.1
 CATEGORIES=	games gnome
 MASTER_SITES=	GNOME
-DIST_SUBDIR=	gnome3
+DIST_SUBDIR=	gnome
 
 MAINTAINER=	gnome@FreeBSD.org
 COMMENT=	Move the tiles until you obtain the 2048 tile
@@ -22,7 +22,7 @@ LIB_DEPENDS=	libclutter-1.0.so:graphics/clutter \
 
 PORTSCOUT=	limitw:1,even
 
-USES=		gettext gmake gnome localbase pathfix pkgconfig tar:xz
+USES=		gettext gl gmake gnome localbase pathfix pkgconfig tar:xz xorg
 USE_GNOME=	cairo gtk30 intltool libxml2:build
 USE_GL=		egl
 USE_XORG+=	x11 xext xdamage xfixes xcomposite xi xrandr

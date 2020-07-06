@@ -14,11 +14,10 @@ LICENSE=	GPLv2
 
 LIB_DEPENDS=	libgphoto2.so:graphics/libgphoto2
 
-USES=		cmake dos2unix pkgconfig qt:4 tar:bzip2
-DOS2UNIX_GLOB=	*.pro *.cpp *.h
-USE_QT=		qmake_build moc_build rcc_build uic_build gui
+USES=		cmake compiler:c++11-lang dos2unix pkgconfig qt:5 tar:bzip2
+DOS2UNIX_FILES=	main.cpp
+USE_QT=		buildtools_build qmake_build core gui widgets
 
-INSTALLS_ICONS=	yes
 ICON_SIZES=	16x16 32x32 128x128 256x256 512x512
 
 DESKTOP_ENTRIES="EOS Camera Movie Recorder" "" "${PORTNAME}" \
@@ -37,7 +36,7 @@ post-install:
 	${INSTALL_DATA} ${WRKSRC}/mac.icons/${PORTNAME}_${s}.png \
 		${STAGEDIR}${PREFIX}/share/icons/hicolor/${s}/apps/${PORTNAME}.png
 .endfor
-	${LN} -sf ${PREFIX}/share/icons/hicolor/32x32/apps/${PORTNAME}.png \
+	${LN} -sf ../icons/hicolor/32x32/apps/${PORTNAME}.png \
 		${STAGEDIR}${PREFIX}/share/pixmaps/
 
 .include <bsd.port.mk>

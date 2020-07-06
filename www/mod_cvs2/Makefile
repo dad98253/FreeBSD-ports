@@ -11,6 +11,8 @@ PKGNAMEPREFIX=	${APACHE_PKGNAMEPREFIX}
 MAINTAINER=	apache@FreeBSD.org
 COMMENT=	Module that makes Apache 2 CVS aware
 
+BROKEN=		unfetchable
+
 LICENSE=	AFL12
 LICENSE_NAME=	Academic Free License 1.2
 LICENSE_FILE=	${WRKSRC}/LICENSE.AFL
@@ -21,6 +23,8 @@ AP_FAST_BUILD=	yes
 AP_GENPLIST=	yes
 
 PORTDOCS=	reference.html guide.html README
+
+OPTIONS_DEFINE=	DOCS
 
 post-install:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

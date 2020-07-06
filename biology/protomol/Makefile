@@ -3,7 +3,7 @@
 
 PORTNAME=	protomol
 PORTVERSION=	2.0.3
-PORTREVISION=	13
+PORTREVISION=	14
 CATEGORIES=	biology
 MASTER_SITES=	SF/${PORTNAME}/ProtoMol/${PORTVERSION}
 DISTFILES=	${DISTNAME}-tar.gz
@@ -17,7 +17,8 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 LIB_DEPENDS=	libpng.so:graphics/png \
 		libtiff.so:graphics/tiff
 
-USES=		shebangfix
+USES=		jpeg shebangfix xorg
+USE_CXXSTD=	c++98
 SHEBANG_FILES=	examples/butane_4/procDihedralFile.awk \
 		examples/butane_4/cleanOutput.bash \
 		examples/butane_4/runButaneResults.sh \
@@ -26,7 +27,6 @@ SHEBANG_LANG=	awk
 awk_OLD_CMD=	/usr/bin/gawk
 awk_CMD=	/usr/bin/awk # base awk works fine in this case
 GNU_CONFIGURE=	yes
-USES=		jpeg
 USE_XORG=	xmu xt sm ice xext x11 xi
 
 # Hack to cure a misbehavior of the configure script
@@ -41,6 +41,7 @@ OPTIONS_DEFINE=	GLUT EXAMPLES
 OPTIONS_DEFAULT=	GLUT
 
 GLUT_CONFIGURE_ON=	--with-glut=yes
+GLUT_USES=	gl
 GLUT_USE=	GL=glut
 GLUT_CONFIGURE_OFF=	--with-glut=no
 

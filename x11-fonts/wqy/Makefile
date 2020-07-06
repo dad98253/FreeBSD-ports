@@ -3,7 +3,7 @@
 
 PORTNAME=	wqy-fonts
 PORTVERSION=	20100803
-PORTREVISION=	9
+PORTREVISION=	10
 PORTEPOCH=	1
 CATEGORIES=	x11-fonts
 MASTER_SITES=	SF/wqy/wqy-bitmapfont/1.0.0-RC1:bitmapfont \
@@ -24,8 +24,8 @@ LICENSE=	GPLv2
 
 BUILD_DEPENDS=	bdftopcf:x11-fonts/bdftopcf
 
+USES=		fonts perl5 xorg
 USE_XORG=	x11
-USES=		fonts perl5
 USE_PERL5=	build
 NO_WRKSUBDIR=	yes
 NO_ARCH=	yes

@@ -3,6 +3,7 @@
 
 PORTNAME=	enchant
 PORTVERSION=	2.2.3
+PORTREVISION=	4
 CATEGORIES=	textproc gnome
 MASTER_SITES=	https://github.com/AbiWord/enchant/releases/download/v${PORTVERSION}/
 PKGNAMESUFFIX=	2
@@ -13,7 +14,8 @@ COMMENT=	Dictionary/spellchecking framework
 LICENSE=	LGPL21
 LICENSE_FILE=	${WRKSRC}/COPYING.LIB
 
-USES=		compiler:c++11-lib gmake libtool localbase pathfix pkgconfig
+USES=		compiler:c++11-lib gmake gnome libtool localbase pathfix \
+		pkgconfig
 USE_GNOME=	glib20
 GNU_CONFIGURE=	yes
 USE_LDCONFIG=	yes
@@ -38,7 +40,7 @@ HSPELL_LIB_DEPENDS=	libhspell.so.0:hebrew/hspell
 HSPELL_CONFIGURE_WITH=	hspell
 HSPELL_CONFIGURE_ON=	--with-hspell-dir=${LOCALBASE}/share/hspell
 
-HUNSPELL_LIB_DEPENDS=	libhunspell-1.6.so:textproc/hunspell
+HUNSPELL_LIB_DEPENDS=	libhunspell-1.7.so:textproc/hunspell
 HUNSPELL_CONFIGURE_WITH=	hunspell
 HUNSPELL_CONFIGURE_ON=	--with-hunspell-dir=${LOCALBASE}/share/hunspell
 

@@ -3,7 +3,7 @@
 
 PORTNAME=	mailman
 PORTVERSION=	2.1.14.j7
-PORTREVISION=	5
+PORTREVISION=	6
 PORTEPOCH=	1
 CATEGORIES=	japanese mail
 MASTER_SITES=	https://docs.python.jp/contrib/mailman/_static/ \
@@ -16,6 +16,9 @@ COMMENT=	Japanized mailman which is a mailing list manager with a web front-end
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/gnu-COPYING-GPL
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 CONFLICTS=	mailman-2.1.*
 

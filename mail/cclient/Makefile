@@ -3,9 +3,9 @@
 
 PORTNAME=	cclient
 PORTVERSION=	2007f
-PORTREVISION=	3
+PORTREVISION=	4
 PORTEPOCH=	1
-CATEGORIES=	mail devel ipv6
+CATEGORIES=	mail devel
 MASTER_SITES=	ftp://ftp.cac.washington.edu/imap/%SUBDIR%/ \
 		http://atreides.freenix.no/~anders/%SUBDIR%/ \
 		ftp://ftp.funet.fi/pub/mirrors/ftp.cac.washington.edu/imap/%SUBDIR%/ \
@@ -55,7 +55,7 @@ SHLIBBASE=	c-client4
 SHLIBMAJ=	9
 SHLIBNAME=	lib${SHLIBBASE}.so.${SHLIBMAJ}
 MAKE_ENV+=	SHLIBNAME=${SHLIBNAME} SHLIBBASE=${SHLIBBASE}
-PLIST_SUB=	SHLIBNAME=${SHLIBNAME} SHLIBBASE=${SHLIBBASE}
+PLIST_SUB+=	SHLIBNAME=${SHLIBNAME} SHLIBBASE=${SHLIBBASE}
 
 post-patch:
 .for file in Makefile src/osdep/unix/Makefile src/osdep/unix/Makefile.gss

@@ -3,9 +3,9 @@
 
 PORTNAME=	ripit
 PORTVERSION=	3.9.0
-PORTREVISION?=	2
+PORTREVISION=	3
 CATEGORIES=	audio
-MASTER_SITES=	http://www.suwald.com/ripit/
+MASTER_SITES=	https://github.com/blabber/${PORTNAME}/releases/download/v${PORTVERSION}/
 
 MAINTAINER=	tobias.rehbein@web.de
 COMMENT=	Command line audio CD ripper
@@ -21,15 +21,17 @@ RUN_DEPENDS=	p5-CDDB_get>=0:audio/p5-CDDB_get \
 	cdparanoia:audio/cdparanoia
 
 USES=		perl5 shebangfix tar:bzip2
-NO_BUILD=	yes
 USE_PERL5=	run
+
+NO_BUILD=	yes
+NO_ARCH=	yes
 SHEBANG_FILES=	ripit.pl
 
 OPTIONS_DEFINE=	EXAMPLES
 
 do-install:
 	${INSTALL_SCRIPT} ${WRKSRC}/ripit.pl ${STAGEDIR}${PREFIX}/bin/ripit
-	${INSTALL_MAN} ${WRKSRC}/ripit.1 ${STAGEDIR}${MAN1PREFIX}/man/man1
+	${INSTALL_MAN} ${WRKSRC}/ripit.1 ${STAGEDIR}${PREFIX}/share/man/man1
 	${MKDIR} ${STAGEDIR}${EXAMPLESDIR}/
 	${INSTALL_DATA} ${WRKSRC}/config ${STAGEDIR}${EXAMPLESDIR}/config
 

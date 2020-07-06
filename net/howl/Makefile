@@ -3,12 +3,14 @@
 
 PORTNAME=	howl
 PORTVERSION=	1.0.0
-PORTREVISION=	2
+PORTREVISION=	3
 CATEGORIES?=	net devel
 MASTER_SITES=	http://www.porchdogsoft.com/download/
 
 MAINTAINER=	freebsd@donovansbrain.co.uk
 COMMENT=	Zeroconf/Bonjour(tm) implementation
+
+BROKEN=		unfetchable
 
 CONFLICTS=	avahi-[0-9]*
 

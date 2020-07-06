@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	libdom
-PORTVERSION=	0.3.2
+PORTVERSION=	0.4.0
 CATEGORIES=	www
 MASTER_SITES=	http://download.netsurf-browser.org/libs/releases/
-DISTNAME=	${PORTNAME}-${PORTVERSION}-src
+EXTRACT_SUFX=	-src.tar.gz
 
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Document Object Model library
@@ -22,13 +22,11 @@ LIB_DEPENDS=	libwapcaplet.so:textproc/libwapcaplet \
 USES=		gmake iconv localbase pkgconfig
 USE_LDCONFIG=	yes
 
-WRKSRC=		${WRKDIR}/${DISTNAME:S/-src//}
+MAKE_ENV=	COMPONENT_TYPE="lib-shared"
 
-MAKE_ENV+=	COMPONENT_TYPE="lib-shared"
-
-PLIST_SUB+=	VERSION=${PORTVERSION}
+PLIST_SUB=	VERSION=${PORTVERSION}
 
 post-install:
-	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libdom.so*
+	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libdom.so
 
 .include <bsd.port.mk>

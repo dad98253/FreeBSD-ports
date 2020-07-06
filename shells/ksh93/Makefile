@@ -10,47 +10,70 @@
 # program.  If you are really unconvinced, go ahead but do not
 # complain to me about it.
 
-PORTNAME=	ksh93
-PORTVERSION=	${KSHVERSION:S/-//g}
-PORTREVISION=	2
-CATEGORIES=	shells
-MASTER_SITES=	http://www2.research.att.com/~astopen/download/tgz/ \
-		LOCAL/sunpoet/${PORTNAME}
-DISTFILES=	INIT.${INITVERSION}.tgz ast-ksh.${KSHVERSION}.tgz
-DIST_SUBDIR=	${PORTNAME}
+# Do not update this port to 93v. 93v was an abandoned beta when
+# David Korn left the project. It was subsequently reverted to 93u.
+# https://github.com/att/ast/issues/1466#issuecomment-589942449
 
-MAINTAINER=	saper@saper.info
-COMMENT=	Official AT&T release of KornShell 93
+PORTNAME=	ksh93
+DISTVERSION=	93u
+PORTREVISION=	1
+PORTEPOCH=	2
+CATEGORIES=	shells
+DIST_SUBDIR=	ksh93
+
+MAINTAINER=	cy@FreeBSD.org
+COMMENT=	AT&T KornShell 93
 
 LICENSE=	EPL
 
-OPTIONS_DEFINE=	EXAMPLES STATIC
+BROKEN_aarch64=	Fails to compile: needs sbrk
 
-FETCH_ENV=	HTTP_AUTH=basic:*:I\ accept\ www.opensource.org/licenses/cpl:.
+USES=		compiler:c11
+
+USE_GITHUB=	yes
+GH_ACCOUNT=	att
+GH_PROJECT=	ast
+
+KSH_CONFLICTS=		pdksh-*
+KSH93_CONFLICTS=	ksh93-devel-* ast-ksh-*
+
+OPTIONS_DEFAULT=	KSH93 EXAMPLES
+OPTIONS_DEFINE=		EXAMPLES STATIC
+OPTIONS_SINGLE=		BIN_KSH
+OPTIONS_SINGLE_BIN_KSH=	KSH KSH93
+KSH_DESC=		Install to ${PREFIX}/bin/ksh
+KSH93_DESC=		Install to ${PREFIX}/bin/ksh93
+
+CFLAGS+=	-DMAP_TYPE
 LDFLAGS+=	-lm
-MAKE_ENV=	CCFLAGS="${CFLAGS}"
-NO_WRKSUBDIR=	yes
+MAKE_ENV=	CCFLAGS="-Wno-unused-value -Wno-parentheses -Wno-logical-op-parentheses" CFLAGS="${CFLAGS}"
 
-INITVERSION=	2013-05-24
-KSHVERSION=	2012-08-01
+STATIC_MAKE_ENV=     LDFLAGS+=-static
 
-STATIC_MAKE_ENV=	LDFLAGS+=-static
-
-BROKEN_aarch64=		Fails to compile: error: unknown type name Dllscan_t
+KSH_PLIST_SUB=		93=""
+KSH93_PLIST_SUB=	93="93"
 
 .include <bsd.port.pre.mk>
 
-post-patch:
-.if ${OPSYS} == FreeBSD && ${OSVERSION} >= 1100093
-	@${REINPLACE_CMD} -e 's|SF_FLAGS|SFIO_FLAGS|g' ${WRKSRC}/src/lib/libast/include/sfio*.h ${WRKSRC}/src/lib/libast/sfio/*.c
+.if ${CHOSEN_COMPILER_TYPE} == gcc && ${COMPILER_VERSION} >= 90
+BROKEN=	GCC 9.1 changes the output of `gcc -E` which breaks the conf.sh script, fixed in shells/ksh93-devel
 .endif
 
+.if ${PORT_OPTIONS:MKSH93}
+PNAME=		ksh93
+.else
+PNAME=		ksh
+.endif
+
+post-patch:
+	@${REINPLACE_CMD} -e 's|SF_FLAGS|SFIO_FLAGS|g' ${WRKSRC}/src/lib/libast/include/sfio*.h ${WRKSRC}/src/lib/libast/sfio/*.c
+
 do-build:
-	@cd ${WRKSRC}/ && ${SETENV} -i ${MAKE_ENV} ${SH} bin/package flat make
+	@cd ${WRKSRC}/ && ${SETENV} -i ${MAKE_ENV} ${SH} bin/package flat make ksh93
 
 do-install:
-	${INSTALL_PROGRAM} ${WRKSRC}/bin/ksh ${STAGEDIR}${PREFIX}/bin/ksh93
-	${INSTALL_MAN} ${WRKSRC}/man/man1/sh.1 ${STAGEDIR}${MAN1PREFIX}/man/man1/ksh93.1
+	${INSTALL_PROGRAM} ${WRKSRC}/bin/ksh ${STAGEDIR}${PREFIX}/bin/${PNAME}
+	${INSTALL_MAN} ${WRKSRC}/man/man1/sh.1 ${STAGEDIR}${MAN1PREFIX}/man/man1/${PNAME}.1
 	${MKDIR} ${STAGEDIR}${EXAMPLESDIR}/
 	cd ${WRKSRC}/fun/ && ${INSTALL_SCRIPT} dirs popd pushd ${STAGEDIR}${EXAMPLESDIR}/
 

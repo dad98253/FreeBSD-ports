@@ -15,7 +15,7 @@ LICENSE=	GPLv2
 ONLY_FOR_ARCHS=	i386
 ONLY_FOR_ARCHS_REASON=	uses i386 assembly code
 
-USES=		compiler gmake
+USES=		compiler gmake xorg
 USE_XORG=	x11 ice sm xext xpm
 USE_BINUTILS=	yes
 GNU_CONFIGURE=	yes
@@ -29,6 +29,10 @@ DESKTOP_ENTRIES="TuxNES" "" "${PREFIX}/share/pixmaps/tuxnes.xpm" \
 
 .if ${COMPILER_TYPE} == "clang"
 CPPFLAGS+=	-no-integrated-as
+.endif
+.if ${ARCH} == "i386"
+# Build tool "compdata" segfaults when linked with lld
+LLD_UNSAFE=	yes
 .endif
 
 post-patch:

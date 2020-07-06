@@ -7,15 +7,15 @@ PORTREVISION=	3
 CATEGORIES=	astro windowmaker
 MASTER_SITES=	http://www.cs.mun.ca/~gstarkes/wmaker/dockapps/files/
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	mbeis@xs4all.nl
 COMMENT=	Displays the phase of the moon, plus orbital data
 
 LICENSE=	GPLv2
 
 WRKSRC=		${WRKDIR}/${DISTNAME}/Src
 
+USES=		gmake xorg
 USE_XORG=	xpm
-USES=		gmake
 
 PLIST_FILES=	bin/wmmoonclock man/man1/wmmoonclock.1.gz
 

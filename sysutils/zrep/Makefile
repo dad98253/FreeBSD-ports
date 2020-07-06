@@ -1,11 +1,11 @@
 # $FreeBSD$
 
 PORTNAME=	zrep
-PORTVERSION=	1.7.3
+PORTVERSION=	1.8.0
 DISTVERSIONPREFIX=	v
 CATEGORIES=	sysutils
 
-MAINTAINER=	neel@neelc.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	ZFS based replication and failover solution
 
 LICENSE=	bolthole
@@ -20,6 +20,7 @@ GH_ACCOUNT=	bolthole
 
 PLIST_FILES=	bin/zrep
 
+NO_ARCH=	yes
 NO_BUILD=	yes
 
 post-patch:

@@ -3,7 +3,7 @@
 
 PORTNAME=	opencv
 PORTVERSION=	3.4.1
-PORTREVISION=	1
+PORTREVISION=	31
 CATEGORIES=	graphics
 
 MAINTAINER=	ports@FreeBSD.org
@@ -15,10 +15,14 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 NOT_FOR_ARCHS=	sparc64
 NOT_FOR_ARCHS_REASON_sparc64=	does not compile on sparc64
 
+.if defined(OCV_CORE)
+BUILD_DEPENDS=	protoc:devel/protobuf
+.else
 LIB_DEPENDS=	libprotobuf.so:devel/protobuf \
 		libtesseract.so:graphics/tesseract
+.endif
 
-USES=		cmake:outsource compiler:c++14-lang localbase:ldflags pkgconfig
+USES=		cmake compiler:c++14-lang localbase:ldflags pkgconfig
 
 USE_GITHUB=	yes
 USE_LDCONFIG=	yes
@@ -86,7 +90,6 @@ CMAKE_ARGS+=	-DWITH_1394:BOOL=OFF \
 		-DWITH_MATLAB:BOOL=OFF \
 		-DWITH_VA:BOOL=OFF \
 		-DWITH_VA_INTEL:BOOL=OFF \
-		-DWITH_MFX:BOOL=OFF \
 		-DWITH_GDAL:BOOL=OFF \
 		-DWITH_GPHOTO2:BOOL=OFF \
 		-DWITH_LAPACK:BOOL=OFF \
@@ -150,13 +153,11 @@ OCV_MODS=		apps calib3d contrib dnn features2d flann highgui \
 OCV_JAVA_MODS=		java
 OCV_PYTHON_MODS=	python${PYTHON_MAJOR_VER}
 
-OPTIONS_DEFINE=		EXAMPLES EXTRA_MODULES OPENGL
+OPTIONS_DEFINE=		EXAMPLES EXTRA_MODULES OPENGL GTK2
 OPTIONS_GROUP=		PERFORMANCE IMAGE VIDEO
 OPTIONS_GROUP_PERFORMANCE=	EIGEN3 OPENCL TBB
 OPTIONS_GROUP_IMAGE=	GDAL GDCM JASPER JPEG OPENEXR PNG TIFF WEBP
-OPTIONS_GROUP_VIDEO=	ARAVIS DC1394 FFMPEG GPHOTO2 GSTREAMER V4L XINE
-OPTIONS_RADIO=		GUI
-OPTIONS_RADIO_GUI=	GTK2 QT4
+OPTIONS_GROUP_VIDEO=	ARAVIS DC1394 FFMPEG GPHOTO2 GSTREAMER MFX V4L XINE
 # EXTRA_MODULES required for libopencv_dnn which is required by py-opencv
 OPTIONS_DEFAULT=	EIGEN3 EXTRA_MODULES FFMPEG JASPER JPEG PNG TIFF WEBP V4L \
 			${MACHINE_CPU:tu}
@@ -164,7 +165,7 @@ OPTIONS_SUB=		yes
 .if defined(OCV_CORE)
 OPTIONS_EXCLUDE=	ARAVIS DC1394 EXAMPLES EXTRA_MODULES FFMPEG \
 			GDAL GDCM GPHOTO2 GSTREAMER GTK2 JASPER JPEG \
-			OPENEXR OPENGL PNG QT4 TIFF WEBP V4L XINE
+			OPENEXR OPENGL PNG TIFF WEBP V4L XINE
 .elif defined(OCV_SLAVE)
 OPTIONS_EXCLUDE=	EXAMPLES
 .endif
@@ -206,7 +207,13 @@ GDCM_DESC=		Open source DICOM library
 GDCM_LIB_DEPENDS=	libgdcmMSFF.so:devel/gdcm
 GDCM_CMAKE_BOOL=	WITH_GDCM
 
-OPENEXR_LIB_DEPENDS=	libIlmImf.so:graphics/OpenEXR
+MFX_DESC=		Intel MediaSDK (aka Quick Sync Video)
+MFX_LIB_DEPENDS=	libmfx.so:multimedia/intel-media-sdk \
+			libva-drm.so:multimedia/libva
+MFX_CONFIGURE_ENV=	MFX_HOME="${LOCALBASE}"
+MFX_CMAKE_BOOL=		WITH_MFX
+
+OPENEXR_LIB_DEPENDS=	libIlmImf.so:graphics/openexr
 OPENEXR_CMAKE_BOOL=	WITH_OPENEXR
 
 PNG_LIB_DEPENDS=	libpng.so:graphics/png
@@ -243,8 +250,7 @@ XINE_LIB_DEPENDS=	libxine.so:multimedia/libxine
 XINE_CMAKE_BOOL=	WITH_XINE
 
 EXTRA_MODULES_DESC=		Extra modules
-EXTRA_MODULES_GH_ACCOUNT=	opencv:DEFAULT \
-				tiny-dnn:extra_mod_3rdparty_tiny_dnn
+EXTRA_MODULES_GH_ACCOUNT=	tiny-dnn:extra_mod_3rdparty_tiny_dnn
 EXTRA_MODULES_GH_PROJECT=	opencv_contrib:extra_mod \
 				tiny-dnn:extra_mod_3rdparty_tiny_dnn \
 				opencv_3rdparty:extra_mod_3rdparty_face_landmark_model \
@@ -259,30 +265,22 @@ EXTRA_MODULES_LIB_DEPENDS=	libgflags.so:devel/gflags \
 				libglog.so:devel/glog \
 				libhdf5.so:science/hdf5
 EXTRA_MODULES_EXTRA_PATCHES+=	${FILESDIR}/extra-patch-modules_dnn__modern_CMakeLists.txt \
-				${FILESDIR}/extra-patch-modules_sfm_src__libmv__light_libmv_numeric_numeric.h
+				${FILESDIR}/extra-patch-modules_sfm_src__libmv__light_libmv_numeric_numeric.h \
+				${FILESDIR}/extra-patch-modules_stereo_src_descriptor.cpp
 
-OPENGL_DESC=		OpenGL (require QT or GTK2)
+OPENGL_DESC=		OpenGL (requires GTK2)
 OPENGL_CMAKE_BOOL=	WITH_OPENGL
 OPENGL_LIB_DEPENDS=	${PORT_OPTIONS:MGTK2:C,.+,libgtkglext-x11-1.0.so:x11-toolkits/gtkglext,}
-OPENGL_USE=		${PORT_OPTIONS:MQT4:S,$,=opengl,}
 
 # GUI
 
+GTK2_USES=		gnome
 GTK2_USE=		GNOME=cairo,gdkpixbuf2,gtk20
 GTK2_CMAKE_BOOL=	WITH_GTK
 GTK2_LIB_DEPENDS=	libfreetype.so:print/freetype2 \
 			libharfbuzz.so:print/harfbuzz \
 			libsz.so:science/szip \
 			libfontconfig.so:x11-fonts/fontconfig \
-			liblept.so:graphics/leptonica
-
-QT4_USES=		qt:4
-QT4_USE=		QT=corelib,gui,moc_build,qmake_build,rcc_build,uic_build,qtestlib
-QT4_CMAKE_ON=		-DWITH_QT:STRING="4"
-QT4_CMAKE_OFF=		-DWITH_QT:BOOL=OFF
-QT4_LIB_DEPENDS=	libfreetype.so:print/freetype2 \
-			libharfbuzz.so:print/harfbuzz \
-			libsz.so:science/szip \
 			liblept.so:graphics/leptonica
 
 .if defined(OCV_CORE)
@@ -295,7 +293,7 @@ LIB_DEPENDS+=	libopencv_core.so:graphics/opencv-core \
 		libopencv_ml.so:graphics/opencv
 BUILD_DEPENDS+=	${PYNUMPY}
 RUN_DEPENDS+=	${PYNUMPY}
-USES+=		python:2.7
+USES+=		python
 USE_PYTHON=	flavors
 CMAKE_ARGS+=	-DBUILD_opencv_python${PYTHON_MAJOR_VER}:BOOL=ON
 . for module in apps java stitching superres videostab

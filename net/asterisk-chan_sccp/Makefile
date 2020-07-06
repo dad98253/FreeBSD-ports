@@ -1,43 +1,67 @@
 # Created by: Diederik de Groot
 # $FreeBSD$
 
-PORTNAME=		chan_sccp
-PORTVERSION=		4.2.3
-PORTREVISION=		1
-CATEGORIES=		net
-MASTER_SITES=		SF/chan-sccp-b
-PKGNAMEPREFIX=		asterisk-
-DISTNAME=		Chan_SCCP-4.2.3_STABLE_r6728
+PORTNAME=	chan_sccp
+DISTVERSIONPREFIX=	v
+DISTVERSION=	4.3.2
+DISTVERSIONSUFFIX=	-epsilon
+PORTREVISION=	3
+CATEGORIES=	net
+PKGNAMEPREFIX=	asterisk-
 
-MAINTAINER=		ddegroot@talon.nl
-COMMENT=		Replacement for the SCCP channel driver in Asterisk
+MAINTAINER=	ddegroot@talon.nl
+COMMENT=	Replacement for the SCCP channel driver in Asterisk
 
-LICENSE=		GPLv1
+LICENSE=	GPLv1
+LICENSE_FILE=	${WRKSRC}/COPYING
 
-BUILD_DEPENDS=		asterisk:net/asterisk13
-RUN_DEPENDS=		asterisk:net/asterisk13
+FLAVORS=	asterisk16 asterisk13
+FLAVOR?=	${FLAVORS:[1]}
 
-GNU_CONFIGURE=		yes
-USES=			iconv compiler libtool
-CONFIGURE_ARGS+=	--enable-video \
-			--enable-video-layer \
-			--enable-conference \
-			--enable-advanced-functions \
-			--with-hash-size=3001 \
-			${ICONV_CONFIGURE_ARG}
+USES=		autoreconf compiler:c11 gettext-tools iconv libtool localbase
 
-CPPFLAGS+=		-I${ICONV_INCLUDE_PATH}
-LDFLAGS+=		-L${LOCALBASE}/lib ${ICONV_LIB}
+USE_GITHUB=	yes
+GH_ACCOUNT=	chan-sccp
+GH_PROJECT=	chan-sccp
 
-PLIST_FILES=		lib/asterisk/modules/chan_sccp.so \
-			etc/asterisk/sccp.conf \
-			etc/asterisk/sccp.conf.annotated
+GNU_CONFIGURE=	yes
+CONFIGURE_ARGS=	--enable-advanced-functions \
+		--with-hash-size=3001 \
+		${ICONV_CONFIGURE_ARG}
+INSTALL_TARGET=	install-strip
 
-post-build:
-	${STRIP_CMD} ${WRKSRC}/src/.libs/chan_sccp.so
+CPPFLAGS+=	-I${ICONV_INCLUDE_PATH}
+LDFLAGS+=	-L${LOCALBASE}/lib \
+		${ICONV_LIB}
+
+PLIST_FILES=	etc/asterisk/sccp.conf.annotated \
+		"@sample etc/asterisk/sccp.conf.sample" \
+		lib/asterisk/modules/chan_sccp.so \
+		share/asterisk/documentation/thirdparty/chan_sccp-en_US.xml
+
+asterisk13_PKGNAMEPREFIX=	asterisk13-
+asterisk13_CONFLICTS_INSTALL=	asterisk16-chan_sccp
+asterisk13_BUILD_DEPENDS=	asterisk:net/asterisk13
+asterisk13_RUN_DEPENDS=		asterisk:net/asterisk13
+
+asterisk16_PKGNAMEPREFIX=	asterisk16-
+asterisk16_CONFLICTS_INSTALL=	asterisk13-chan_sccp
+asterisk16_BUILD_DEPENDS=	asterisk:net/asterisk16
+asterisk16_RUN_DEPENDS=		asterisk:net/asterisk16
+
+OPTIONS_DEFINE=			CONFERENCE VIDEO
+OPTIONS_DEFAULT=		CONFERENCE VIDEO
+CONFERENCE_DESC=		Enable Conference Support
+VIDEO_DESC=			Enable Video Support
+
+CONFERENCE_CONFIGURE_ENABLE=	conference
+VIDEO_CONFIGURE_ENABLE=		video
 
 post-install:
-	${MKDIR} ${STAGEDIR}${PREFIX}/etc/asterisk
-	(cd ${WRKSRC}/conf && ${CP} sccp.conf sccp.conf.annotated ${STAGEDIR}${PREFIX}/etc/asterisk/)
+	@${MKDIR} ${STAGEDIR}${PREFIX}/etc/asterisk
+	${INSTALL_DATA} ${WRKSRC}/conf/sccp.conf \
+		${STAGEDIR}${PREFIX}/etc/asterisk/sccp.conf.sample
+	${INSTALL_DATA} ${WRKSRC}/conf/sccp.conf.annotated \
+		${STAGEDIR}${PREFIX}/etc/asterisk
 
 .include <bsd.port.mk>

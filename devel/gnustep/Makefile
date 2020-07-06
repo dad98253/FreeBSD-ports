@@ -3,10 +3,10 @@
 
 PORTNAME=	gnustep
 PORTVERSION=	1.28.0
-PORTREVISION=	4
+PORTREVISION=	6
 CATEGORIES=	devel lang gnustep
 
-MAINTAINER=	theraven@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Objective-C libraries based on the OpenStep standard
 
 USES=		metaport gnustep

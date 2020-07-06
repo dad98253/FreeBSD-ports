@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME?=	mame
-PORTVERSION=	0.198
+PORTVERSION=	0.212
 CATEGORIES=	emulators
 
 MAINTAINER=	ports@FreeBSD.org
@@ -10,16 +10,18 @@ COMMENT=	Multi Arcade Machine Emulator
 
 LICENSE=	GPLv2
 
-ONLY_FOR_ARCHS=		amd64 i386
-ONLY_FOR_ARCHS_REASON=	not yet ported to any arch other than x86
+ONLY_FOR_ARCHS=		amd64 i386 powerpc64
+ONLY_FOR_ARCHS_REASON=	not yet ported to any arch other than x86 and powerpc64
 
 LIB_DEPENDS=	libFLAC.so:audio/flac \
 		libexpat.so:textproc/expat2 \
 		libfontconfig.so:x11-fonts/fontconfig \
-		libfreetype.so:print/freetype2
+		libfreetype.so:print/freetype2 \
+		libpugixml.so:textproc/pugixml
 RUN_DEPENDS=	liberation-fonts-ttf>=0:x11-fonts/liberation-fonts-ttf
 
-USES=		compiler:c++14-lang gmake jpeg pkgconfig python:2.7,build qt:5 shebangfix
+USES=		compiler:c++14-lang gl gmake jpeg pkgconfig \
+		python:2.7,build qt:5 sdl shebangfix xorg
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	mamedev
@@ -43,12 +45,13 @@ MAKE_ENV=	NOWERROR=1 USE_NETWORK=1 \
 		LD="${CXX}" PYTHON="${PYTHON_CMD}" \
 		OPT_FLAGS="${CXXFLAGS}" GCC_LDFLAGS="${LDFLAGS}" \
 		TARGET="${MTARGET}" SUBTARGET="${MSUBTARGET}" FULLNAME="mame" SDL_NETWORK="pcap"
-MAKE_ARGS=	TARGETOS=freebsd VERBOSE=1 TOOLS=1
+MAKE_ARGS=	TARGETOS=freebsd VERBOSE=1 TOOLS=1 USE_SYSTEM_LIB_PUGIXML=1
 MAKEFILE=	makefile
 GENIE=		${WRKSRC}/3rdparty/genie
 PORTDOCS=	*
 PORTEXAMPLES=	${MSUBTARGET}.ini
 
+MAKE_JOBS_UNSAFE=	yes
 SUB_FILES=	pkg-message target.ini
 SUB_LIST=	MTARGET=${MTARGET} MSUBTARGET=${MSUBTARGET}
 
@@ -56,13 +59,13 @@ DEBUG_MAKE_ENV=		DEBUG=1
 
 .include <bsd.port.options.mk>
 
-.if ${ARCH} == amd64
+.if ${ARCH} == amd64 || ${ARCH} == powerpc64
 MAKE_ARGS+=	PTR64=1
 EMULATOR=	${MSUBTARGET}64
 .else
 EMULATOR=	${MSUBTARGET}
 .endif
-PLIST_SUB=	EMULATOR=${EMULATOR}
+PLIST_SUB+=	EMULATOR=${EMULATOR}
 
 post-patch:
 	@${RM} ${WRKSRC}/3rdparty/bx/include/compat/freebsd/dirent.h
@@ -77,7 +80,6 @@ post-patch:
 		 s| .(ARCH)|| ; \
 		 s|FreeBSD|${OPSYS}|g' \
 		 ${WRKSRC}/makefile \
-		 ${WRKSRC}/src/devices/cpu/m68000/makefile \
 		 ${GENIE}/build/gmake.bsd/genie.make
 	@${REINPLACE_CMD} -e 's|gcc|cc|; s|g++|c++|' \
 		${GENIE}/src/tools/gcc.lua \
@@ -93,6 +95,8 @@ post-patch:
 		${WRKSRC}/scripts/genie.lua
 	@${GREP} -rl '"png.h"' ${WRKSRC}/src | ${XARGS} ${REINPLACE_CMD} \
 		-e 's|"png.h"|"localpng.h"|'
+	@${REINPLACE_CMD} -e 's|"util/png.h"|"util/localpng.h"|' \
+		${WRKSRC}/src/frontend/mame/ui/icorender.cpp
 	@${MV} ${WRKSRC}/src/lib/util/png.h ${WRKSRC}/src/lib/util/localpng.h
 
 do-install:

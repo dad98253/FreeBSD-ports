@@ -3,11 +3,14 @@
 
 PORTNAME=	pyembree
 DISTVERSION=	0.1.4
+PORTREVISION=	2
 CATEGORIES=	graphics python
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
 MAINTAINER=	yuri@FreeBSD.org
 COMMENT=	Python wrapper for Embree
+
+BROKEN=		outdated version, incompatible with Embree 3 API
 
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE

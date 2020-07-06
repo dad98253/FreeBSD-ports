@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	four-in-a-row
-PORTVERSION=	3.22.1
+PORTVERSION=	3.28.0
 CATEGORIES=	games gnome
 MASTER_SITES=	GNOME
-DIST_SUBDIR=	gnome3
+DIST_SUBDIR=	gnome
 
 MAINTAINER=	gnome@FreeBSD.org
 COMMENT=	Make lines of the same color
@@ -21,7 +21,7 @@ LIB_DEPENDS=	libcanberra.so:audio/libcanberra \
 
 PORTSCOUT=	limitw:1,even
 
-USES=		gettext gmake gnome localbase pathfix pkgconfig tar:xz
+USES=		gettext gmake gnome localbase pathfix pkgconfig tar:xz xorg
 INSTALLS_ICONS=	yes
 USE_GNOME=	cairo gtk30 intlhack librsvg2 libxml2:build
 USE_XORG=	x11

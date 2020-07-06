@@ -3,7 +3,7 @@
 
 PORTNAME=	chpp
 PORTVERSION=	0.3.5
-PORTREVISION=	4
+PORTREVISION=	6
 CATEGORIES=	textproc
 MASTER_SITES=	http://www.complang.tuwien.ac.at/schani/chpp/files/ \
 		http://freebsd.nsu.ru/distfiles/
@@ -29,10 +29,6 @@ OPTIONS_DEFINE=	DOCS EXAMPLES
 
 .include <bsd.port.pre.mk>
 
-.if ${ARCH} != "i386" && ${ARCH} != "amd64" && ${ARCH} != "powerpc64"
-BROKEN=		Does not compile
-.endif
-
 post-extract:
 .for i in getopt.h regex.h gc/gc.h
 	@cd ${WRKSRC} && ${MV} -f ${i} ${i}.dist
@@ -51,8 +47,8 @@ post-patch:
 
 post-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}
-.for file in AUTHORS NEWS README
-	${INSTALL_DATA} ${WRKSRC}/${file} ${STAGEDIR}${DOCSDIR}
+.for filename in AUTHORS NEWS README
+	${INSTALL_DATA} ${WRKSRC}/${filename} ${STAGEDIR}${DOCSDIR}
 .endfor
 
 post-install-EXAMPLES-on:

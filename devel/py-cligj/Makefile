@@ -1,12 +1,12 @@
 # $FreeBSD$
 
 PORTNAME=	cligj
-PORTVERSION=	0.4.0
+PORTVERSION=	0.5.0
 CATEGORIES=	devel python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	lbartoletti@tuxfamily.org
+MAINTAINER=	lbartoletti@FreeBSD.org
 COMMENT=	Click-based argument and option decorators for Python GIS cli
 
 LICENSE=	BSD3CLAUSE

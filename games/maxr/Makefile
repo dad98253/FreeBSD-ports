@@ -3,6 +3,7 @@
 
 PORTNAME=	maxr
 PORTVERSION=	0.2.9
+PORTREVISION=	3
 CATEGORIES=	games
 MASTER_SITES=	http://www.maxr.org/downloads/ \
 		http://mirror.amdmi3.ru/distfiles/
@@ -13,7 +14,7 @@ COMMENT=	Mechanized Assault and Exploration Reloaded
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/data/COPYING
 
-USES=		cmake compiler:c++11-lib dos2unix
+USES=		cmake compiler:c++11-lib dos2unix sdl
 DOS2UNIX_FILES=	src/config/selectplatformconfig.h
 USE_SDL=	sdl2 mixer2 net2
 
@@ -27,10 +28,4 @@ DESKTOP_ENTRIES="M.A.X.R." \
 		"Game;StrategyGame;" \
 		false
 
-.include <bsd.port.pre.mk>
-
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1100000
-BROKEN=		does not build on 10.x
-.endif
-
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

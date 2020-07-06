@@ -2,26 +2,28 @@
 # $FreeBSD$
 
 PORTNAME=	pivy
-PORTVERSION=	0.5.0
-PORTREVISION=	1
+PORTVERSION=	0.6.5
 CATEGORIES=	graphics python
-MASTER_SITES=	https://bitbucket.org/Coin3D/pivy/get/
-DISTNAME=	8eab90908f2a
+PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	pfg@FreeBSD.org
+MAINTAINER=	cmt@FreeBSD.org
 COMMENT=	Python binding for Coin
 
 LICENSE=	MIT
 
-BUILD_DEPENDS=	swig3.0:devel/swig30
-LIB_DEPENDS=	libSoQt.so:x11-toolkits/soqt
+BUILD_DEPENDS=	cmake:devel/cmake \
+		swig3.0:devel/swig30
+LIB_DEPENDS=	libCoin.so:graphics/Coin \
+		libSoQt.so:x11-toolkits/soqt
 
-BROKEN_powerpc64=	fails to link: coin_wrap.o: relocation truncated to fit: R_PPC64_TOC16_DS
-
-USES=		zip python:2.7
+USES=		compiler:c11 python qt:5
+USE_GITHUB=	yes
+GH_ACCOUNT=	coin3d
 USE_PYTHON=	autoplist distutils
-BINARY_ALIAS=	swig=swig3.0
+USE_QT=		core gui opengl widgets
 
-WRKSRC=		${WRKDIR}/Coin3D-pivy-${DISTNAME}
+INSTALL_TARGET=	install-strip
+
+BINARY_ALIAS=	swig=swig3.0
 
 .include <bsd.port.mk>

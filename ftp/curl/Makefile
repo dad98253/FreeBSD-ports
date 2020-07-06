@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	curl
-PORTVERSION=	7.61.0
+PORTVERSION=	7.69.1
 CATEGORIES=	ftp net www
 MASTER_SITES=	https://curl.haxx.se/download/ \
 		LOCAL/sunpoet
@@ -13,7 +13,7 @@ COMMENT=	Command line tool and library for transferring data with URLs
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-OPTIONS_DEFINE=	BROTLI CA_BUNDLE COOKIES CURL_DEBUG DEBUG DOCS EXAMPLES IDN IPV6 METALINK PROXY PSL TLS_SRP
+OPTIONS_DEFINE=	ALTSVC BROTLI CA_BUNDLE COOKIES CURL_DEBUG DEBUG DOCS EXAMPLES IDN IPV6 METALINK NTLM PROXY PSL TLS_SRP
 OPTIONS_GROUP=	PROTOCOL
 OPTIONS_RADIO=	SSL
 OPTIONS_SINGLE=	GSSAPI RESOLV
@@ -21,7 +21,8 @@ OPTIONS_GROUP_PROTOCOL=	DICT FTP GOPHER HTTP HTTP2 IMAP LDAP LDAPS LIBSSH2 POP3 
 OPTIONS_RADIO_SSL=	GNUTLS NSS OPENSSL WOLFSSL
 OPTIONS_SINGLE_GSSAPI=	GSSAPI_BASE GSSAPI_HEIMDAL GSSAPI_MIT GSSAPI_NONE
 OPTIONS_SINGLE_RESOLV=	CARES THREADED_RESOLVER
-OPTIONS_DEFAULT=	CA_BUNDLE COOKIES GSSAPI_${${SSL_DEFAULT} == base :?BASE :NONE} DICT FTP GOPHER HTTP HTTP2 IMAP OPENSSL POP3 PROXY RESOLV RTSP SMTP TELNET TFTP THREADED_RESOLVER TLS_SRP
+OPTIONS_DEFAULT=	ALTSVC CA_BUNDLE COOKIES GSSAPI_${${SSL_DEFAULT} == base :?BASE :NONE} DICT FTP GOPHER HTTP HTTP2 IMAP NTLM OPENSSL POP3 PROXY RESOLV RTSP SMTP TELNET TFTP THREADED_RESOLVER TLS_SRP
+ALTSVC_DESC=		HTTP Alternative Services support
 CA_BUNDLE_DESC=		Enable CA bundle for OpenSSL/GnuTLS/mbedTLS
 COOKIES_DESC=		Cookies support
 CURL_DEBUG_DESC=	cURL debug memory tracking
@@ -31,7 +32,7 @@ HTTP2_DESC=		HTTP/2 support (requires HTTP)
 HTTP2_IMPLIES=		HTTP
 IMAP_DESC=		IMAP/IMAPS support
 LDAPS_IMPLIES=		LDAP
-LIBSSH2_DESC=		SCP/SFTP support via libssh2
+LIBSSH2_DESC=		SCP/SFTP support via libssh2 (requires OPENSSL)
 LIBSSH2_IMPLIES=	OPENSSL
 POP3_DESC=		POP3/POP3S support
 PROXY_IMPLIES=		HTTP
@@ -42,38 +43,37 @@ SMTP_DESC=		SMTP/SMTPS support
 THREADED_RESOLVER_DESC=	Threaded DNS resolver
 TLS_SRP_DESC=		TLS-SRP (Secure Remote Password) support
 
+USES=		cpe libtool localbase pathfix perl5 shebangfix tar:xz
+USE_PERL5=	build
+
 CONFIGURE_ARGS=	--disable-werror \
-		--with-zsh-functions-dir=${LOCALBASE}/share/zsh/site-functions \
-		--without-axtls
+		--with-fish-functions-dir=${LOCALBASE}/share/fish/completions \
+		--with-zsh-functions-dir=${LOCALBASE}/share/zsh/site-functions
 CONFIGURE_ENV=	LOCALBASE=${LOCALBASE} \
 		ac_cv_func_SSLv2_client_method=no
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
 TEST_TARGET=	test
 USE_LDCONFIG=	yes
-USE_PERL5=	build
-USES=		cpe gmake libtool localbase pathfix perl5 shebangfix tar:xz
 
 PORTDOCS=	*
 PORTEXAMPLES=	*
 
 CPE_VENDOR=	haxx
 
-DOCS=		BUGS CODE_OF_CONDUCT.md CODE_STYLE.md CONTRIBUTE.md FAQ \
-		FEATURES HISTORY.md HTTP-COOKIES.md HTTP2.md INSTALL \
-		INTERNALS.md KNOWN_BUGS LICENSE-MIXING.md MAIL-ETIQUETTE \
-		MANUAL RESOURCES ROADMAP.md \
-		SECURITY-PROCESS.md SSL-PROBLEMS.md SSLCERTS.md THANKS TODO \
-		TheArtOfHttpScripting VERSIONS
+DOCS=		BUGS FAQ FEATURES INSTALL KNOWN_BUGS MAIL-ETIQUETTE RESOURCES \
+		THANKS TODO TheArtOfHttpScripting VERSIONS
 
 SHEBANG_FILES=	*/*.pl
 
+ALTSVC_CONFIGURE_ENABLE=alt-svc
 BROTLI_CONFIGURE_WITH=	brotli
 BROTLI_LIB_DEPENDS=	libbrotlidec.so:archivers/brotli
 CA_BUNDLE_CONFIGURE_WITH=	ca-bundle=${LOCALBASE}/share/certs/ca-root-nss.crt
 CA_BUNDLE_RUN_DEPENDS=	${LOCALBASE}/share/certs/ca-root-nss.crt:security/ca_root_nss
 CARES_CONFIGURE_ENABLE=	ares
 CARES_LIB_DEPENDS=	libcares.so:dns/c-ares
+CARES_USES=		pkgconfig
 COOKIES_CONFIGURE_ENABLE=	cookies
 CURL_DEBUG_CONFIGURE_ENABLE=	curldebug
 DEBUG_CONFIGURE_ENABLE=	debug
@@ -106,7 +106,6 @@ HTTP2_USES=		pkgconfig
 IDN_CONFIGURE_WITH=	libidn2
 IDN_LIB_DEPENDS=	libidn2.so:dns/libidn2
 IMAP_CONFIGURE_ENABLE=	imap
-IPV6_CATEGORIES=	ipv6
 IPV6_CONFIGURE_ENABLE=	ipv6
 LDAP_CONFIGURE_ENABLE=	ldap
 LDAP_USE=		OPENLDAP=yes
@@ -120,6 +119,7 @@ NSS_CONFIGURE_WITH=	nss
 NSS_LIB_DEPENDS=	libnss3.so:security/nss \
 			libnspr4.so:devel/nspr
 NSS_USES=		pkgconfig
+NTLM_CPPFLAGS_OFF=	-DCURL_DISABLE_NTLM
 OPENSSL_CONFIGURE_WITH=	ssl=${OPENSSLBASE}
 OPENSSL_CPPFLAGS=	-I${OPENSSLINC}
 OPENSSL_LDFLAGS=	-L${OPENSSLLIB}
@@ -131,14 +131,14 @@ PSL_LIB_DEPENDS=	libpsl.so:dns/libpsl
 RTMP_CONFIGURE_WITH=	librtmp
 RTMP_LIB_DEPENDS=	librtmp.so:multimedia/librtmp
 RTMP_USES=		pkgconfig
-RTSP_ENABLE=		rtsp
+RTSP_CONFIGURE_ENABLE=	rtsp
 SMB_CONFIGURE_ENABLE=	smb
 SMTP_CONFIGURE_ENABLE=	smtp
 TELNET_CONFIGURE_ENABLE=telnet
 TFTP_CONFIGURE_ENABLE=	tftp
 THREADED_RESOLVER_CONFIGURE_ENABLE=	pthreads threaded-resolver
 TLS_SRP_CONFIGURE_ENABLE=	tls-srp
-WOLFSSL_CONFIGURE_WITH=	cyassl
+WOLFSSL_CONFIGURE_WITH=	wolfssl
 WOLFSSL_LIB_DEPENDS=	libwolfssl.so:security/wolfssl
 
 .include <bsd.port.pre.mk>
@@ -154,14 +154,14 @@ IGNORE=		only supports LDAPS with SSL
 post-patch:
 	@${REINPLACE_CMD} -e '/^SUBDIRS = / s|$$| docs scripts|; /^DIST_SUBDIRS = / s| docs scripts||; /cd docs &&/d' ${WRKSRC}/Makefile.in
 	@${REINPLACE_CMD} -e 's|\(flags_dbg_off=\)".*"|\1""|; s|\(flags_opt_off=\)".*"|\1""|' ${WRKSRC}/configure
-	@${REINPLACE_CMD} -e 's|include <gssapi.h>|include <gssapi/gssapi.h>|' ${WRKSRC}/lib/curl_gssapi.h ${WRKSRC}/lib/urldata.h
+	@${REINPLACE_CMD} -e 's|include <gssapi.h>|include <gssapi/gssapi.h>|' ${WRKSRC}/lib/urldata.h
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/docs/libcurl/libcurl.m4 ${STAGEDIR}${PREFIX}/share/aclocal/
 
 post-install-DOCS-on:
 	${MKDIR} ${STAGEDIR}${DOCSDIR}/ ${STAGEDIR}${DOCSDIR}/libcurl/
-	cd ${WRKSRC}/docs/ && ${INSTALL_DATA} ${DOCS} ${STAGEDIR}${DOCSDIR}/
+	cd ${WRKSRC}/docs/ && ${INSTALL_DATA} ${DOCS} *.md ${STAGEDIR}${DOCSDIR}/
 	cd ${WRKSRC}/docs/libcurl/ && ${INSTALL_DATA} ABI *.m4 ${STAGEDIR}${DOCSDIR}/libcurl/
 
 post-install-EXAMPLES-on:

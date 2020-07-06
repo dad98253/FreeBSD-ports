@@ -1,9 +1,9 @@
-# Created by: Nikolai Lifanov <lifanov@FreeBSD.org>
 # $FreeBSD$
 
 PORTNAME=		docker-machine
-PORTVERSION=		0.14.0
+PORTVERSION=		0.16.2
 DISTVERSIONPREFIX=	v
+PORTREVISION=		1
 CATEGORIES=		sysutils
 
 MAINTAINER=		lifanov@FreeBSD.org
@@ -22,9 +22,6 @@ GH_ACCOUNT=	docker
 GH_PROJECT=	machine
 
 GO_PKGNAME=	github.com/${GH_ACCOUNT}/${GH_PROJECT}
-GO_TARGET=	github.com/${GH_ACCOUNT}/${GH_PROJECT}/cmd
-
-post-install:
-	@${MV} ${STAGEDIR}${PREFIX}/bin/cmd ${STAGEDIR}${PREFIX}/bin/docker-machine
+GO_TARGET=	github.com/${GH_ACCOUNT}/${GH_PROJECT}/cmd/${PORTNAME}
 
 .include <bsd.port.mk>

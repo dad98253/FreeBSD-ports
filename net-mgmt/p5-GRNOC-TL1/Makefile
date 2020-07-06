@@ -11,10 +11,12 @@ PKGNAMEPREFIX=	p5-
 MAINTAINER=	bofh@FreeBSD.org
 COMMENT=	Retrieve data from different models of TL1 devices
 
-BUILD_DEPENDS=	p5-Date-Calc>0:devel/p5-Date-Calc \
+BROKEN=		unfetchable
+
+BUILD_DEPENDS=	${RUN_DEPENDS}
+RUN_DEPENDS=	p5-Date-Calc>0:devel/p5-Date-Calc \
 		p5-Net-SSH-Expect>0:net/p5-Net-SSH-Expect \
 		p5-Net-Telnet>0:net/p5-Net-Telnet
-RUN_DEPENDS:=	${BUILD_DEPENDS}
 
 USES=		perl5
 USE_PERL5=	configure

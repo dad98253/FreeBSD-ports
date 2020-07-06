@@ -2,35 +2,38 @@
 # $FreeBSD$
 
 PORTNAME=	protracker
-DISTVERSION=	2.3d
-PORTREVISION=	1
+PORTVERSION=	1.04
+DISTVERSIONPREFIX=	v
+PORTEPOCH=	2
 CATEGORIES=	audio
 MASTER_SITES=	LOCAL/ehaupt
-DISTFILES=	${DISTNAME}${EXTRACT_SUFX} ${PORTNAME}-extras-1.tar.gz
+DISTFILES=	${PORTNAME}-extras-1${EXTRACT_SUFX}
 
 MAINTAINER=	ehaupt@FreeBSD.org
 COMMENT=	Amiga ProTracker clone
 
 LICENSE=	WTFPL
-LICENSE_FILE=	${WRKSRC}/COPYING.txt
 
-USES=		localbase:ldflags
+LIB_DEPENDS=	libasound.so:audio/alsa-lib
+
+USES=		cmake localbase:ldflags sdl
+USE_CSTD=	c99
 USE_SDL=	sdl2
 
-LDFLAGS+=	-lSDL2 -lm
+USE_GITHUB=	yes
+GH_ACCOUNT=	8bitbubsy
+GH_PROJECT=	pt2-clone
+
+CFLAGS_i386+=	-msse2
 
 PLIST_FILES=	bin/protracker man/man1/protracker.1.gz \
 		share/applications/protracker.desktop \
 		share/pixmaps/protracker.png
 
-do-build:
-	${CC} ${CFLAGS} ${LDFLAGS} ${WRKSRC}/trunk/src/*.c \
-		${WRKSRC}/trunk/src/gfx/*.c -o ${WRKSRC}/trunk/protracker
-
 do-install:
 	@${MKDIR} ${STAGEDIR}${PREFIX}/bin ${STAGEDIR}${MANPREFIX}/man/man1 \
 		${STAGEDIR}${DESKTOPDIR}
-	${INSTALL_PROGRAM} ${WRKSRC}/trunk/${PORTNAME} ${STAGEDIR}${PREFIX}/bin
+	${INSTALL_PROGRAM} ${WRKSRC}/release/other/pt2-clone ${STAGEDIR}${PREFIX}/bin/${PORTNAME}
 	${INSTALL_MAN} ${WRKDIR}/${PORTNAME}-extras-1/${PORTNAME}.1 \
 		${STAGEDIR}${MANPREFIX}/man/man1
 	${INSTALL_DATA} ${WRKDIR}/${PORTNAME}-extras-1/*.desktop \

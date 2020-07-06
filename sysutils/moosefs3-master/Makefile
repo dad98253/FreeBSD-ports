@@ -2,13 +2,14 @@
 # $FreeBSD$
 
 PORTNAME=		moosefs3
-PORTVERSION=		3.0.100
+PORTVERSION=		3.0.111
+PORTREVISION=		2
 CATEGORIES=		sysutils
 MASTER_SITES=		http://ppa.moosefs.com/src/
 PKGNAMESUFFIX?=		-master
-DISTNAME=		moosefs-${PORTVERSION}-1
+DISTNAME=		moosefs-${PORTVERSION}-${PORTREVISION}
 
-MAINTAINER=		freebsd@moosefs.com
+MAINTAINER=		freebsd@moosefs.pro
 COMMENT?=		Fault-tolerant distributed filesystem
 
 LICENSE=		GPLv2
@@ -74,7 +75,8 @@ CONFIGURE_ARGS+=	--disable-mfscli
 .endif
 
 .if ${MFS_COMPONENT} == client
-USES=			fuse pkgconfig
+USES=			compiler:c11 fuse:3 libtool pkgconfig
+USE_LDCONFIG=		yes
 CONFIGURE_ARGS+=	--enable-mfsmount
 .else
 CONFIGURE_ARGS+=	--disable-mfsmount

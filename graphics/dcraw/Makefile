@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	dcraw
-PORTVERSION=	9.27
+PORTVERSION=	9.28
+PORTREVISION=	1
 CATEGORIES=	graphics
 MASTER_SITES=	LOCAL/sunpoet
 
@@ -19,7 +20,7 @@ LIBS+=		-ljasper -ljpeg -llcms2 -lm
 USES=		jpeg localbase tar:xz
 
 PLIST_FILES=	bin/${PORTNAME} \
-		man/man1/${PORTNAME}.1.gz
+		share/man/man1/${PORTNAME}.1.gz
 
 do-build:
 	@cd ${WRKSRC}/ && ${CC} -o ${PORTNAME} ${CPPFLAGS} ${CFLAGS} \
@@ -27,7 +28,7 @@ do-build:
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/${PORTNAME} ${STAGEDIR}${PREFIX}/bin/
-	${INSTALL_MAN} ${WRKSRC}/${PORTNAME}.1 ${STAGEDIR}${PREFIX}/man/man1/
+	${INSTALL_MAN} ${WRKSRC}/${PORTNAME}.1 ${STAGEDIR}${PREFIX}/share/man/man1/
 
 # maintainer section:
 
@@ -35,7 +36,7 @@ MS_DIFF=	${MS_WRKSRC}/${PORTNAME}.c.diff
 MS_VERSION=	`${CAT} ${MS_VERSIONFILE}`
 MS_VERSIONFILE=	${MS_WRKSRC}/.version
 MS_WRKSRC=	${WRKSRC}/tmp
-MS_MASTER_SITE=	http://www.cybercom.net/~dcoffin/${PORTNAME}/
+MS_MASTER_SITE=	https://www.cybercom.net/~dcoffin/dcraw/
 MS_DISTFILES=	${PORTNAME}.1 ${PORTNAME}.c
 
 maketar: do-clean extract

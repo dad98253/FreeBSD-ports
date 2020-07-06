@@ -3,7 +3,7 @@
 
 PORTNAME=	sage
 PORTVERSION=	6.7
-PORTREVISION=	4
+PORTREVISION=	8
 CATEGORIES=	math
 MASTER_SITES=	http://boxen.math.washington.edu/home/sagemath/sage-mirror/src/ \
 		http://mirrors.xmission.com/sage/src/ \
@@ -15,11 +15,13 @@ PKGNAMESUFFIX=	-math
 MAINTAINER=	stephen@FreeBSD.org
 COMMENT=	Open source Mathematics software
 
+BROKEN=		unfetchable
+
 LICENSE=	GPLv3
 LICENSE_FILE=	${WRKSRC}/COPYING.txt
 
 BUILD_DEPENDS=	bash:shells/bash \
-		convert:graphics/ImageMagick \
+		convert:graphics/ImageMagick6 \
 		ffmpeg:multimedia/ffmpeg \
 		automake:devel/automake \
 		autoconf:devel/autoconf

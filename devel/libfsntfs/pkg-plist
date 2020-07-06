@@ -1,4 +1,5 @@
 bin/fsntfsinfo
+bin/fsntfsmount
 include/libfsntfs.h
 include/libfsntfs/codepage.h
 include/libfsntfs/definitions.h

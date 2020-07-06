@@ -1,12 +1,12 @@
 # $FreeBSD$
 
 PORTNAME=	os-service-types
-DISTVERSION=	1.2.0
+PORTVERSION=	1.7.0
 CATEGORIES=	devel python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	freebsd_ports@k-worx.org
+MAINTAINER=	kai@FreeBSD.org
 COMMENT=	Python library for consuming OpenStack service-types-authority data
 
 LICENSE=	APACHE20

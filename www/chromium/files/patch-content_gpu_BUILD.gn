@@ -1,6 +1,15 @@
---- content/gpu/BUILD.gn.orig	2018-06-13 00:10:17.000000000 +0200
-+++ content/gpu/BUILD.gn	2018-07-19 12:07:20.670815000 +0200
-@@ -127,7 +127,7 @@
+--- content/gpu/BUILD.gn.orig	2020-05-13 18:39:43 UTC
++++ content/gpu/BUILD.gn
+@@ -96,7 +96,7 @@ target(link_target_type, "gpu_sources") {
+     ]
+   }
+ 
+-  if (is_linux) {
++  if (is_linux && !is_bsd) {
+     deps += [ "//services/service_manager/zygote" ]
+   }
+ 
+@@ -130,7 +130,7 @@ target(link_target_type, "gpu_sources") {
  
    # Use DRI on desktop Linux builds.
    if (current_cpu != "s390x" && current_cpu != "ppc64" && is_desktop_linux &&

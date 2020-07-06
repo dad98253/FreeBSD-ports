@@ -16,7 +16,8 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 BUILD_DEPENDS=	cdrecord:sysutils/cdrtools
 RUN_DEPENDS=	cdrecord:sysutils/cdrtools
 
-USE_SDL=	yes
+USES=		sdl
+USE_SDL=	sdl
 GNU_CONFIGURE=	yes
 
 .include <bsd.port.mk>

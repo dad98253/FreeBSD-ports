@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	nghttp2
-PORTVERSION=	1.32.0
+PORTVERSION=	1.41.0
 DISTVERSIONPREFIX=	v
 CATEGORIES=	www net
 
@@ -12,9 +12,6 @@ COMMENT=	HTTP/2.0 C Library
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_SSL=	openssl-devel
-BROKEN_SSL_REASON_openssl-devel=	error: use of undeclared identifier 'SSL_get0_next_proto_negotiated'
-
 BUILD_DEPENDS=	libnghttp2>=${PORTVERSION}:www/libnghttp2
 LIB_DEPENDS=	libnghttp2.so:www/libnghttp2
 
@@ -23,15 +20,15 @@ OPTIONS_DEFAULT=APP HPACK
 OPTIONS_SUB=	yes
 APP_DESC=	Build h2load, nghttp, nghttpd and nghttpx
 
+USES=		autoreconf compiler:c++14-lang gmake libtool localbase pathfix pkgconfig ssl
+
 CONFIGURE_ARGS=	--disable-python-bindings --with-jemalloc
 CONFIGURE_ENV=	OPENSSL_CFLAGS="-I${OPENSSLINC}" \
 		OPENSSL_LIBS="-L${OPENSSLLIB} -lcrypto -lssl"
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
-USE_CXXSTD=	c++11
-USE_LDCONFIG=	yes
+USE_CXXSTD=	c++14
 USE_RC_SUBR=	nghttpx
-USES=		autoreconf compiler:c++11-lib gmake libtool localbase pathfix pkgconfig ssl
 
 PORTDATA=	fetch-ocsp-response
 PORTDOCS=	*
@@ -51,6 +48,7 @@ ASIO_BUILD_DEPENDS=	boost-libs>=1.54.0:devel/boost-libs
 ASIO_CONFIGURE_OFF=	--with-boost=no
 ASIO_CONFIGURE_ON=	--enable-asio-lib --with-boost-asio --with-boost-system --with-boost-thread
 ASIO_LIB_DEPENDS=	libboost_thread.so:devel/boost-libs
+ASIO_USE=		LDCONFIG=yes
 EXAMPLES_CONFIGURE_ENABLE=	examples
 EXAMPLES_BUILD_DEPENDS=	libevent>=2.0.8:devel/libevent
 EXAMPLES_LIB_DEPENDS=	libevent_openssl.so:devel/libevent

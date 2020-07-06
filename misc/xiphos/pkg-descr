@@ -1,6 +1,7 @@
-Xiphos (formerly known as GnomeSword) is a Bible study tool written
-with the GNOME toolkit, offering a rich and featureful environment
-for reading, study, and research using modules from The SWORD Project
-and elsewhere.
+Xiphos (formerly known as GnomeSword) is a Bible study application for Linux,
+UNIX, and Windows operating systems. It uses Sword to display Bibles,
+commentaries, dictionary, and other texts and images. Xiphos includes features
+such as searching, biblesync, bookmarks, parallel study, and original language
+study.
 
-WWW: http://www.xiphos.org/
+WWW: http://xiphos.org

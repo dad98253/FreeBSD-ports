@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	you-get
-PORTVERSION=	0.4.1060
-PORTREVISION=	1
+PORTVERSION=	0.4.1403
 CATEGORIES=	www
 MASTER_SITES=	CHEESESHOP
 
@@ -15,12 +14,15 @@ LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
 RUN_DEPENDS=	ffmpeg:multimedia/ffmpeg
 
-OPTIONS_DEFINE=	RTMPDUMP
+USES=		python:3.5+
+USE_PYTHON=	autoplist distutils noflavors
 
 NO_ARCH=	yes
-USE_PYTHON=	autoplist distutils noflavors
-USES=		python:3.4+
+
+OPTIONS_DEFINE=	RTMPDUMP SOCKS
+SOCKS_DESC=	SOCKS support
 
 RTMPDUMP_RUN_DEPENDS=	rtmpdump:multimedia/rtmpdump
+SOCKS_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pysocks>=0:net/py-pysocks@${PY_FLAVOR}
 
 .include <bsd.port.mk>

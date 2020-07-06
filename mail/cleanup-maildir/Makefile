@@ -4,15 +4,20 @@
 PORTNAME=	cleanup-maildir
 PORTVERSION=	0.1.1
 DISTVERSIONPREFIX=	v
+PORTREVISION=	1
 CATEGORIES=	mail python
 
 MAINTAINER=	ehaupt@FreeBSD.org
 COMMENT=	Script for cleaning up mails in Maildir folders based on arival date
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}graph-core>=${PORTVERSION}:graphics/py-graph-core@${PY_FLAVOR}
 
-USES=		python shebangfix
+USES=		python:2.7 shebangfix
 USE_GITHUB=	yes
+
 NO_BUILD=	yes
 NO_ARCH=	yes
 

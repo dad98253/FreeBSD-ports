@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	httperf
-PORTVERSION=	0.9.0.1
+PORTVERSION=	0.9.1
 CATEGORIES=	benchmarks www
 
 MAINTAINER=	jlaffaye@FreeBSD.org
@@ -13,7 +13,7 @@ LICENSE=	GPLv2
 GNU_CONFIGURE=	yes
 USES=		autoreconf gmake libtool ssl
 USE_GITHUB=	yes
-GH_TAGNAME=	dcfb746
+GH_TAGNAME=	568322e
 MAKE_ARGS=	LIBUTIL_OBJS=ssl_writev.o \
 		exec_prefix=${PREFIX}
 

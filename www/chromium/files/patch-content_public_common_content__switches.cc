@@ -1,8 +1,8 @@
---- content/public/common/content_switches.cc.orig	2017-06-05 19:03:07 UTC
+--- content/public/common/content_switches.cc.orig	2020-05-13 18:40:32 UTC
 +++ content/public/common/content_switches.cc
-@@ -1006,7 +1006,7 @@ const char kDisableVaapiAcceleratedVideoEncode[] =
-     "disable-vaapi-accelerated-video-encode";
- #endif
+@@ -1003,7 +1003,7 @@ const char kEnableAggressiveDOMStorageFlushing[] =
+ // Enable indication that browser is controlled by automation.
+ const char kEnableAutomation[] = "enable-automation";
  
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_FREEBSD)

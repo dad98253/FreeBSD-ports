@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/bin/python
 
 # Copyright: www.brool.com (http://www.brool.com/post/using-google-authenticator-for-your-website/)
 # License: CC0 1.0 Universal License
@@ -31,7 +31,7 @@ def authenticate(username, secretkey, pin, code_attempt):
         hm = hmac.HMAC(secretkey, b, hashlib.sha1).digest()
 
         # extract 4 bytes from digest based on LSB
-        offset = ord(hm[-1]) & 0x0F
+        offset = hm[-1] & 0x0F
         truncatedHash = hm[offset:offset+4]
 
         # get the code from it

@@ -2,20 +2,23 @@
 # $FreeBSD$
 
 PORTNAME=	tornado
-PORTVERSION=	5.0.2
+PORTVERSION=	5.1.1
 CATEGORIES=	www python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER=	gblach@FreeBSD.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	Python Web Server from FriendFeed
 
 LICENSE=	APACHE20
 
-CONFLICTS=	py[0-9]*-tornado4-*
+RUN_DEPENDS=	${PY_FUTURES}
 
 USES=		python
 USE_PYTHON=	autoplist distutils
+
+CONFLICTS_INSTALL=	${PYTHON_PKGNAMEPREFIX}tornado4 \
+			${PYTHON_PKGNAMEPREFIX}tornado6
 
 .include <bsd.port.pre.mk>
 
@@ -27,10 +30,10 @@ RUN_DEPENDS+=	${PYTHON_PKGNAMEPREFIX}singledispatch>0:devel/py-singledispatch@${
 RUN_DEPENDS+=	${PYTHON_PKGNAMEPREFIX}backports_abc>=0.4:devel/py-backports_abc@${PY_FLAVOR}
 .endif
 
-post-build:
-	@${FIND} ${WRKSRC}/build -name speedups.so -exec ${STRIP_CMD} {} \;
+post-install:
+	${STRIP_CMD} ${STAGEDIR}${PYTHON_SITELIBDIR}/tornado/speedups.so
 
-regression-test: build
+do-test:
 	@cd ${WRKSRC} && ${PYTHON_CMD} -m tornado.test.runtests
 
 .include <bsd.port.post.mk>

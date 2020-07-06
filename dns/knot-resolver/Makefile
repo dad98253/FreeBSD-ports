@@ -2,98 +2,122 @@
 # $FreeBSD$
 
 PORTNAME=	knot-resolver
-DISTVERSION=	2.3.0
-PORTREVISION=	2
-CATEGORIES=	dns ipv6
+DISTVERSION=	5.0.1
+CATEGORIES=	dns
 MASTER_SITES=	https://secure.nic.cz/files/knot-resolver/ \
 		https://dns.company/downloads/knot-resolver/
 
 MAINTAINER=	freebsd@dns.company
 COMMENT=	Caching full resolver implementation
 
-LICENSE=	GPLv3
+LICENSE=	GPLv3+
+LICENSE_FILE=	${WRKSRC}/COPYING
+
+BUILD_DEPENDS=	bash:shells/bash \
+		cmocka>=1.1.1:sysutils/cmocka \
+		flake8:devel/py-flake8@${PY_FLAVOR} \
+		luacheck:devel/lua-luacheck
 
 LIB_DEPENDS=	libgnutls.so:security/gnutls \
-		libknot.so:dns/knot2 \
+		libknot.so:dns/knot2-lib \
 		liblmdb.so:databases/lmdb \
-		libluajit-5.1.so:lang/luajit \
+		libluajit-5.1.so:lang/luajit-openresty \
 		libuv.so:devel/libuv
+
+USES=		compiler:c11 compiler:c++11-lang libedit libtool meson \
+		ncurses ninja pkgconfig python shebangfix tar:xz
+USE_CXXSTD=	c++11
+USE_LDCONFIG=	yes
+LDFLAGS+=	-L${LOCALBASE}/lib
+
+SUB_FILES=	pkg-message
+
+SHEBANG_FILES=	scripts/bench.sh \
+		scripts/build-in-obs.sh \
+		scripts/coverage_c_combine.sh \
+		scripts/coverage_env.sh \
+		scripts/gen-cdefs.sh \
+		scripts/get-date.sh \
+		scripts/get-scanbuild-args.sh \
+		scripts/luacov_gen_empty.sh \
+		scripts/make-dev-archive.sh \
+		scripts/make-distrofiles.sh \
+		scripts/make-doc.sh \
+		scripts/make-srpm.sh \
+		scripts/obs-build.sh \
+		scripts/run-pylint.sh \
+		scripts/test-config.sh \
+		scripts/test-integration-prepare.sh \
+		scripts/update-root-hints.sh
 
 CONFLICTS=	knot-1.* knot1-[0-6].*
 
-MAKE_ARGS+=	PREFIX=${LOCALBASE}
-MAKE_ARGS+=	LIBDIR=${PREFIX}/lib
-MAKE_ARGS+=	MANDIR=${PREFIX}/man
-MAKE_ARGS+=	PKGCONFIGDIR=${PREFIX}/libdata/pkgconfig
-MAKE_ARGS+=	lmdb_CFLAGS=-I${PREFIX}/include lmdb_LIBS=-llmdb
+MESON_ARGS=	--buildtype=release \
+		--default-library=static \
+		--prefix=${LOCALBASE} \
+		-Duser=${USERS} \
+		-Dgroup=${GROUPS} \
+		-Dinstall_kresd_conf=enabled \
+		-Dclient=enabled \
+		-Dutils=enabled \
+		-Dinstall_root_keys=enabled \
+		-Dkeyfile_default=${ETCDIR}/root.keys \
+		-Dmanaged_ta=enabled \
+		-Droot_hints=${ETCDIR}/root.hints \
+		-Dunit_tests=enabled
 
-USES=		gmake libedit libtool ncurses pkgconfig tar:xz
-USE_LDCONFIG=	yes
+#		--libdir=${PREFIX}/lib
+#		--pkg-config-path=${PREFIX}/libdata/pkgconfig
+#		lmdb_CFLAGS=-I${PREFIX}/include lmdb_LIBS=-llmdb
+#		-Dlmdb_CFLAGS=-I${PREFIX}/include \	# doesn't help
+#		-Dlmdb_LIBS=-llmdb			# doesn't help
+#		-Dconfig_tests=enabled \		# complains about missing cqueues lua package
+#		-Dextra_tests=enabled \			# also requires -Dsendmmsg=disabled
 
-OPTIONS_DEFINE=	COOKIES DNSTAP DOXYGEN GO MEMCACHED REDIS TRUSTANCHOR
+OPTIONS_DEFINE=		DOCS DNSTAP DOXYGEN TRUSTANCHOR
+OPTIONS_DEFAULT=	DOCS DNSTAP DOXYGEN
 
-COOKIES_DESC=			cookies
-COOKIES_LIB_DEPENDS=		libnettle.so:security/nettle
-COOKIES_MAKE_ARGS_ON=		HAS_nettle=yes
-COOKIES_MAKE_ARGS_OFF=		HAS_nettle=no
-COOKIES_PLIST_FILES=		lib/kdns_modules/cookies.so      \
-				include/libkres/alg_containers.h \
-				include/libkres/alg_sha.h        \
-				include/libkres/control.h        \
-				include/libkres/helper.h         \
-				include/libkres/lru_cache.h      \
-				include/libkres/nonce.h
+# docs/meson.build wants python2 or python3 - not -for example- python3.7
+# So this currently is partially broken:
+#DOCS_MESON_ON=			-Ddoc=enabled
 
 DNSTAP_DESC=			dnstap support
 DNSTAP_LIB_DEPENDS=		libprotobuf.so:devel/protobuf \
 				libprotobuf-c.so:devel/protobuf-c \
 				libfstrm.so:devel/fstrm
-DNSTAP_MAKE_ARGS_ON=		HAS_libprotobuf-c=yes HAS_libfstrm=yes
-DNSTAP_MAKE_ARGS_OFF=		HAS_libprotobuf-c=no  HAS_libfstrm=no
-DNSTAP_PLIST_FILES=		lib/kdns_modules/dnstap.so
+DNSTAP_PLIST_FILES=		lib/knot-resolver/kres_modules/dnstap.so
+DNSTAP_MESON_ON=		-Ddnstap=enabled
+DNSTAP_MESON_OFF=		-Ddnstap=disabled
 
-DOXYGEN_BUILD_DEPENDS=		doxygen:devel/doxygen
-DOXYGEN_MAKE_ARGS_ON=		HAS_doxygen=yes
-DOXYGEN_MAKE_ARGS_OFF=		HAS_doxygen=no
-
-GO_DESC=			go
-GO_BUILD_DEPENDS=		go>=1.5:lang/go
-GO_MAKE_ARGS_ON=		HAS_go=yes
-GO_MAKE_ARGS_OFF=		HAS_go=no
-
-MEMCACHED_DESC=			memcached in-memory data-backend
-MEMCACHED_LIB_DEPENDS=		libmemcached.so:databases/libmemcached
-MEMCACHED_MAKE_ARGS_ON=		HAS_libmemcached=yes
-MEMCACHED_MAKE_ARGS_OFF=	HAS_libmemcached=no
-MEMCACHED_PLIST_FILES=		lib/kdns_modules/memcached.so
-
-REDIS_DESC=			redis in-memory data-backend
-REDIS_LIB_DEPENDS=		libhiredis.so:databases/hiredis
-REDIS_MAKE_ARGS_ON=		HAS_hiredis=yes
-REDIS_MAKE_ARGS_OFF=		HAS_hiredis=no
-REDIS_PLIST_FILES=		lib/kdns_modules/redis.so
+DOXYGEN_IMPLIES=		DOCS
+DOXYGEN_BUILD_DEPENDS=		doxygen:devel/doxygen \
+				${PYTHON_PKGNAMEPREFIX}sphinx>0:textproc/py-sphinx@${PY_FLAVOR} \
+				${PYTHON_PKGNAMEPREFIX}sphinx_rtd_theme>0:textproc/py-sphinx_rtd_theme@${PY_FLAVOR}
 
 TRUSTANCHOR_DESC=		Trust anchor bootstrapping and stats
 TRUSTANCHOR_USES=		lua
-TRUSTANCHOR_MAKE_ARGS_ON=	HAS_ltn12=yes HAS_ssl.https=yes
-TRUSTANCHOR_MAKE_ARGS_OFF=	HAS_ltn12=no  HAS_ssl.https=no
 TRUSTANCHOR_BUILD_DEPENDS=	${LUA_PKGNAMEPREFIX}luasocket>=0:net/luasocket \
 				${LUA_PKGNAMEPREFIX}luasec>=0:security/luasec
 
+.include <bsd.port.options.mk>
+
 USERS=		kresd
-GROUPS=		kresd
+GROUPS=		${USERS}
 
-PORTDOCS=	AUTHORS COPYING CodingStyle README.md
+PORTDOCS=	AUTHORS COPYING CodingStyle NEWS README.md
 
-STRIP_TARGETS=	sbin/kresd			\
-		sbin/kresc			\
-		lib/libkres.so.7		\
-		lib/kdns_modules/ahocorasick.so	\
-		lib/kdns_modules/cookies.so	\
-		lib/kdns_modules/dnstap.so	\
-		lib/kdns_modules/hints.so	\
-		lib/kdns_modules/kmemcached.so	\
-		lib/kdns_modules/stats.so
+STRIP_TARGETS=	sbin/kresd \
+		sbin/kresc \
+		lib/knot-resolver/ahocorasick.so \
+		lib/knot-resolver/kres_modules/bogus_log.so \
+		lib/knot-resolver/kres_modules/dnstap.so \
+		lib/knot-resolver/kres_modules/edns_keepalive.so \
+		lib/knot-resolver/kres_modules/hints.so \
+		lib/knot-resolver/kres_modules/lib/knot-resolver/kres_modules/nsid.so \
+		lib/knot-resolver/kres_modules/refuse_nord.so \
+		lib/knot-resolver/kres_modules/stats.so
+
+pre-install-TEST-on: do-test
 
 post-install:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

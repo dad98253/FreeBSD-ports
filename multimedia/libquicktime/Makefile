@@ -3,12 +3,12 @@
 
 PORTNAME=	libquicktime
 PORTVERSION=	1.2.4
-PORTREVISION?=	20
+PORTREVISION?=	28
 CATEGORIES=	multimedia
 MASTER_SITES=	SF
 
 MAINTAINER=	ports@FreeBSD.org
-COMMENT=	library for reading and writing quicktime files
+COMMENT=	Library for reading and writing quicktime files
 
 .if !defined(_BUILDING_LIBQUICKTIME_PLUGINS)
 LIB_DEPENDS=	libvorbis.so:audio/libvorbis
@@ -25,6 +25,7 @@ LIBS+=		-L${LOCALBASE}/lib -lintl
 INSTALL_TARGET=	install-strip
 
 .if !defined(_BUILDING_LIBQUICKTIME_PLUGINS)
+USES+=		xorg
 USE_XORG=	xaw xv
 CONFIGURE_ARGS=	--with-x --enable-gpl --without-doxygen --without-lame
 
@@ -33,10 +34,7 @@ OPTIONS_DEFINE=	ALSA DV FAAC FAAD FFMPEG GTK2 JPEG OPENGL OPTIMIZED_CFLAGS PNG \
 OPTIONS_DEFAULT=	FFMPEG JPEG OPENGL PNG SCHROEDINGER X264
 OPTIONS_SUB=	yes
 
-PORTDOCS=	api_usage.html codecs.html qt4l_building.html \
-		qt4l_codecs.html qt4l_index.html \
-		qt4l_license.html qt4l_opening.html qt4l_positioning.html \
-		qt4l_reading.html qt4l_util.html qt4l_writing.html
+PORTDOCS=	api_usage.html codecs.html
 
 .else
 CONFIGURE_ARGS+=	--without-x --enable-gpl --without-doxygen
@@ -51,6 +49,7 @@ CONFIGURE_ARGS+=	--without-cpuflags
 
 .if !defined(_BUILDING_LIBQUICKTIME_PLUGINS)
 .if ${PORT_OPTIONS:MGTK2}
+USES+=		gnome
 USE_GNOME+=	gtk20
 CONFIGURE_ARGS+=	--with-gtk
 .else
@@ -58,12 +57,13 @@ CONFIGURE_ARGS+=	--without-gtk
 .endif
 
 .if ${PORT_OPTIONS:MALSA}
-LIB_DEPENDS=	libasound.so:audio/alsa-lib
+LIB_DEPENDS+=	libasound.so:audio/alsa-lib
 .else
 CONFIGURE_ARGS+=	--without-alsa
 .endif
 
 .if ${PORT_OPTIONS:MOPENGL}
+USES+=		gl
 USE_GL=		yes
 CONFIGURE_ARGS+=	--with-opengl
 .else

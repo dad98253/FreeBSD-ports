@@ -1,11 +1,13 @@
---- plugins/node.d.freebsd/df.in.orig	2016-12-04 19:34:49 UTC
+Ignore autofs too.
+
+--- plugins/node.d.freebsd/df.in.orig	2020-03-24 12:31:00 UTC
 +++ plugins/node.d.freebsd/df.in
-@@ -24,7 +24,7 @@ if [ "$1" = "autoconf" ]; then
+@@ -22,7 +22,7 @@ if [ "$1" = "autoconf" ]; then
  	exit 0
  fi
  
--EXCLUDEDFS="-t noprocfs,devfs,fdescfs,linprocfs,linsysfs,nfs,nullfs"
-+EXCLUDEDFS="-t noprocfs,devfs,fdescfs,linprocfs,linsysfs,nfs,nullfs,autofs"
+-EXCLUDEDFS="-t noprocfs,devfs,fdescfs,linprocfs,linsysfs,sysfs,nfs,nullfs,cd9660"
++EXCLUDEDFS="-t noprocfs,devfs,fdescfs,linprocfs,linsysfs,sysfs,nfs,nullfs,cd9660,autofs"
  
  if [ $(uname -s) = "GNU/kFreeBSD" ]; then
- 	EXCLUDEDFS=$(echo $EXCLUDEDFS | sed 's/^-t /-x /; s/,/ -x /g')
+ 	# Debian ships df from GNU coreutils

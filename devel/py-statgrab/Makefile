@@ -12,9 +12,12 @@ DISTNAME=	py${PORTNAME}-${PORTVERSION}
 MAINTAINER=	tdb@FreeBSD.org
 COMMENT=	Set of Python bindings for libstatgrab
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 LIB_DEPENDS=	libstatgrab.so:devel/libstatgrab
 
-USES=		pkgconfig python
+USES=		pkgconfig python:-3.6
 USE_PYTHON=	distutils autoplist
 
 .include <bsd.port.mk>

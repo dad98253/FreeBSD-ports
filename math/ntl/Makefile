@@ -2,47 +2,55 @@
 # $FreeBSD$
 
 PORTNAME=	ntl
-PORTVERSION=	6.0.0
+PORTVERSION=	11.4.3
+PORTREVISION=	1
 CATEGORIES=	math
 MASTER_SITES=	http://www.shoup.net/ntl/
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	ndowens04@gmail.com
 COMMENT=	Victor Shoup's Number Theory Library
 
-# ntl is faster with libgmp4, but you can disable it
-.if !defined(WITHOUT_GMP)
-LIB_DEPENDS=	libgmp.so:math/gmp
+LICENSE=	LGPL21+
+LICENSE_FILE=	${WRKSRC}/../doc/copying.txt
 
-CONFIGURE_ARGS=	NTL_GMP_LIP=on
-.endif
-
-USES=		perl5
+USES=		compiler:c11 libtool perl5
+USE_LDCONFIG=	yes
 USE_PERL5=	build
+
 HAS_CONFIGURE=	yes
-CONFIGURE_ARGS+=	AR="${AR}" \
-		CC="${CC}" CFLAGS="${CFLAGS}" \
-		CXX="${CXX}" CXXFLAGS="${CXXFLAGS}" \
-		DEF_PREFIX="${LOCALBASE}" \
-		LDFLAGS="${LDFLAGS}" NTL_STD_CXX=on \
-		PREFIX="${PREFIX}" RANLIB="${RANLIB}"
+CONFIGURE_ARGS+=AR="${AR}" CXX="${CXX}" CXXFLAGS="${CXXFLAGS}" \
+		DEF_PREFIX="${LOCALBASE}" LDFLAGS="${LDFLAGS}" \
+		PREFIX="${PREFIX}" RANLIB="${RANLIB}" SHARED=on
 
 CFLAGS+=	-fPIC
-WRKSRC=		${WRKDIR}/${DISTNAME}/src
+WRKSRC_SUBDIR=	src
 MAKEFILE=	makefile
+TEST_TARGET=	check
 
-OPTIONS_DEFINE=	DOCS
+NTLDOCSDIR=	share/doc/NTL
+PLIST_SUB=	NTLDOCS=${NTLDOCSDIR}
 
-do-install:
-	${MKDIR} ${STAGEDIR}${PREFIX}/include/NTL
-	${INSTALL_DATA} ${WRKSRC}/../include/NTL/* ${STAGEDIR}${PREFIX}/include/NTL/
-	${INSTALL_DATA} ${WRKSRC}/ntl.a ${STAGEDIR}${PREFIX}/lib/libntl.a
+OPTIONS_DEFINE=		DOCS GF2X GMP NATIVE
+OPTIONS_DEFAULT=	GF2X GMP
 
-post-install-DOCS-on:
+GMP_DESC=		Arbitrary precision arithmetic (Faster)
+GMP_LIB_DEPENDS=	libgmp.so:math/gmp
+GMP_CONFIGURE_OFF=	NTL_GMP_LIP=off
+
+GF2X_DESC=		Faster arithmetic over GF(2)[X] (the NTL class GF2X)
+GF2X_LIB_DEPENDS=	libgf2x.so:math/gf2x
+GF2X_CONFIGURE_ON=	NTL_GF2X_LIB=on
+GF2X_CONFIGURE_OFF=	NTL_GF2X_LIB=off
+
+NATIVE_DESC=		Build with native optimizations (-march=native)
+NATIVE_CONFIGURE_ON=	NATIVE=on
+NATIVE_CONFIGURE_OFF=	NATIVE=off
+
+do-install-DOCS-on:
 	${MKDIR} ${STAGEDIR}${DOCSDIR}
 	${INSTALL_DATA} ${WRKSRC}/../doc/* ${STAGEDIR}${DOCSDIR}
 
-test: build
-	@(cd ${WRKSRC}; ${SETENV} ${MAKE_ENV} ${MAKE} \
-		${MAKE_FLAGS} ${MAKEFILE} ${MAKE_ARGS} check)
+post-install:
+	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libntl.so.*
 
 .include <bsd.port.mk>

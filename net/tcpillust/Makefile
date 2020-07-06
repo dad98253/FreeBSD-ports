@@ -6,12 +6,13 @@ PORTVERSION=	2.01
 PORTREVISION=	2
 PORTEPOCH=	1
 CATEGORIES=	net tcl tk
-MASTER_SITES=	http://www.jp.nishida.org/tcpillust/
+MASTER_SITES=	https://cschubert.com/distfiles/ \
+		LOCAL/cy
 
 MAINTAINER=	nishida@sfc.wide.ad.jp
 COMMENT=	Graphical TCP connection analysis tool
 
-USES=		motif tk
+USES=		motif tk xorg
 USE_XORG=	xt
 
 PORTDOCS=	tcpclient.log tcpserver.log
@@ -24,6 +25,8 @@ PLIST_FILES=	bin/tcpillust \
 		share/tcpillust/zoomout.xbm
 
 WRKSRC=		${WRKDIR}/${PORTNAME}
+
+OPTIONS_DEFINE=	DOCS
 
 do-build:
 .for file in binread.c button.c draw.c parser.c tcpillust.c tcpdump/print-tcp.c

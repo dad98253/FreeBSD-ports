@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	check-manifest
-PORTVERSION=	0.37
+PORTVERSION=	0.41
 CATEGORIES=	devel python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -13,12 +13,15 @@ COMMENT=	Tool to check the completeness of MANIFEST.in for Python packages
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE.rst
 
+RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pep517>=0:devel/py-pep517@${PY_FLAVOR} \
+		${PYTHON_PKGNAMEPREFIX}toml>=0:textproc/py-toml@${PY_FLAVOR}
 TEST_DEPENDS=	${PYTHON_PKGNAMEPREFIX}mock>=0:devel/py-mock@${PY_FLAVOR}
 
 OPTIONS_DEFINE=	DOCS
 
 USES=		python
 USE_PYTHON=	autoplist concurrent distutils
+
 NO_ARCH=	yes
 
 PORTDOCS=	CHANGES.rst README.rst

@@ -2,11 +2,12 @@
 # $FreeBSD$
 
 PORTNAME=	grip
-PORTVERSION=	3.7.0
+PORTVERSION=	4.1.0
+PORTREVISION=	1
 CATEGORIES=	audio
 MASTER_SITES=	SF/grip/${PORTVERSION}
 
-MAINTAINER=	multimedia@FreeBSD.org
+MAINTAINER=	freebsd-ports@jan0sch.de
 COMMENT=	GTK front-end to external cd rippers and audio encoders
 
 LICENSE=	GPLv2+
@@ -18,16 +19,17 @@ LIB_DEPENDS=	libcurl.so:ftp/curl \
 		libid3.so:audio/id3lib \
 		libpopt.so:devel/popt
 
-USES=		gmake libtool localbase pathfix pkgconfig
+USES=		compiler:c++11-lang gmake gnome libtool localbase \
+		pathfix pkgconfig xorg gnome
 USE_XORG=	ice sm x11 xext
-USE_GNOME=	cairo gdkpixbuf2 gnomeprefix libgnomeui vte
+USE_GNOME=	cairo gdkpixbuf2 gtk20
 
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS+=--disable-werror
 INSTALLS_ICONS=	yes
 
 OPTIONS_DEFINE=	CDPARANOIA CDDA2WAV LAME VORBIS FAAC FLAC NLS
-OPTIONS_DEFAULT=	CDPARANOIA VORBIS
+OPTIONS_DEFAULT=	CDPARANOIA FLAC VORBIS
 
 .if !defined(PACKAGE_BUILDING)
 OPTIONS_DEFAULT+=	LAME
@@ -50,6 +52,8 @@ DEFAULT_CDROM_DEVICE=${WITH_CDROM_DEVICE}
 DEFAULT_CDROM_DEVICE=/dev/cd0
 .endif
 
+.include <bsd.port.pre.mk>
+
 pre-everything::
 .if !defined(WITH_CDROM_DEVICE)
 	@${ECHO_MSG} "===> The default CDROM device is ${DEFAULT_CDROM_DEVICE}"
@@ -60,5 +64,8 @@ pre-everything::
 post-patch:
 	@${REINPLACE_CMD} -e 's|/dev/cdrom|${DEFAULT_CDROM_DEVICE}|' \
 		${WRKSRC}/src/grip.c
+.if ${CHOSEN_COMPILER_TYPE} == gcc && ${COMPILER_VERSION} <= 42
+	${REINPLACE_CMD} -e '/pragma/d' ${WRKSRC}/src/cdpar.c
+.endif
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

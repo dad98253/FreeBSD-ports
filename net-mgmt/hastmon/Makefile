@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	hastmon
-PORTVERSION=	0.3.2
+PORTVERSION=	0.3.4
 CATEGORIES=	net-mgmt
 
 MAINTAINER=	trociny@FreeBSD.org
@@ -20,6 +20,8 @@ MKCMAKE?=	${LOCALBASE}/bin/mkcmake
 INSTALL_TARGET=	installdirs install
 
 PORTDOCS=	ChangeLog COPYRIGHT README
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	${REINPLACE_CMD} \

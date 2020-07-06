@@ -3,7 +3,7 @@
 
 PORTNAME=	puckman
 PORTVERSION=	1.0
-PORTREVISION=	5
+PORTREVISION=	6
 CATEGORIES=	games
 MASTER_SITES=	SF/nemysisfreebsdp/${CATEGORIES}/:icons
 DISTFILES=	${DISTNAME}${EXTRACT_SUFX} \
@@ -20,7 +20,7 @@ USE_GITHUB=	yes
 GH_ACCOUNT=	patapizza
 GH_TAGNAME=	f5b809c
 
-USES=		gmake
+USES=		gmake sdl
 USE_SDL=	sdl image gfx
 
 PORTDOCS=	README.md

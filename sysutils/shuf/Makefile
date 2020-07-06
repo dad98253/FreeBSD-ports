@@ -9,9 +9,9 @@ MASTER_SITES=	https://devio.us/~bcallah/shuf/
 MAINTAINER=	feld@FreeBSD.org
 COMMENT=	Randomly permute input lines
 
-LICENSE=	ISCL
+BROKEN=		unfetchable
 
-BROKEN_FreeBSD_10=	Requires reallocarray
+LICENSE=	ISCL
 
 GNU_CONFIGURE=	yes
 

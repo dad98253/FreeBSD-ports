@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	Net_Sieve
-DISTVERSION=	1.4.3
+DISTVERSION=	1.4.4
 CATEGORIES=	net www pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	PEAR class to handle talking to timsieved
 
 LICENSE=	BSD3CLAUSE

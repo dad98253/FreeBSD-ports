@@ -3,10 +3,11 @@
 
 PORTNAME=	gcal
 PORTVERSION=	4.1
+PORTREVISION=	1
 CATEGORIES=	deskutils
 MASTER_SITES=	GNU
 
-MAINTAINER=	johans@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	GNU Gregorian calendar program
 
 LICENSE=	GPLv3+

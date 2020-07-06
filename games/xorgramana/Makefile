@@ -12,7 +12,7 @@ DISTNAME=	XorGramana-${PORTVERSION}
 MAINTAINER=	amdmi3@FreeBSD.org
 COMMENT=	Logic word puzzle game set inside a series of mazes
 
-USES=		tar:bzip2 gmake
+USES=		gl gmake sdl tar:bzip2 
 USE_SDL=	sdl image
 USE_GL=		glu
 
@@ -28,6 +28,8 @@ DESKTOP_ENTRIES="XorGramana" \
 		"xorgramana" \
 		"Game;LogicGame;" \
 		false
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} -e 's|GFX/|${DATADIR}/&|' ${WRKSRC}/icons.c

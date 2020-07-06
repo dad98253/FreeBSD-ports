@@ -10,13 +10,15 @@ DISTNAME=	${PORTNAME}.v${PORTVERSION}
 MAINTAINER=	pi@FreeBSD.org
 COMMENT=	SIP call flow creator (HTML format)
 
+BROKEN=		unfetchable
+
 LICENSE=	APACHE20
 
 USES=		perl5 zip shebangfix
 USE_PERL5=	run
-NO_BUILD=	yes
 
-WRKSRC=		${WRKDIR}
+NO_BUILD=	yes
+NO_WRKSUBDIR=	yes
 
 # TODO: there are two documents available at
 # http://www.abptech.com/support/resources/SIP_scen_generator_v1.2.7/index/SipScenario.pdf

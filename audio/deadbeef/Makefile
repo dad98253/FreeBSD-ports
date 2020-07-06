@@ -3,7 +3,7 @@
 
 PORTNAME=	deadbeef
 PORTVERSION=	0.7.2
-PORTREVISION=	10
+PORTREVISION=	18
 CATEGORIES=	audio
 MASTER_SITES=	SF/${PORTNAME}/
 
@@ -13,19 +13,17 @@ COMMENT=	Ultimate music player for Unix-like systems
 LICENSE=	GPLv2 LGPL21
 LICENSE_COMB=	dual
 
-BROKEN_aarch64=		Fails to compile: error: invalid conversion between vector type and integer type
-BROKEN_armv6=		Fails to compile: error: invalid conversion between vector type and integer type
-BROKEN_armv7=		Fails to compile: error: invalid conversion between vector type and integer type
-
 GNU_CONFIGURE=	yes
-USES=		compiler:c11 desktop-file-utils gettext gmake iconv libtool \
-		pkgconfig shebangfix tar:bzip2
+USES=		compiler:c11 desktop-file-utils gettext gmake gnome iconv \
+		libtool pkgconfig shebangfix tar:bzip2
 USE_LDCONFIG=	yes
 CONFIGURE_ARGS=	--disable-alsa --disable-nullout --disable-static
 CPPFLAGS+=	-I../dumb/dumb-kode54/include -I../../plugins/libmp4ff \
 		-I../../plugins/gme/game-music-emu-0.6pre \
 		-I./sidplay-libs/libsidplay/include/sidplay \
 		-I${LOCALBASE}/include
+CFLAGS+=	-Wno-narrowing
+LDFLAGS_i386=	-Wl,-z,notext
 LIBS+=		-L${LOCALBASE}/lib -lexecinfo -lintl
 USE_GNOME=	intltool
 INSTALLS_ICONS=	yes
@@ -174,13 +172,13 @@ SC68_CONFIGURE_OFF=	--disable-sc68
 
 SHN_CONFIGURE_OFF=	--disable-shn
 
-SHELLEXEC_CONFIGURE_ARGS+=	--disable-shellexec
+SHELLEXEC_CONFIGURE_OFF=	--disable-shellexec
 
 NLS_CONFIGURE_OFF=	--disable-nls
 
 M3U_CONFIGURE_OFF=	--disable-m3u
 
-SPF_CONFIGURE_OFF=	--disable-psf
+PSF_CONFIGURE_OFF=	--disable-psf
 
 DSP_LIB_DEPENDS=	libsamplerate.so:audio/libsamplerate
 DSP_CONFIGURE_OFF=	--disable-src
@@ -220,9 +218,16 @@ post-patch:
 		${WRKSRC}/plugins/supereq/Makefile.in
 	@${REINPLACE_CMD} -e 's,/etc/timidity++/timidity-freepats.cfg:/etc/timidity/freepats.cfg:/etc/timidity/,${LOCALBASE}/share/,' \
 		${WRKSRC}/plugins/wildmidi/wildmidiplug.c
-	@${REINPLACE_CMD} \
-		-e '/HAVE_OGG" = "yes"/ {n; n; /HAVE_VORBISPLUGIN=yes/d;}' \
+# Clang accepts `-msse2' command line option even on !x86, need better check
+	@${REINPLACE_CMD} -e '25177s,^,#include <xmmintrin.h>,' \
 		${WRKSRC}/configure
+	@${REINPLACE_CMD} -e '/chnresolv/s,const char,signed &,' \
+		${WRKSRC}/plugins/adplug/adplug/s3m.cpp \
+		${WRKSRC}/plugins/adplug/adplug/s3m.h
+	@${REINPLACE_CMD} -e "/sampleConvertTable/s,int8_t,u&, ; \
+		86,+1 { s,',,g; s,\\\\x,0x,g; }" \
+		${WRKSRC}/plugins/sid/sidplay-libs/libsidplay/src/xsid/xsid.cpp \
+		${WRKSRC}/plugins/sid/sidplay-libs/libsidplay/src/xsid/xsid.h
 # Fix build with libzip-1.0
 	@${REINPLACE_CMD} 's,zip_file_t,zip_file_DB,g' \
 		${WRKSRC}/plugins/vfs_zip/vfs_zip.c

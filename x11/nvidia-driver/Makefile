@@ -7,30 +7,32 @@
 # Starting with version 1.0-7667, NVidia has dropped support for numerous
 # "legacy" GPUs.  Consult NVidia README (the Appendix) to find out whether
 # you need to use legacy driver version and install one of corresponding
-# slave ports instead (`x11/nvidia-driver-340' or `x11/nvidia-driver-304').
+# slave ports instead (`x11/nvidia-driver-390', `x11/nvidia-driver-340',
+# or `x11/nvidia-driver-304').
 
 PORTNAME=	nvidia-driver
-DISTVERSION?=	390.67
+DISTVERSION?=	440.64
 # Always try to set PORTREVISION as it can be overridden by the slave ports
 PORTREVISION?=	0
 CATEGORIES=	x11
 MASTER_SITES=	NVIDIA/XFree86/FreeBSD-${ARCH_SUFX}/${DISTVERSION}
 DISTNAME=	NVIDIA-FreeBSD-${ARCH_SUFX}-${DISTVERSION}
+DISTFILES=	${DISTNAME}${EXTRACT_SUFX}
 
 MAINTAINER=	danfe@FreeBSD.org
 COMMENT=	NVidia graphics card binary drivers for hardware OpenGL rendering
 
-LICENSE=	NVIDIA
-LICENSE_NAME=	License For Customer Use of NVIDIA Software
 LICENSE_FILE=	${WRKSRC}/doc/license.txt
-LICENSE_PERMS=	dist-mirror no-dist-sell pkg-mirror no-pkg-sell auto-accept
+.include "${.CURDIR}/../nvidia-driver/Makefile.common"
 
-ONLY_FOR_ARCHS=	i386 amd64
+# Pull GNU sed(1) for "binary" patching of obj/libglvnd/libEGL.so.1 and
+# obj/libEGL_nvidia.so.0 (see below)
+.if ${NVVERSION} >= 410.057
+PATCH_DEPENDS=	gsed:textproc/gsed
+.endif
 
-ARCH_SUFX=	x86${ARCH:S/i386//:S/amd/_/}
-USES=		kmod uidfix
+USES=		kmod uidfix xorg
 USE_XORG=	x11 xorg-server xext
-USE_GL=		gl
 USE_LDCONFIG=	yes
 
 # NVIDIA_ROOT is not set in src/Makefile, which results in bogus -I/src
@@ -39,23 +41,25 @@ USE_LDCONFIG=	yes
 # fixed upstream (across all versions, including legacy ones), use this
 # hack below to universally set NVIDIA_ROOT.  Also provide X11BASE value
 # since it is still used by legacy drivers.
-MAKE_ENV=	NVIDIA_ROOT=${WRKSRC} X11BASE=${LOCALBASE}
-SUB_FILES=	pkg-deinstall pkg-install pkg-message nvidia.conf
+GLVND_JSON_PATH=	${PREFIX}/share/glvnd/egl_vendor.d
+WAYLAND_JSON_PATH=	${PREFIX}/share/egl/egl_external_platform.d
+MAKE_ENV=	NVIDIA_ROOT=${WRKSRC} X11BASE=${LOCALBASE} \
+		EGL_GLVND_JSON_PATH=${STAGEDIR}${GLVND_JSON_PATH} \
+		EGL_WAYLAND_JSON_PATH=${STAGEDIR}${WAYLAND_JSON_PATH}
+SUB_FILES=	pkg-message nvidia.conf
+.if ${NVVERSION} < 410.057
+SUB_FILES+=	pkg-deinstall pkg-install
+.endif
+SUB_PATCHES=	extra-patch-src-Makefile \
+		extra-patch-src-nv-freebsd.h \
+		extra-patch-src-nv-misc.h \
+		extra-patch-src-nvidia_ctl.c \
+		extra-patch-src-nvidia_dev.c \
+		extra-patch-src-nvidia_linux.c \
+		extra-patch-src-nvidia_pci.c
 DOCSDIR=	${PREFIX}/share/doc/NVIDIA_GLX-1.0
 MODULESDIR=	lib/xorg/modules
 PORTDOCS=	*
-
-# NVVERSION is float since r372065 (integer values become less readable
-# after minor version could occupy three digits)
-.if ${DISTVERSION:C/[0-9]+//g} == ".."		# major.minor.update
-NVVERSION=	${DISTVERSION:S/./.0/:R}${DISTVERSION:E}
-.else						# major.minor
-.  if ${DISTVERSION:E} < 100
-NVVERSION=	${DISTVERSION:S/./.0/}		# allow minor > 99
-.  else
-NVVERSION=	${DISTVERSION}
-.  endif
-.endif
 
 .if ${NVVERSION} >= 331.013
 SUB_LIST+=	NVGL=""
@@ -64,14 +68,8 @@ SUB_LIST+=	NVGL="\# "
 .endif
 
 .if ${NVVERSION} < 355.006
-EXTRA_PATCHES=	${FILESDIR}/extra-patch-src-Makefile \
-		${FILESDIR}/extra-patch-src-nv-freebsd.h \
-		${FILESDIR}/extra-patch-src-nv-misc.h
 NVSRC=		.
 .else
-EXTRA_PATCHES=	${FILESDIR}/extra-patch-src_nvidia_Makefile \
-		${FILESDIR}/extra-patch-src_nvidia_nv-freebsd.h \
-		${FILESDIR}/extra-patch-src_nvidia_nv-misc.h
 NVSRC=		nvidia
 .endif
 
@@ -96,21 +94,17 @@ OPTIONS_DEFINE+=	FREEBSD_AGP
 FREEBSD_AGP_DESC=	Use FreeBSD AGP GART driver
 .endif
 
-PLIST_SUB+=	LINUXBASE=${LINUXBASE} SHLIB_VERSION=${PORTVERSION} \
-		MODULESDIR=${MODULESDIR}
+PLIST_SUB+=	MODULESDIR=${MODULESDIR}
 
-.include <bsd.port.options.mk>
+.include <bsd.port.pre.mk>
 
-.if ${PORT_OPTIONS:MLINUX}
-CONFLICTS_INSTALL=	linux[-_]dri-[0-9]* linux-f10-dri-[0-9]*
-USES+=		linux
-USE_LINUX=	base:build,run xorglibs
-PLIST_SUB+=	LINUX=""
-.else
-PLIST_SUB+=	LINUX="@comment "
-# Propagate WITHOUT_LINUX variable down to inner Makefiles
-MAKE_ENV+=	WITHOUT_LINUX=yes
-.endif
+pre-patch:
+.for p in ${SUB_PATCHES}
+	@${SED} 's/%%NVSRC%%/${NVSRC}/g' ${PATCHDIR}/${p}.in > ${WRKDIR}/${p}
+.endfor
+.for p in ${SUB_PATCHES}
+EXTRA_PATCHES+=	${WRKDIR}/${p}
+.endfor
 
 post-patch: .SILENT
 # We should support -CURRENT: kill the check
@@ -119,18 +113,9 @@ post-patch: .SILENT
 	${REINPLACE_CMD} -E '/#include "machine\/\.\.\/linux(32)?\/linux.h"/ \
 		{ x ; s/.*/#include "machine\/..\/..\/compat\/linux\/linux_ioctl.h"/ ; H ; x ; }' \
 			${WRKSRC}/src/${NVSRC}/nvidia_linux.c
-# Adjust `vm_object' locking after FreeBSD src r248084 and bogus memset() call
-	${REINPLACE_CMD} -e '/#include <vm\/vm_object.h>/ \
-		{ x ; s/.*/#include <sys\/rwlock.h>/ ; G ; }' \
-			${WRKSRC}/src/${NVSRC}/nv-freebsd.h
-	${REINPLACE_CMD} -E 's/(VM_OBJECT_)(UN)?(LOCK)/\1W\2\3/ ; \
-		/memset/s/sizeof\(ci/sizeof(*ci/' \
-			${WRKSRC}/src/${NVSRC}/nvidia_subr.c
-# Adjust kmem(9) calls after FreeBSD src r254025
-.if ${NVVERSION} < 331.067
-	${REINPLACE_CMD} -e '/kmem_/s/kernel_map/kernel_arena/' \
+# Fix bogus memset() call
+	${REINPLACE_CMD} -e '/memset/s/sizeof(ci/sizeof(*ci/' \
 		${WRKSRC}/src/${NVSRC}/nvidia_subr.c
-.endif
 # Chase `sys/capability.h' rename to `sys/capsicum.h' in FreeBSD src r263232
 	${REINPLACE_CMD} -e 's:sys/capability\.h:sys/capsicum.h:' \
 		${WRKSRC}/src/${NVSRC}/nv-freebsd.h
@@ -138,15 +123,28 @@ post-patch: .SILENT
 	${REINPLACE_CMD} -e 's:sys/capability\.h:sys/capsicum.h:' \
 		${WRKSRC}/src/nvidia-modeset/nvidia-modeset-freebsd.c
 .endif
-# Respect WITHOUT_LINUX setting
-	${REINPLACE_CMD} -e 's/exists(\/.*/& \&\& !defined(WITHOUT_LINUX)/' \
+# KPI of kmem_alloc_contig(),kmem_free() changed in FreeBSD src r338143,r338318
+.if ${OSVERSION} >= 1200079
+	${REINPLACE_CMD} \
+	    -e 's/kmem_alloc_contig(kmem_arena, /kmem_alloc_contig(/' \
+	    -e 's/kmem_free(kmem_arena, /kmem_free(/' \
+		${WRKSRC}/src/${NVSRC}/nvidia_subr.c
+.endif
+# Pull the right header after FreeBSD src r347984
+.if ${OSVERSION} >= 1300029 && ${NVVERSION} >= 358.009
+	${REINPLACE_CMD} -e '/^#include/s:lock\.h:mutex.h:' \
+		${WRKSRC}/src/nvidia-modeset/nvidia-modeset-freebsd.c
+.endif
+# Disable installation of Linux libraries (provided by the corresponding
+# `x11/linux-nvidia-libs' port or its slaves)
+	${REINPLACE_CMD} -e 's/exists(\/.*/& \&\& 0/' \
 		${WRKSRC}/lib/Makefile
 # Do not install VDPAU libraries which are provided by `multimedia/libvdpau'
 # port for a while now
 	${REINPLACE_CMD} -e '/libvdpau[[:blank:]_][^n]/d ; \
 		s/name libvdpau/&_nvidia/' ${WRKSRC}/lib/Makefile
 # Do not build any binaries (native nvidia-settings and nvidia-xconfig are
-# provided by corresponding ports) and manual pages
+# provided by their corresponding ports) and manual pages
 	${REINPLACE_CMD} -E 's/(extension).*/\1/' ${WRKSRC}/x11/Makefile
 	${REINPLACE_CMD} -e '/bin/d ; /man/d' ${WRKSRC}/x11/Makefile
 # Also do not install libnvidia-gtk* libraries which are for nvidia-settings
@@ -155,8 +153,10 @@ post-patch: .SILENT
 .endif
 # Adjust installation path of a conflicting file (shared between
 # nvidia-driver and xorg-server) to ease package manager work
+.if ${NVVERSION} < 410.057
 	${REINPLACE_CMD} -e '/LIBDIR/s:xorg/modules/extensions:&/.nvidia:' \
 		${WRKSRC}/x11/extension/Makefile
+.endif
 # Do not execute afterinstall target (prevent automatic module registration
 # and "smart" installation of conflicting files heuristics)
 	${REINPLACE_CMD} -e 's/afterinstall/&_dontexecute/' ${WRKSRC}/Makefile
@@ -165,9 +165,22 @@ post-patch: .SILENT
 # /usr/share/nvidia path is hardcoded in libGL and nvidia-settings, but we
 # won't adhere to this stupidity and install nvidia-application-profiles-*
 # files as part of documentation
-.if ${NVVERSION} >= 334.016
-	${REINPLACE_CMD} -e 's,/usr/share/nvidia,${STAGEDIR}${DOCSDIR},' \
+.if ${NVVERSION} >= 410.057
+	${REINPLACE_CMD} -e 's,/usr/share/nvidia,$${DESTDIR}${DOCSDIR},' \
+		${WRKSRC}/lib/libGLX_nvidia/Makefile ${WRKSRC}/doc/Makefile
+	${REINPLACE_CMD} -e '/AUXLINK_LINK/s,\$${DESTDIR},,' \
+		${WRKSRC}/lib/libGLX_nvidia/Makefile
+	prefix="${PREFIX}" ; padding=$$(($${#prefix}+3)) ; \
+	gsed ${REINPLACE_ARGS} -E "s,/etc/glvnd/egl_vendor\.d.{$$padding},${GLVND_JSON_PATH}\x00," \
+		${WRKSRC}/obj/libglvnd/libEGL.so.1
+.elif ${NVVERSION} >= 334.016
+	${REINPLACE_CMD} -e 's,/usr/share/nvidia,$${DESTDIR}${DOCSDIR},' \
 		${WRKSRC}/lib/libGL/Makefile ${WRKSRC}/doc/Makefile
+.endif
+.if ${NVVERSION} >= 415.013
+	prefix="${PREFIX}" ; padding=$$(($${#prefix}+3)) ; \
+	gsed ${REINPLACE_ARGS} -E "s,/etc/egl/egl_external_platform\.d.{$$padding},${WAYLAND_JSON_PATH}\x00," \
+		${WRKSRC}/obj/libEGL_nvidia.so.0
 .endif
 # Finally, process OPTIONS
 .if ${PORT_OPTIONS:MFREEBSD_AGP}
@@ -223,52 +236,45 @@ post-install: .SILENT
 .if ${NVVERSION} < 352.009
 	${REINPLACE_CMD} -E '/(lib)?nvidia-(debugdump|smi|ml)/d' ${TMPPLIST}
 .endif
-.if ${NVVERSION} < 355.006
-	${REINPLACE_CMD} -E '/(libEGL_nvidia|GLdispatch|OpenGL)/d' ${TMPPLIST}
-.else
-	${REINPLACE_CMD} 's/libEGL\.so\.${PORTVERSION}/libEGL.so/' \
-		${TMPPLIST}
-.endif
 .if ${NVVERSION} < 358.009
-	${REINPLACE_CMD} '/nvidia-modeset.ko/d' ${TMPPLIST}
+	${REINPLACE_CMD} -e '/nvidia-modeset\.ko/d' ${TMPPLIST}
 .endif
-.if ${NVVERSION} >= 361.028
-	${REINPLACE_CMD} -E '/(EGL_nvidia\.so|GLESv[12](_CM)?(\.so\.[0-9]+\.[0-9]+))$$/d' \
-		${TMPPLIST}
+.if ${NVVERSION} < 410.057
+	${REINPLACE_CMD} -E '/lib(EGL|GLESv[12].*)_nvidia/d ; \
+		/lib(GLX|GLdispatch|OpenGL)/d ; \
+		/extensions\/libglxserver_nvidia\.so/d ; \
+		/10_nvidia\.json/d' ${TMPPLIST}
 .else
-	${REINPLACE_CMD} -E '/\/lib\/libGLESv[12](_CM)?(\.so)?(_nvidia.so(\.[0-9]|\.[0-9]+\.[0-9]+)?)?$$/d ; \
-		/libEGL_nvidia\.so\.${PORTVERSION}/d' ${TMPPLIST}
+	${REINPLACE_CMD} -e '/extensions\/\.nvidia\/libglx/d' ${TMPPLIST}
 .endif
-# rename libGL.so, libEGL.so and libGLESv2.so
-	${MV} -f ${STAGEDIR}${PREFIX}/lib/libGL.so \
+.if ${NVVERSION} < 415.013
+	${REINPLACE_CMD} -e '/libnvidia-egl-wayland\.so/d ; \
+		/10_nvidia_wayland\.json/d' ${TMPPLIST}
+.endif
+.if ${NVVERSION} < 440.036
+	${REINPLACE_CMD} -e '/lib32\//d' ${TMPPLIST}
+.endif
+# Rename some libraries and install a libmap file to resolve conflict with
+# Mesa libraries.
+	${LN} -sf libGL-NVIDIA.so.1 \
 		${STAGEDIR}${PREFIX}/lib/libGL-NVIDIA.so
 	${MV} -f ${STAGEDIR}${PREFIX}/lib/libGL.so.1 \
 		${STAGEDIR}${PREFIX}/lib/libGL-NVIDIA.so.1
+	${RM} ${STAGEDIR}${PREFIX}/lib/libGL.so
 .if ${NVVERSION} >= 331.013
-	${MV} -f ${STAGEDIR}${PREFIX}/lib/libEGL.so \
+	${LN} -sf libEGL-NVIDIA.so.1 \
 		${STAGEDIR}${PREFIX}/lib/libEGL-NVIDIA.so
 	${MV} -f ${STAGEDIR}${PREFIX}/lib/libEGL.so.1 \
 		${STAGEDIR}${PREFIX}/lib/libEGL-NVIDIA.so.1
-	${MV} -f ${STAGEDIR}${PREFIX}/lib/libGLESv2.so \
+	${RM} ${STAGEDIR}${PREFIX}/lib/libEGL.so
+	${LN} -sf libGLESv2-NVIDIA.so.2 \
 		${STAGEDIR}${PREFIX}/lib/libGLESv2-NVIDIA.so
 	${MV} -f ${STAGEDIR}${PREFIX}/lib/libGLESv2.so.2 \
 		${STAGEDIR}${PREFIX}/lib/libGLESv2-NVIDIA.so.2
+	${RM} ${STAGEDIR}${PREFIX}/lib/libGLESv2.so
 .endif
 	@${MKDIR} ${STAGEDIR}${PREFIX}/etc/libmap.d/
 	${INSTALL_DATA} ${WRKDIR}/nvidia.conf \
 		${STAGEDIR}${PREFIX}/etc/libmap.d/
 
-# Target below can be used instead of standard `makesum' to correctly
-# update distinfo (i.e., keeping other driver version entries intact)
-.if ${.TARGETS:Mupdate-distinfo}
-DISTINFO_FILE=	${MASTERDIR}/distinfo.new
-.endif
-
-update-distinfo: makesum .SILENT
-	${REINPLACE_CMD} -e '/${ARCH_SUFX}-${NVVERSION:R}/s/^/~/' \
-		${MASTERDIR}/distinfo
-	${REINPLACE_CMD} -e '/^~SHA256/r ${DISTINFO_FILE}' -e '/^~/d' \
-		${MASTERDIR}/distinfo
-	${RM} ${DISTINFO_FILE} ${MASTERDIR}/distinfo.bak
-
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

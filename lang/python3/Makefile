@@ -3,7 +3,7 @@
 PORTNAME=	python3
 PORTVERSION=	${PYTHON_MAJOR_VER}
 PORTREVISION=	3
-CATEGORIES=	lang python ipv6
+CATEGORIES=	lang python
 MASTER_SITES=
 DISTFILES=
 EXTRACT_ONLY=
@@ -11,9 +11,10 @@ EXTRACT_ONLY=
 MAINTAINER=	python@FreeBSD.org
 COMMENT=	The "meta-port" for version 3 of the Python interpreter
 
-USES=			python:run
-PYTHON_VERSION=		python${PYTHON3_DEFAULT}
-NO_BUILD=		yes
+USES=		python:3.5+,run
+
+NO_ARCH=	yes
+NO_BUILD=	yes
 
 PLIST_FILES=	bin/2to3-${PYTHON_MAJOR_VER} \
 		bin/idle${PYTHON_MAJOR_VER} \
@@ -21,10 +22,6 @@ PLIST_FILES=	bin/2to3-${PYTHON_MAJOR_VER} \
 		bin/python${PYTHON_MAJOR_VER} \
 		bin/python${PYTHON_MAJOR_VER}-config \
 		libdata/pkgconfig/python${PYTHON_MAJOR_VER}.pc
-
-.include <bsd.port.pre.mk>
-
-RUN_DEPENDS+=	${PYTHON_CMD}:${PYTHON_PORTSDIR}
 
 do-install:
 	${LN} -sf python${PYTHON_VER} \
@@ -40,14 +37,4 @@ do-install:
 	${LN} -sf python-${PYTHON_VER}.pc \
 		${STAGEDIR}${PREFIX}/libdata/pkgconfig/python${PYTHON_MAJOR_VER}.pc
 
-# Major upgrade support
-PORTUPGRADE_CMD=	${LOCALBASE}/sbin/portupgrade
-
-.if defined(USE_PORTMASTER)
-PORTUPGRADE_CMD=	${LOCALBASE}/sbin/portmaster
-.endif
-
-PKG_LIST=	${PKG_BIN} query -a '%n-%v'
-PKG_LIST_FILES=	${PKG_INFO} -l
-
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

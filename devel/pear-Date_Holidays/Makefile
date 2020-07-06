@@ -5,8 +5,10 @@ PORTNAME=	Date_Holidays
 PORTVERSION=	0.21.8
 CATEGORIES=	devel www pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	PEAR driver based class to calculate holidays
+
+LICENSE=	PHP301
 
 BUILD_DEPENDS=	${PEARDIR}/Date.php:devel/pear-Date@${PHP_FLAVOR} \
 		${PEARDIR}/XML/Serializer.php:devel/pear-XML_Serializer@${PHP_FLAVOR}

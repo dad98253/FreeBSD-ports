@@ -2,9 +2,9 @@
 # $FreeBSD$
 
 PORTNAME=	dnsmasq
-DISTVERSION=	2.77rc5
-PORTEPOCH=	2
-CATEGORIES=	dns ipv6
+DISTVERSION=	2.81rc4
+PORTEPOCH=	3
+CATEGORIES=	dns
 MASTER_SITES=	http://www.thekelleys.org.uk/dnsmasq/release-candidates/
 #MASTER_SITES=	http://www.thekelleys.org.uk/dnsmasq/test-releases/
 PKGNAMESUFFIX=	-devel
@@ -14,7 +14,8 @@ COMMENT=	Lightweight DNS forwarder, DHCP, and TFTP server
 
 LICENSE=	GPLv2
 
-IGNORE=		build stable version instead, it is newer than this release candidate
+USES=		cpe shebangfix tar:xz
+
 CONFLICTS_INSTALL=dnsmasq-2*
 
 PORTDOCS=	CHANGELOG CHANGELOG.archive FAQ doc.html setup.html
@@ -33,10 +34,9 @@ OPTIONS_RADIO_INTL=	IDN NLS
 INTL_DESC=	Internationalization Support Level
 NLS_DESC=	IDN+NLS: Int'l Domain Names & National Language support
 IDN_DESC=	IDN: Int'l Domain Names WITHOUT full NLS
-IPSET_DESC=	Dynamic firewall managment of resolved names (require PF)
+IPSET_DESC=	Dynamic firewall management of resolved names (needs PF)
 LUA_DESC=	Support lease-change scripts written in Lua
 DNSSEC_DESC=	Enable DNSSEC caching and validation
-USES=		cpe shebangfix tar:xz
 SHEBANG_FILES=	contrib/dynamic-dnsmasq/dynamic-dnsmasq.pl \
 		contrib/dnslist/dnslist.pl
 CPE_VENDOR=	thekelleys
@@ -78,11 +78,11 @@ LDFLAGS+=	`pkg-config --libs dbus-1`
 CPPFLAGS+=	-I${LUA_INCDIR}
 CFLAGS+=	-DHAVE_LUASCRIPT
 LDFLAGS+=	-L${LUA_LIBDIR} -llua-${LUA_VER}
-USES+=		lua
+USES+=		lua pkgconfig
 .endif
 
 .if ${PORT_OPTIONS:MDNSSEC}
-CFLAGS+=	-DHAVE_DNSSEC
+CFLAGS+=	-DHAVE_DNSSEC -I${LOCALBASE}/include
 USES+=		pkgconfig
 LIB_DEPENDS+=	libnettle.so:security/nettle
 LIB_DEPENDS+=	libgmp.so:math/gmp
@@ -93,9 +93,6 @@ USE_RC_SUBR=	dnsmasq
 .include <bsd.port.pre.mk>
 
 LDFLAGS+=	-L${LOCALBASE}/lib ${_intllibs} ${ICONV_LIB}
-
-post-patch:
-	${REINPLACE_CMD} -e "s/lua5\.1/lua-${LUA_VER}/" ${WRKSRC}/Makefile
 
 pre-configure: pretty-print-config
 .if ${PORT_OPTIONS:MIDN}
@@ -109,6 +106,9 @@ pre-configure: pretty-print-config
 	@${ECHO} 'WARNING: IDN and NLS enabled, building IDN WITH NLS.'
 .endif
 .endif
+
+post-patch:
+	${REINPLACE_CMD} -e '/^lua_/s/lua5\.2/lua-${LUA_VER}/' ${WRKSRC}/Makefile
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/src/dnsmasq ${STAGEDIR}${PREFIX}/sbin

@@ -3,25 +3,30 @@
 # $FreeBSD$
 
 PORTNAME=	base
-PORTVERSION=	${LICQ_VER}
-PORTREVISION=	10
+PORTVERSION=	1.9.0
+PORTREVISION=	3
 CATEGORIES=	net-im
+PKGNAMEPREFIX=	licq-
 PKGNAMESUFFIX=	${SOCKS_SUFFIX}${PKGNAMESUFFIX2}
 
-MAINTAINER=	dinoex@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Popular ICQ-compatible plugin-based program
 
 LICENSE=	GPLv2
 
 LIB_DEPENDS=	libboost_regex.so:devel/boost-libs
 
-BROKEN_sparc64=		Does not build: fails to link
+BROKEN_FreeBSD_11_powerpc64=	fails to pass tests
+BROKEN_FreeBSD_12_powerpc64=	fails to pass tests
+BROKEN_sparc64=		fails to link
 
 USES=		cmake:noninja iconv ssl
 USE_CXXSTD=	c++98
-WRKSRC=		${WRKDIR}/${DISTNAME}
-LICQ_PORT?=	net-im/licq
-
+USE_GITHUB=	yes
+GH_ACCOUNT=	licq-im
+GH_PROJECT=	licq
+GH_TAGNAME=	f271d55
+WRKSRC_SUBDIR=	licq
 CFLAGS+=	-I${LOCALBASE}/include
 CXXFLAGS+=	-DGTEST_USE_OWN_TR1_TUPLE
 
@@ -36,9 +41,9 @@ GPGME_LIB_DEPENDS=	libgpgme.so:security/gpgme \
 			libassuan.so:security/libassuan \
 			libgpg-error.so:security/libgpg-error
 
-.include <bsd.port.options.mk>
+LICQ_PORT?=	net-im/licq
 
-.include "${PORTSDIR}/${LICQ_PORT}/Makefile.inc"
+.include <bsd.port.options.mk>
 
 pre-configure:
 	${REINPLACE_CMD} -e 's=!/bin/bash=!${LOCALBASE}/bin/bash=' \

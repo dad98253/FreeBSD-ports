@@ -15,14 +15,14 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 
 LIB_DEPENDS=	libmenu-cache.so:x11/menu-cache \
 		libkeybinder.so:x11/keybinder \
-		libfm-gtk.so:x11/libfm \
+		libfm-gtk.so:x11/libfm@gtk2 \
 		libfontconfig.so:x11-fonts/fontconfig \
 		libfreetype.so:print/freetype2
 RUN_DEPENDS=	${LOCALBASE}/etc/xdg/menus/lxde-applications.menu:x11/lxmenu-data
 
+USES=		gmake gnome libtool localbase pathfix pkgconfig tar:xz xorg
 USE_GNOME=	glib20 gtk20 cairo gdkpixbuf2 libwnck intltool
 USE_XORG=	x11
-USES=		gmake libtool localbase pathfix pkgconfig tar:xz
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--sysconfdir=${PREFIX}/etc \
 		--with-plugins="${LXPANEL_PLUGINS}"

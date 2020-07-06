@@ -3,7 +3,7 @@
  * cron_edit.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2008 Mark J Crane
  * All rights reserved.
  *
@@ -33,6 +33,12 @@ $a_cron = &$config['cron']['item'];
 $id = $_GET['id'];
 if (isset($_POST['id'])) {
 	$id = $_POST['id'];
+}
+
+$dup = false;
+if (isset($_GET['dup']) && is_numericint($_GET['dup'])) {
+	$id = $_GET['dup'];
+	$dup = true;
 }
 
 if ($_GET['act'] == "del") {
@@ -72,7 +78,7 @@ if ($_POST) {
 		$ent['who'] = $_POST['who'];
 		$ent['command'] = $_POST['command'];
 
-		if (isset($id) && $a_cron[$id]) {
+		if (isset($id) && $a_cron[$id] && !$dup) {
 			// update
 			$a_cron[$id] = $ent;
 		} else {
@@ -179,7 +185,7 @@ print $form;
 		'<br/>Ranges may also be used, for example "1-5" in the "Day of Week" field means Monday through Friday' .
 		'<br/>Time entries may be divided and will be executed when they divide evenly, for example "*/15" in the Minute field means "Every 15 minutes".' .
 		'<br/><br/>For more information see: <a href="http://www.freebsd.org/doc/en/books/handbook/configtuning-cron.html">FreeBSD Handbook - Configuring cron(8)</a> ' .
-		'and <a href="https://www.freebsd.org/cgi/man.cgi?query=crontab&amp;sektion=5">crontab(5) man page</a>.', info)?>
+		'and <a href="https://www.freebsd.org/cgi/man.cgi?query=crontab&amp;sektion=5">crontab(5) man page</a>.', 'info')?>
 </div>
 
 <?php include("foot.inc"); ?>

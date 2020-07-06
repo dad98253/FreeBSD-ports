@@ -10,6 +10,9 @@ COMMENT=	Shell environment to limited sets of commands to users
 
 LICENSE=	GPLv3+
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 GH_ACCOUNT=	ghantoos
 GH_PROJECT=	lshell
 GH_TAGNAME=	279d7ab
@@ -18,6 +21,8 @@ NO_ARCH=	yes
 USES=		python:2.7
 USE_GITHUB=	yes
 USE_PYTHON=	distutils
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} -e \

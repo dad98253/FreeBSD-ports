@@ -16,7 +16,6 @@ share/kconf_update/knavalbattle.upd
 share/kservices5/knavalbattle.protocol
 share/kxmlgui5/knavalbattle/knavalbattleui.rc
 share/locale/ar/LC_MESSAGES/knavalbattle.mo
-share/locale/ast/LC_MESSAGES/knavalbattle.mo
 share/locale/bg/LC_MESSAGES/knavalbattle.mo
 share/locale/bs/LC_MESSAGES/knavalbattle.mo
 share/locale/ca/LC_MESSAGES/knavalbattle.mo
@@ -39,6 +38,7 @@ share/locale/he/LC_MESSAGES/knavalbattle.mo
 share/locale/hi/LC_MESSAGES/knavalbattle.mo
 share/locale/hr/LC_MESSAGES/knavalbattle.mo
 share/locale/hu/LC_MESSAGES/knavalbattle.mo
+share/locale/id/LC_MESSAGES/knavalbattle.mo
 share/locale/is/LC_MESSAGES/knavalbattle.mo
 share/locale/it/LC_MESSAGES/knavalbattle.mo
 share/locale/ja/LC_MESSAGES/knavalbattle.mo

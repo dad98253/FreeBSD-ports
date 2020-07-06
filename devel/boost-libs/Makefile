@@ -2,16 +2,13 @@
 # $FreeBSD$
 
 PORTNAME=	boost-libs
-PORTREVISION=	3
+PORTREVISION=	1
 
 COMMENT=	Free portable C++ libraries (without Boost.Python)
 
 BROKEN_sparc64=	https://github.com/boostorg/context/commit/f2ef6326b6ed
 
 BUILD_DEPENDS+=	bjam:devel/boost-jam
-
-# libs/config/test/boost_no_cxx11_thread_local.ipp fails (see base r303795)
-PLIST_SUB+=	FIBER="${"${OPSYS}"=="FreeBSD" && ${OSREL:R} < 11:?@comment :}"
 
 OPTIONS_DEFINE=		DEBUG OPTIMIZED_CFLAGS
 OPTIONS_MULTI=		LOCALE
@@ -39,6 +36,8 @@ ALL_TARGET=	stage
 do-install:
 	@cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MAKE_CMD} \
 		${MAKE_ARGS:NDESTDIR=*:S,^--prefix=,&${STAGEDIR},} ${INSTALL_TARGET}
+	@${FIND} ${STAGEDIR}${PREFIX}/lib/cmake -type f -exec \
+		${REINPLACE_CMD} -i '' -e 's,${STAGEDIR},,' {} +
 # For some reasons BJAM forget about the links
 	@cd ${WRKSRC}/stage/ && ${FIND} lib -type l | ${PAX} -rw -p p ${STAGEDIR}${PREFIX}
 

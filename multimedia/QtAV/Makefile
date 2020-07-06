@@ -1,24 +1,27 @@
 # $FreeBSD$
 
 PORTNAME=		QtAV
-PORTVERSION=		1.12.0
 DISTVERSIONPREFIX=	v
-PORTREVISION=		3
+DISTVERSION=		1.13.0
+PORTREVISION=		2
 CATEGORIES=		multimedia
 DIST_SUBDIR=		KDE
+
+PATCH_SITES=		https://github.com/wang-bin/QtAV/commit/
+PATCHFILES=		5abba7f0505e75fceabd4dd8992a7e02bb149d64.patch:-p1
 
 MAINTAINER=		kde@FreeBSD.org
 COMMENT=		Cross-platform multimedia framwork based on Qt and ffmpeg
 
 LICENSE=		LGPL21+
-LICENSE_FIKE=		${WRKSRC}/lgpl-2.1.txt
+LICENSE_FILE=		${WRKSRC}/lgpl-2.1.txt
 
 LIB_DEPENDS=		libass.so:multimedia/libass \
 			libavcodec.so:multimedia/ffmpeg
 
-USES=			qmake:outsource qt:5
+USES=			compiler:c++11-lang gl qmake:outsource qt:5 xorg
 USE_GL=			gl
-USE_QT=			core gui network opengl qml quick sql widgets \
+USE_QT=			core declarative gui network opengl sql widgets \
 			buildtools_build qmake_build
 USE_XORG=		x11 xext xv
 

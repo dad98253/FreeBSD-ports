@@ -3,7 +3,7 @@
 
 PORTNAME=	glest
 PORTVERSION=	3.2.2
-PORTREVISION=	11
+PORTREVISION=	12
 CATEGORIES=	games
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}%20source/${PORTVERSION}
 DISTNAME=	${PORTNAME}_source_${PORTVERSION}
@@ -13,17 +13,19 @@ MAINTAINER=	mmokhi@FreeBSD.org
 COMMENT=	Free 3D real-time customizable strategy game
 
 LIB_DEPENDS=	libxerces-c.so:textproc/xerces-c3 \
-		libvorbis.so:audio/libvorbis
+		libvorbis.so:audio/libvorbis \
+		libogg.so:audio/libogg
 BUILD_DEPENDS=	jam:devel/jam
 RUN_DEPENDS=	${LOCALBASE}/${DATADIR_REL}/servers.ini:games/glest-data
 
-USES=		autoreconf:build dos2unix localbase lua:51 openal:al,alut \
-		pkgconfig zip
-USE_SDL=	yes
-USE_GL=		yes
-LLD_UNSAFE=	yes
+USES=		autoreconf:build compiler:c++11-lang dos2unix gl localbase \
+		lua:51 openal:al,alut pkgconfig sdl xorg zip
+USE_SDL=	sdl
+USE_GL=		gl glu
+USE_XORG=	x11
 GNU_CONFIGURE=	yes
 CONFIGURE_SCRIPT=	mk/linux/configure
+LDFLAGS_i386=	-Wl,-znotext
 SUB_FILES=		glest-wrapper pkg-message
 
 JAM_CMD=		${LOCALBASE}/bin/jam -q -a -dx

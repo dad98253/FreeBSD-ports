@@ -1,8 +1,8 @@
 # $FreeBSD$
 
 PORTNAME=	pfSense-pkg-suricata
-PORTVERSION=	4.0.12
-PORTREVISION=	2
+PORTVERSION=	5.0.2
+PORTREVISION=	3
 CATEGORIES=	security
 MASTER_SITES=	# empty
 DISTFILES=	# empty
@@ -13,7 +13,7 @@ COMMENT=	pfSense package suricata
 
 LICENSE=	APACHE20
 
-RUN_DEPENDS=	suricata>=4.0.0:security/suricata \
+RUN_DEPENDS=	suricata>=5.0.2:security/suricata \
 		barnyard2:security/barnyard2
 
 NO_BUILD=	yes
@@ -21,6 +21,8 @@ NO_MTREE=	yes
 
 SUB_FILES=	pkg-install pkg-deinstall
 SUB_LIST=	PORTNAME=${PORTNAME}
+
+.include <bsd.port.pre.mk>
 
 do-extract:
 	${MKDIR} ${WRKSRC}
@@ -74,8 +76,6 @@ do-install:
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/suricata/suricata_interfaces.php \
 		${STAGEDIR}${PREFIX}/www/suricata
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/suricata/suricata_interfaces_edit.php \
-		${STAGEDIR}${PREFIX}/www/suricata
-	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/suricata/suricata_download_rules.php \
 		${STAGEDIR}${PREFIX}/www/suricata
 	${INSTALL_DATA} ${FILESDIR}${PREFIX}/www/suricata/suricata_rules.php \
 		${STAGEDIR}${PREFIX}/www/suricata
@@ -144,4 +144,4 @@ do-install:
 	@${REINPLACE_CMD} -i '' -e "s|%%PKGVERSION%%|${PKGVERSION}|" \
 		${STAGEDIR}${DATADIR}/info.xml
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

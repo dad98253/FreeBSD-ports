@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	libXcomposite
-PORTVERSION=	0.4.4
-PORTREVISION=	3
+PORTVERSION=	0.4.5
 PORTEPOCH=	1
 CATEGORIES=	x11
 
@@ -13,7 +12,9 @@ COMMENT=	X Composite extension library
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-XORG_CAT=	lib
-USE_XORG=	compositeproto:both x11 xfixes xext fixesproto xproto:both
+USES=		xorg xorg-cat:lib
+USE_XORG=	x11 xfixes xext xorgproto
+
+INSTALL_TARGET=	install-strip
 
 .include <bsd.port.mk>

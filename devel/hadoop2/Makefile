@@ -7,7 +7,7 @@
 # no problems encountered so far.  Thanks.
 PORTNAME=	hadoop
 PORTVERSION=	2.7.2
-PORTREVISION=	2
+PORTREVISION=	3
 CATEGORIES=	devel java
 MASTER_SITES=	APACHE/${PORTNAME}/common/hadoop-${PORTVERSION} \
 		LOCAL/demon/:maven \
@@ -19,13 +19,10 @@ DISTFILES=	${DISTNAME}${EXTRACT_SUFX} FreeBSD-hadoop2-${PORTVERSION}-maven-repos
 DIST_SUBDIR=	hadoop
 EXTRACT_ONLY=	${DISTNAME}${EXTRACT_SUFX} FreeBSD-hadoop2-${PORTVERSION}-maven-repository.tar.gz jetty-6.1.14.zip
 
-MAINTAINER=	demon@FreeBSD.org
+MAINTAINER=	kbowling@FreeBSD.org
 COMMENT=	Apache Map/Reduce framework
 
 LICENSE=	APACHE20
-
-BROKEN_SSL=	openssl-devel
-BROKEN_SSL_REASON_openssl-devel=	incomplete definition of type 'struct evp_cipher_ctx_st'
 
 BUILD_DEPENDS=	${LOCALBASE}/share/java/maven3/bin/mvn:devel/maven3 \
 		cmake:devel/cmake \
@@ -39,7 +36,6 @@ CONFLICTS_INSTALL=	hadoop-1* yarn
 USES=		cpe shebangfix
 CPE_VENDOR=	apache
 USE_JAVA=	yes
-JAVA_VERSION=	1.7+
 USE_LDCONFIG=	yes
 SHEBANG_FILES=	hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/sbin/httpfs.sh hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/libexec/httpfs-config.sh hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/conf/httpfs-env.sh hadoop-common-project/hadoop-kms/src/main/sbin/kms.sh hadoop-common-project/hadoop-kms/src/main/libexec/kms-config.sh hadoop-common-project/hadoop-kms/src/main/conf/kms-env.sh hadoop-tools/hadoop-sls/src/main/bin/rumen2sls.sh hadoop-tools/hadoop-sls/src/main/bin/slsrun.sh
 MAKE_ENV+=	JAVA_HOME=${JAVA_HOME} HADOOP_PROTOC_PATH=${LOCALBASE}/protobuf25/bin/protoc
@@ -73,6 +69,8 @@ SUB_LIST=	HDFS_USER="${HDFS_USER}" \
 		JAVA_HOME="${JAVA_HOME}" \
 		HADOOP_LOGDIR="${HADOOP_LOGDIR}" \
 		HADOOP_RUNDIR="${HADOOP_RUNDIR}"
+
+.include <bsd.port.pre.mk>
 
 post-patch:
 	${REINPLACE_CMD} -e "s#/bin/bash#${LOCALBASE}/bin/bash#" ${WRKSRC}/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/DefaultContainerExecutor.java ${WRKSRC}/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/MRJobConfig.java ${WRKSRC}/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/launcher/ContainerLaunch.java ${WRKSRC}/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/Shell.java ${WRKSRC}/hadoop-common-project/hadoop-common/src/main/bin/hadoop-daemon.sh
@@ -120,4 +118,4 @@ do-install:
 	${MKDIR} ${STAGEDIR}${HADOOP_LOGDIR}
 	${MKDIR} ${STAGEDIR}${HADOOP_RUNDIR}
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

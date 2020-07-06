@@ -2,6 +2,7 @@
 
 PORTNAME=	xcm
 PORTVERSION=	0.5.4
+PORTREVISION=	1
 CATEGORIES=	x11
 
 MAINTAINER=	bsam@FreeBSD.org
@@ -17,7 +18,7 @@ USE_GITHUB=     yes
 GH_ACCOUNT=     oyranos-cms
 HAS_CONFIGURE=	yes
 CONFIGURE_ARGS=	--mandir=${PREFIX}/man
-USES=		pkgconfig
+USES=		pkgconfig xorg
 USE_XORG=	x11 xfixes xmu xt
 
 # xcm should be added to XORG_MODULES at /usr/ports/Mk/bsd.xorg.mk
@@ -29,5 +30,7 @@ PLIST_FILES=	bin/xcm bin/xcmedid bin/xcmevents bin/xcmhextobin \
 		man/man1/xcmddc.1.gz man/man1/xcmedid.1.gz \
 		man/man1/xcmevents.1.gz man/man1/xcmhextobin.1.gz
 PORTDOCS=	*
+
+OPTIONS_DEFINE=	DOCS
 
 .include <bsd.port.mk>

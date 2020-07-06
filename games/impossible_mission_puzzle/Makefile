@@ -19,6 +19,7 @@ LICENSE=	GPLv2
 
 WRKSRC=		${WRKDIR}/puzzle-${PORTVERSION}
 
+USES=		sdl
 USE_SDL=	sdl
 
 PLIST_FILES=	bin/${PORTNAME} \
@@ -28,6 +29,8 @@ PORTDOCS=	README
 
 DESKTOP_ENTRIES="Impossible Mission puzzle" "" "${PORTNAME}" \
 		"${PORTNAME}" "Game;ArcadeGame;" ""
+
+OPTIONS_DEFINE=	DOCS
 
 do-build:
 	@cd ${WRKSRC} && ${CC} -o ${PORTNAME} ${CFLAGS} \

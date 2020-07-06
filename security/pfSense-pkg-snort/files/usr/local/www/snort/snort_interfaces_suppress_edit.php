@@ -3,9 +3,9 @@
  * snort_interfaces_suppress_edit.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2004-2018 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2004-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2009-2010 Robert Zelaya.
- * Copyright (c) 2018 Bill Meeks
+ * Copyright (c) 2019 Bill Meeks
  * All rights reserved.
  *
  * originially part of m0n0wall (http://m0n0.ch/wall)
@@ -43,6 +43,7 @@ elseif (isset($_GET['id']) && is_numericint($_GET['id']))
 
 /* Should never be called without identifying list index, so bail */
 if (is_null($id)) {
+	unset($a_suppress);
 	header("Location: /snort/snort_interfaces_suppress.php");
 	exit;
 }
@@ -59,6 +60,7 @@ function is_validwhitelistname($name) {
 }
 
 if ($_POST['cancel']) {
+	unset($a_suppress);
 	header("Location: /snort/snort_interfaces_suppress.php");
 	exit;
 }
@@ -123,14 +125,15 @@ if ($_POST['save']) {
 			$a_suppress[] = $s_list;
 
 		write_config("Snort pkg: modified Suppress List {$s_list['name']}.");
-		conf_mount_rw();
 		sync_snort_package_config();
-		conf_mount_ro();
-
+		unset($a_suppress);
 		header("Location: /snort/snort_interfaces_suppress.php");
 		exit;
 	}
 }
+
+// Finished with config array reference, so release it
+unset($a_suppress);
 
 $pgtitle = array(gettext("Services"), gettext("Snort"), gettext("Suppression List Edit"));
 include_once("head.inc");

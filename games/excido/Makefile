@@ -18,9 +18,11 @@ LIB_DEPENDS=	libphysfs.so:devel/physfs
 
 WRKSRC=		${WRKDIR}/${PORTNAME}-${PORTVERSION}
 
-USE_GL=		yes
+USES=		compiler:c++11-lang gl gmake openal:al,alut sdl tar:bzip2
+USE_GL=		gl glu
 USE_SDL=	image sdl ttf
-USES=		gmake openal:al,alut tar:bzip2
+
+LDFLAGS_i386=	-Wl,-znotext
 
 OPTIONS_DEFINE=	DOCS
 

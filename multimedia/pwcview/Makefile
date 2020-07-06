@@ -3,7 +3,7 @@
 
 PORTNAME=	pwcview
 PORTVERSION=	1.4.1
-PORTREVISION=	6
+PORTREVISION=	7
 CATEGORIES=	multimedia
 MASTER_SITES=	http://raaf.atspace.org/ \
 		http://www.selasky.org/hans_petter/video4bsd/releases/ \
@@ -17,7 +17,7 @@ LIB_DEPENDS=	libv4l1.so:multimedia/libv4l
 
 CONFLICTS=	pwcbsd-[0-9]*
 
-USES=		jpeg
+USES=		jpeg sdl
 USE_SDL=	sdl
 
 WRKSRC=		${WRKDIR}/${PORTNAME}

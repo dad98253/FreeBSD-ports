@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	evernote
-PORTVERSION=	1.25.1
+PORTVERSION=	1.25.3
 CATEGORIES=	www python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -15,7 +15,7 @@ LICENSE=	BSD2CLAUSE
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}oauth2>0:net/py-oauth2@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}thrift>0:devel/py-thrift@${PY_FLAVOR}
 
-USES=		python:-2.7
+USES=		python:2.7
 USE_PYTHON=	autoplist distutils
 
 .include <bsd.port.mk>

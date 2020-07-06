@@ -1,12 +1,12 @@
---- src/gdal/CMakeLists.txt.orig	2018-03-11 14:00:07 UTC
+Add translation files only if the NLS knob is set
+
+--- src/gdal/CMakeLists.txt.orig	2019-12-05 06:33:57 UTC
 +++ src/gdal/CMakeLists.txt
-@@ -34,8 +34,10 @@ set(MAPPER_GDAL_SOURCES
-   ogr_template.cpp
+@@ -36,7 +36,9 @@ set(MAPPER_GDAL_SOURCES
    mapper-osmconf.ini
  )
--	
+ 	
 -mapper_translations_sources(${MAPPER_GDAL_HEADERS} ${MAPPER_GDAL_SOURCES})
-+
 +if(Mapper_WITH_NLS)
 +	mapper_translations_sources(${MAPPER_GDAL_HEADERS} ${MAPPER_GDAL_SOURCES})
 +endif()

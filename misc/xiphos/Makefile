@@ -1,36 +1,41 @@
 # $FreeBSD$
 
 PORTNAME=	xiphos
-PORTVERSION=	3.1.6
-PORTREVISION=	6
+DISTVERSION=	4.1.0-72
+DISTVERSIONSUFFIX=	-g9e573336
 CATEGORIES=	misc gnome
-MASTER_SITES=	SF/gnomesword/Xiphos/${PORTVERSION}
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	salvadore@FreeBSD.org
 COMMENT=	Bible interface utilizing the sword framework
 
-LICENSE=	GPLv2
+LICENSE=	GPLv2+
+LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_FreeBSD_12=	fails to compile: /usr/include/c++/v1/type_traits:1116:29: recursive template instantiation exceeded maximum depth of 25
+BUILD_DEPENDS=	appstream-util:devel/appstream-glib \
+		desktop-file-validate:devel/desktop-file-utils \
+		itstool:textproc/itstool \
+		yelp-build:textproc/yelp-tools
+LIB_DEPENDS=	libbiblesync.so:misc/biblesync \
+		libdbus-1.so:devel/dbus \
+		libdbus-glib-1.so:devel/dbus-glib \
+		libenchant.so:textproc/enchant \
+		libicui18n.so:devel/icu \
+		libsoup-2.4.so:devel/libsoup \
+		libsword.so:misc/sword \
+		libuuid.so:misc/e2fsprogs-libuuid \
+		libwebkit2gtk-4.0.so:www/webkit2-gtk3
 
-RUN_DEPENDS=	yelp:x11/yelp
-BUILD_DEPENDS:=	${RUN_DEPENDS} \
-		docbook2html:textproc/docbook-utils \
-		gnome-doc-tool:textproc/gnome-doc-utils \
-		nspr>=4.8:devel/nspr
-LIB_DEPENDS=	libwebkitgtk-3.0.so:www/webkit-gtk3 \
-		libdbus-glib-1.so:devel/dbus-glib  \
-		libsword.so:misc/sword
-
-USES=		gettext pkgconfig waf
-INSTALLS_OMF=	yes
+USES=		cmake gettext gnome pkgconfig
+USE_GCC=	yes # misc/biblesync is build with GCC.
+USE_GITHUB=	yes
+GH_ACCOUNT=	crosswire
+USE_GNOME=	cairo gconf2 gtk30 gtkhtml4 intltool libgsf
 INSTALLS_ICONS=	yes
-USE_GNOME=	gtkhtml4 intlhack gtk30 gconf2 libgsf \
-		gtk-update-icon-cache
 
-OPTIONS_DEFINE=	DOCS
+CMAKE_OFF=	EPUB
+CMAKE_ON=	GTKHTML
 
-post-install:
-	@${RM} ${STAGEDIR}${PREFIX}/share/icons/hicolor/icon-theme.cache
+OPTIONS_DEFINE=	NLS
+OPTIONS_SUB=	NLS
 
 .include <bsd.port.mk>

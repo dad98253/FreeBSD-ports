@@ -1,7 +1,7 @@
---- chrome/browser/ui/browser_command_controller.cc.orig	2018-02-24 16:25:10.000000000 +0100
-+++ chrome/browser/ui/browser_command_controller.cc	2018-03-03 21:58:39.480640000 +0100
-@@ -83,7 +83,7 @@
- #include "ui/base/clipboard/clipboard_types.h"
+--- chrome/browser/ui/browser_command_controller.cc.orig	2020-05-13 18:40:25 UTC
++++ chrome/browser/ui/browser_command_controller.cc
+@@ -84,7 +84,7 @@
+ #include "components/session_manager/core/session_manager.h"
  #endif
  
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -9,7 +9,7 @@
  #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
  #endif
  
-@@ -216,7 +216,7 @@
+@@ -254,7 +254,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
  #endif
    }
  
@@ -18,7 +18,7 @@
    // If this key was registered by the user as a content editing hotkey, then
    // it is not reserved.
    ui::TextEditKeyBindingsDelegateAuraLinux* delegate =
-@@ -425,7 +425,7 @@
+@@ -480,7 +480,7 @@ bool BrowserCommandController::ExecuteCommandWithDispo
        break;
  #endif
  
@@ -27,9 +27,9 @@
      case IDC_MINIMIZE_WINDOW:
        browser_->window()->Minimize();
        break;
-@@ -853,7 +853,7 @@
-   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_2, true);
-   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
+@@ -979,7 +979,7 @@ void BrowserCommandController::InitCommandState() {
+   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_4, true);
+   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_5, true);
  #endif
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if (defined(OS_LINUX) || defined(OS_BSD)) && !defined(OS_CHROMEOS)

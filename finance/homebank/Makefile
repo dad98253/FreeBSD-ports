@@ -1,11 +1,11 @@
 # $FreeBSD$
 
 PORTNAME=	homebank
-PORTVERSION=	5.1.8
+PORTVERSION=	5.3.2
 CATEGORIES=	finance
 MASTER_SITES=	http://homebank.free.fr/public/
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	wen@FreeBSD.org
 COMMENT=	Free, easy, personal accounting for everyone
 
 LICENSE=	GPLv2
@@ -15,8 +15,9 @@ LIB_DEPENDS=	libsoup-2.4.so:devel/libsoup \
 		libosp.so:textproc/opensp
 
 GNU_CONFIGURE=	yes
-USES=		desktop-file-utils gettext gmake localbase pkgconfig \
+USES=		desktop-file-utils gettext gmake gnome localbase pkgconfig \
 		shared-mime-info
+USE_CSTD=	c99
 USE_GNOME=	cairo gtk30 intltool
 INSTALLS_ICONS=	yes
 

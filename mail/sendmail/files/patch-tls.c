@@ -1,6 +1,6 @@
 --- sendmail/tls.c.orig	2015-06-20 01:37:28 UTC
 +++ sendmail/tls.c
-@@ -16,6 +16,9 @@ SM_RCSID("@(#)$Id: tls.c,v 8.127 2013-11
+@@ -16,6 +16,9 @@ SM_RCSID("@(#)$Id: tls.c,v 8.127 2013-11-27 02:51:11 g
  # include <openssl/err.h>
  # include <openssl/bio.h>
  # include <openssl/pem.h>
@@ -10,7 +10,7 @@
  # ifndef HASURANDOMDEV
  #  include <openssl/rand.h>
  # endif /* ! HASURANDOMDEV */
-@@ -44,6 +47,23 @@ static bool	tls_safe_f __P((char *, long
+@@ -44,6 +47,23 @@ static bool	tls_safe_f __P((char *, long, bool));
  static int	tls_verify_log __P((int, X509_STORE_CTX *, const char *));
  
  # if !NO_DH
@@ -34,7 +34,7 @@
  static DH *get_dh512 __P((void));
  
  static unsigned char dh512_p[] =
-@@ -64,13 +84,19 @@ static DH *
+@@ -64,13 +84,17 @@ static DH *
  get_dh512()
  {
  	DH *dh = NULL;
@@ -45,20 +45,17 @@
 -	dh->p = BN_bin2bn(dh512_p, sizeof(dh512_p), NULL);
 -	dh->g = BN_bin2bn(dh512_g, sizeof(dh512_g), NULL);
 -	if ((dh->p == NULL) || (dh->g == NULL))
--		return NULL;
-+	dhp_bn = BN_bin2bn(dh512_p, sizeof(dh512_p), NULL);
-+	dhg_bn = BN_bin2bn(dh512_g, sizeof(dh512_g), NULL);
++	dhp_bn = BN_bin2bn(dh512_p, sizeof (dh512_p), NULL);
++	dhg_bn = BN_bin2bn(dh512_g, sizeof (dh512_g), NULL);
 +	if ((dhp_bn == NULL) || (dhg_bn == NULL) || !DH_set0_pqg(dh, dhp_bn, NULL, dhg_bn))
 +	{
 +		DH_free(dh);
-+		BN_free(dhp_bn);
-+		BN_free(dhg_bn);
-+		return(NULL);
+ 		return NULL;
 +	}
  	return dh;
  }
  
-@@ -117,14 +143,17 @@ get_dh2048()
+@@ -117,15 +141,16 @@ get_dh2048()
  		};
  	static unsigned char dh2048_g[]={ 0x02, };
  	DH *dh;
@@ -69,17 +66,17 @@
 -	dh->p=BN_bin2bn(dh2048_p,sizeof(dh2048_p),NULL);
 -	dh->g=BN_bin2bn(dh2048_g,sizeof(dh2048_g),NULL);
 -	if ((dh->p == NULL) || (dh->g == NULL))
-+	dhp_bn = BN_bin2bn(dh2048_p,sizeof(dh2048_p),NULL);
-+	dhg_bn = BN_bin2bn(dh2048_g,sizeof(dh2048_g),NULL);
++	dhp_bn = BN_bin2bn(dh2048_p, sizeof (dh2048_p), NULL);
++	dhg_bn = BN_bin2bn(dh2048_g, sizeof (dh2048_g), NULL);
 +	if ((dhp_bn == NULL) || (dhg_bn == NULL) || !DH_set0_pqg(dh, dhp_bn, NULL, dhg_bn))
  	{
  		DH_free(dh);
-+		BN_free(dhp_bn);
-+		BN_free(dhg_bn);
- 		return(NULL);
+-		return(NULL);
++		return NULL;
  	}
  	return(dh);
-@@ -708,6 +737,32 @@ load_certkey(ssl, srv, certfile, keyfile
+ }
+@@ -708,6 +733,29 @@ load_certkey(ssl, srv, certfile, keyfile)
  
  static char server_session_id_context[] = "sendmail8";
  
@@ -90,19 +87,16 @@
 +	unsigned long e;
 +{
 +	RSA *rsa = NULL;
-+        BIGNUM *bn_rsa_r4;
-+	int rc;
++	BIGNUM *bn_rsa_r4;
 +
 +	bn_rsa_r4 = BN_new();
-+        rc = BN_set_word(bn_rsa_r4, RSA_F4);
-+	if ((bn_rsa_r4 != NULL) && BN_set_word(bn_rsa_r4, RSA_F4) && (rsa = RSA_new()) != NULL)
++	if ((bn_rsa_r4 != NULL) && BN_set_word(bn_rsa_r4, e) && (rsa = RSA_new()) != NULL)
 +	{
-+		if (!RSA_generate_key_ex(rsa, RSA_KEYLENGTH, bn_rsa_r4, NULL))
++		if (!RSA_generate_key_ex(rsa, num, bn_rsa_r4, NULL))
 +		{
 +			RSA_free(rsa);
 +			rsa = NULL;
 +		}
-+		return NULL;
 +	}
 +	BN_free(bn_rsa_r4);
 +	return rsa;
@@ -112,7 +106,7 @@
  /* 0.9.8a and b have a problem with SSL_OP_TLS_BLOCK_PADDING_BUG */
  #if (OPENSSL_VERSION_NUMBER >= 0x0090800fL)
  # define SM_SSL_OP_TLS_BLOCK_PADDING_BUG	1
-@@ -926,7 +981,7 @@ inittls(ctx, req, options, srv, certfile
+@@ -926,7 +974,7 @@ inittls(ctx, req, options, srv, certfile, keyfile, cac
  	{
  		/* get a pointer to the current certificate validation store */
  		store = SSL_CTX_get_cert_store(*ctx);	/* does not fail */
@@ -121,7 +115,7 @@
  		if (crl_file != NULL)
  		{
  			if (BIO_read_filename(crl_file, CRLFile) >= 0)
-@@ -1003,8 +1058,7 @@ inittls(ctx, req, options, srv, certfile
+@@ -1003,8 +1051,7 @@ inittls(ctx, req, options, srv, certfile, keyfile, cac
  	if (bitset(TLS_I_RSA_TMP, req)
  #  if SM_CONF_SHM
  	    && ShmId != SM_SHM_NO_ID &&
@@ -131,7 +125,7 @@
  #  else /* SM_CONF_SHM */
  	    && 0	/* no shared memory: no need to generate key now */
  #  endif /* SM_CONF_SHM */
-@@ -1209,9 +1263,10 @@ inittls(ctx, req, options, srv, certfile
+@@ -1209,9 +1256,10 @@ inittls(ctx, req, options, srv, certfile, keyfile, cac
  			if (tTd(96, 2))
  				sm_dprintf("inittls: Generating %d bit DH parameters\n", bits);
  
@@ -144,7 +138,7 @@
  			dh = DSA_dup_DH(dsa);
  			DSA_free(dsa);
  		}
-@@ -1744,7 +1799,7 @@ tmp_rsa_key(s, export, keylength)
+@@ -1744,7 +1792,7 @@ tmp_rsa_key(s, export, keylength)
  
  	if (rsa_tmp != NULL)
  		RSA_free(rsa_tmp);
@@ -153,7 +147,7 @@
  	if (rsa_tmp == NULL)
  	{
  		if (LogLevel > 0)
-@@ -1971,9 +2026,9 @@ x509_verify_cb(ok, ctx)
+@@ -1971,9 +2019,9 @@ x509_verify_cb(ok, ctx)
  	{
  		if (LogLevel > 13)
  			tls_verify_log(ok, ctx, "x509");

@@ -11,9 +11,12 @@ EXTRACT_SUFX=	-src.tgz
 MAINTAINER=	amdmi3@FreeBSD.org
 COMMENT=	Kiki the nanobot is a 3-D puzzle game
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 BUILD_DEPENDS=	swig3.0:devel/swig30
 
-USES=		compiler dos2unix gmake python:2.7
+USES=		compiler dos2unix gl gmake python:2.7 sdl
 USE_GL=		gl glu glut
 USE_SDL=	sdl mixer image
 DOS2UNIX_REGEX=	.*/(Makefile|.*\.cpp|.*\.h|.*\.i)$
@@ -40,7 +43,7 @@ CXXFLAGS+=	-Werror=tautological-constant-out-of-range-compare
 .endif
 
 .if ${OSVERSION} > 1200031
-EXTRA_PATCHES=	${FILESDIR}/extra-patch-ino64
+EXTRA_PATCHES+=	${FILESDIR}/extra-patch-ino64
 .endif
 
 post-patch:

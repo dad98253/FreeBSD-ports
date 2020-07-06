@@ -21,12 +21,14 @@ LDFLAGS+=	-L${LOCALBASE}/lib
 INSTALL_TARGET=	install-strip
 USES=		jpeg libtool pathfix pkgconfig
 USE_LDCONFIG=	yes
+LDFLAGS_i386=	-Wl,-znotext
 
 DOCS=		AUTHORS COPYING COPYRIGHT ChangeLog NEWS README \
 		README.dvconnect README.encoder TODO
 
 OPTIONS_DEFINE=	SDL DOCS
 
+SDL_USES=	sdl
 SDL_USE=	SDL=sdl
 SDL_CONFIGURE_ENABLE=	sdl
 

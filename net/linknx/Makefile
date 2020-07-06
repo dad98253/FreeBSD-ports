@@ -20,12 +20,14 @@ BROKEN_armv7=		fails to configure: checking for GNU Pth... Segmentation fault
 BROKEN_mips=		fails to configure: checking for GNU Pth... Segmentation fault
 BROKEN_mips64=		fails to configure: checking for GNU Pth... Segmentation fault
 
-USES=	gmake autoreconf pkgconfig
+USES=	compiler gmake autoreconf pkgconfig
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS+=CFLAGS="-I${LOCALBASE}/include" \
 		LDFLAGS="-I${LOCALBASE}/include -L/${LOCALBASE}/lib"
+CXXFLAGS+=	${CXXFLAGS_${CHOSEN_COMPILER_TYPE}}
+CXXFLAGS_clang=	-Wno-c++11-narrowing
 
-OPTIONS_DEFINE=	LIBESMTP LIBCURL LIBLUA MYSQL
+OPTIONS_DEFINE=	LIBESMTP LIBCURL LIBLUA MYSQL DOCS
 OPTIONS_DEFAULT=	LIBESMTP
 OPTIONS_SUB=
 LIBESMTP_DESC=	Install libesmtp for SMTP support
@@ -45,7 +47,7 @@ LIBLUA_CFLAGS=	-I${LUA_INCDIR}
 LIBLUA_LDFLAGS=	-L${LUA_LIBDIR}
 MYSQL_CONFIGURE_ON=	--with-mysql=${LOCALBASE}/bin/mysql_config
 MYSQL_CONFIGURE_OFF=	--without-mysql
-MYSQL_USE=	MYSQL=yes
+MYSQL_USES=	mysql
 
 PORTDOCS=	*
 

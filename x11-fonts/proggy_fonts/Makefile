@@ -3,7 +3,7 @@
 
 PORTNAME=	proggy_fonts
 PORTVERSION=	1.0
-PORTREVISION=	4
+PORTREVISION=	5
 CATEGORIES=	x11-fonts
 MASTER_SITES=	http://upperbounds.net/download/
 DISTFILES=	ProggyClean.pcf.zip ProggySquare.pcf.zip \
@@ -28,8 +28,8 @@ COMMENT=	The perfect monospaced bitmap programming fonts
 ALREADY_UNZIP=	${DISTDIR}/Opti.pcf.gz ${DISTDIR}/OptiSmall.pcf.gz \
 	        ${DISTDIR}/PixelCarnageMono.pcf.gz
 
+USES=		fonts xorg zip
 USE_XORG=	x11
-USES=		fonts zip
 NO_WRKSUBDIR=	yes
 NO_BUILD=	yes
 

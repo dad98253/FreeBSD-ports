@@ -2,8 +2,8 @@
 
 PORTNAME=	bareos16
 DISTVERSIONPREFIX=	Release/
-DISTVERSION=	16.2.7
-PORTREVISION?=	1
+DISTVERSION=	16.2.9
+PORTREVISION?=	0
 CATEGORIES?=	sysutils
 PKGNAMEPREFIX?=	#
 PKGNAMESUFFIX?=	-server
@@ -14,16 +14,15 @@ COMMENT?=	Backup archiving recovery open sourced (server)
 LICENSE=	AGPLv3 LGPL3
 LICENSE_COMB=	multi
 
+LIB_DEPENDS+=	liblzo2.so:archivers/lzo2 \
+		libjansson.so:devel/jansson
+
+USES+=		libtool:keepla pkgconfig readline:port shebangfix
 USE_GITHUB=	yes
 GH_ACCOUNT=	${PORTNAME:S/16//}
 GH_PROJECT=	${PORTNAME:S/16//}
 
-USES+=		libtool:keepla pkgconfig readline:port shebangfix
-
 CONFLICTS?=	bacula*-server-* bareos-server-*
-
-LIB_DEPENDS+=	liblzo2.so:archivers/lzo2 \
-		libjansson.so:devel/jansson
 
 USERS=		bareos
 GROUPS=		${USERS}
@@ -111,7 +110,8 @@ CONFIGURE_ARGS+=--with-tcp-wrappers=/usr/lib \
 .if defined(WITH_CLIENT_ONLY)
 LMDB_CONFIGURE_ON=	--enable-lmdb=yes
 LMDB_CONFIGURE_OFF=	--enable-lmdb=no
-LMDB_CFLAGS=		-DMDB_DSYNC=O_SYNC
+LMDB_CFLAGS=		-DMDB_SYNC=O_SYNC \
+			-DMDB_USE_POSIX_MUTEX=1
 
 CONFIGURE_ARGS+=--with-fd-user=root \
 		--with-fd-group=wheel
@@ -155,7 +155,7 @@ CONFFILES=		sd dir
 # Server default database
 
 MYSQL_CONFIGURE_ON=	--with-mysql=yes
-MYSQL_USE=	MYSQL=yes
+MYSQL_USES=	mysql
 SQLITE3_CONFIGURE_ON=	--with-sqlite3=yes
 SQLITE3_LIB_DEPENDS=	libsqlite3.so:databases/sqlite3
 PGSQL_CONFIGURE_ON=	--with-postgresql=yes
@@ -195,6 +195,7 @@ post-patch:
 #	Default bconsole.conf is in ${ETCDIR}
 	@${REINPLACE_CMD} -e 's|^MAN8 =|MAN8 ?=|g' -e 's|^MAN1 =|MAN1 ?=|g' ${WRKSRC}/manpages/Makefile.in
 	@${REINPLACE_CMD} -e 's|_NONSHARED||g' ${WRKSRC}/src/filed/Makefile.in
+	@${REINPLACE_CMD} -e 's|/usr/bin/python-config|${PYTHON_CMD}-config|g' ${WRKSRC}/configure
 .if defined(WITH_CLIENT_ONLY)
 	@${REINPLACE_CMD} -e 's|^\(fd_subdirs = .*\)scripts\(.*\)|\1\2|g' ${WRKSRC}/Makefile.in
 	@${REINPLACE_CMD} -e 's|\(.*$${MKDIR} $${DESTDIR}$${scriptdir}\)|#\1|g' ${WRKSRC}/Makefile.in

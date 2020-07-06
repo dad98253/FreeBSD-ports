@@ -3,7 +3,7 @@
 
 PORTNAME=	vavoom
 PORTVERSION=	1.33
-PORTREVISION=	14
+PORTREVISION=	15
 CATEGORIES=	games
 MASTER_SITES=	SF/${PORTNAME}/Vavoom-source/${PORTVERSION}
 
@@ -57,7 +57,8 @@ VORBIS_LIB_DEPENDS=			libvorbis.so:audio/libvorbis
 VORBIS_CMAKE_ON=			-DWITH_VORBIS:BOOL=ON
 VORBIS_CMAKE_OFF=			-DWITH_VORBIS:BOOL=OFF
 
-SDL_USE=					SDL=mixer,sdl GL=yes
+SDL_USES=				gl sdl
+SDL_USE=				GL=glu SDL=mixer,sdl
 SDL_CMAKE_ON=				-DWITH_SDL:BOOL=ON -DWITH_OPENGL:BOOL=ON
 SDL_CMAKE_OFF=				-DWITH_SDL:BOOL=OFF -DWITH_OPENGL:BOOL=OFF
 
@@ -72,13 +73,6 @@ post-patch:
 		${WRKSRC}/utils/acc/parse.c
 	@${REINPLACE_CMD} -e 's/<malloc.h>/<stdlib.h>/' \
 		${WRKSRC}/utils/acc/strlist.c
-
-post-configure:
-.if ${PORT_OPTIONS:MLAUNCHER}
-	@${REINPLACE_CMD} -e 's/-pthread;-D_THREAD_SAFE //; \
-			s/-isystem /-I/g' \
-		${WRKSRC}/utils/vlaunch/CMakeFiles/vlaunch.dir/flags.make
-.endif
 
 post-install:
 .if ${PORT_OPTIONS:MDOCS}

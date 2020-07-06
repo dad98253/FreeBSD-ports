@@ -3,7 +3,7 @@
 
 PORTNAME=	xpdf
 PORTVERSION=	3.03
-PORTREVISION=	3
+PORTREVISION=	4
 CATEGORIES=	korean
 MASTER_SITES=	ftp://ftp.foolabs.com/pub/xpdf/
 PKGNAMESUFFIX=	-kofont
@@ -12,6 +12,8 @@ DIST_SUBDIR=	${DISTNAME}-${PORTVERSION}
 
 MAINTAINER=	hrs@FreeBSD.org
 COMMENT=	Korean font support for xpdf
+
+BROKEN=		unfetchable
 
 RUN_DEPENDS=	xpdf:graphics/xpdf \
 		${ADOBECMAPDIR}/ai0/CMap/Identity-H:print/adobe-cmaps \

@@ -3,13 +3,13 @@
 
 PORTNAME=	enscript
 PORTVERSION=	1.6.6
-PORTREVISION?=	2	# ?= for chinese/enscript
+PORTREVISION?=	3	# ?= for chinese/enscript
 CATEGORIES+=	print
 MASTER_SITES=	GNU
 PKGNAMESUFFIX=	-${PAPERSIZE}
 DISTNAME=	enscript-${PORTVERSION}
 
-MAINTAINER?=	johans@FreeBSD.org
+MAINTAINER?=	mbeis@xs4all.nl
 COMMENT=	ASCII to PostScript filter
 
 USES=		cpe shebangfix perl5

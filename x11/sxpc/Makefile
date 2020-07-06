@@ -11,7 +11,8 @@ EXTRACT_SUFX=	.shar.Z
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Simple X Protocol Compressor
 
-USES=		imake
+USES=		imake xorg
+USE_XORG=	xorgproto
 NO_WRKSUBDIR=	yes
 EXTRACT_CMD=		${GZIP_CMD}
 EXTRACT_BEFORE_ARGS=	-dc

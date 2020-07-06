@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	timidity++
-PORTVERSION=	2.14.0
-PORTREVISION?=	3
+PORTVERSION=	2.15.0
 CATEGORIES+=	audio
 MASTER_SITES=	SF/timidity/TiMidity%2B%2B/TiMidity%2B%2B-${PORTVERSION}
 DISTNAME=	TiMidity++-${PORTVERSION}
@@ -13,32 +12,30 @@ COMMENT?=	Software MIDI player
 
 LICENSE=	GPLv2+
 
+LIB_DEPENDS=	libarc.so:archivers/libarc
 .if !defined(PKGNAMESUFFIX)
-LIB_DEPENDS=	libarc.so:archivers/libarc \
-		libvorbis.so:audio/libvorbis \
+LIB_DEPENDS+=	libvorbis.so:audio/libvorbis \
 		libogg.so:audio/libogg
 RUN_DEPENDS=	eawpats>0:audio/eawpats
 .endif
 
-USES=		gmake tar:bzip2
+USES=		gmake localbase tar:bzip2
 GNU_CONFIGURE=	yes
 CONFIGURE_ENV+=	SHLD="${CC} -shared"
 
-CPPFLAGS+=	-I${LOCALBASE}/include/libarc -I${LOCALBASE}/include
-LDFLAGS+=	-L${LOCALBASE}/lib -Wl,--export-dynamic
+CPPFLAGS+=	-I${LOCALBASE}/include/libarc
+LDFLAGS+=	-Wl,--export-dynamic
 
 PLIST_SUB+=	TIMID_LIBDIR="${TIMID_LIBDIR}" EUCJP_LOCALE="${EUCJP_LOCALE}"
 
 .if !defined(PKGNAMESUFFIX)
-OPTIONS_DEFINE=		DOCS EAWPLUS ESOUND X11
+OPTIONS_DEFINE=		DOCS EAWPLUS X11
 OPTIONS_DEFAULT=	X11
-
+CONFIGURE_ARGS+=	--enable-audio=oss,vorbis
 EAWPLUS_DESC=		Collection of Gravis Ultrasound MIDI patches
 EAWPLUS_RUN_DEPENDS=	eawplus>0:audio/eawplus
-ESOUND_USE=		gnome=esound
-ESOUND_CONFIGURE_ON=	--enable-audio=oss,esd,vorbis
-ESOUND_CONFIGURE_OFF=	--enable-audio=oss,vorbis
 X11_LIB_DEPENDS=	libpng.so:graphics/png
+X11_USES=		xorg
 X11_USE=		xorg=x11,xext
 X11_CONFIGURE_ON=	--with-x --enable-spectrogram --enable-wrd \
 			--enable-dynamic

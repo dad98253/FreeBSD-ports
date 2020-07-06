@@ -6,7 +6,7 @@ PORTVERSION=	12.0.5
 DISTVERSIONPREFIX=	r
 CATEGORIES=	www
 
-MAINTAINER=	johans@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	C/C++ language library including CGI supports
 
 USE_GITHUB=	yes
@@ -20,7 +20,7 @@ PORTEXAMPLES=	*
 PLIST_FILES=	include/qdecoder.h lib/libqdecoder.a \
 		lib/libqdecoder.so lib/libqdecoder.so.12
 
-OPTIONS_DEFINE=		DEBUG
+OPTIONS_DEFINE=		DEBUG EXAMPLES
 DEBUG_CONFIGURE_ENABLE=	debug
 
 post-patch:

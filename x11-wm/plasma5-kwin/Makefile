@@ -23,12 +23,12 @@ LIB_DEPENDS=	libXcursor.so:x11/libXcursor \
 		libxcb-image.so:x11/xcb-util-image \
 		libxcb-keysyms.so:x11/xcb-util-keysyms \
 		libxkbcommon.so:x11/libxkbcommon
-BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:multimedia/v4l_compat \
+BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:devel/evdev-proto \
 		Xwayland:x11-servers/xwayland
 RUN_DEPENDS=	Xwayland:x11-servers/xwayland
 
-USES=		cmake:outsource compiler:c++11-lib cpe gettext \
-		kde:5 pkgconfig qt:5 tar:xz
+USES=		cmake compiler:c++11-lib cpe gettext gl kde:5 pkgconfig python:3.5+,run \
+		qt:5 shebangfix tar:xz xorg
 USE_GL=		egl
 USE_KDE=	activities activities attica auth breeze codecs \
 		completion config configwidgets coreaddons crash decoration \
@@ -37,20 +37,15 @@ USE_KDE=	activities activities attica auth breeze codecs \
 		newstuff notifications plasma-framework service sonnet \
 		textwidgets wayland widgetsaddons windowsystem xmlgui
 USE_LDCONFIG=	yes
-USE_QT=		concurrent core dbus gui multimedia network qml quick script \
+USE_QT=		concurrent core dbus declarative gui multimedia network script \
 		sensors testlib uiplugin uitools widgets x11extras xml \
 		buildtools_build qmake_build \
 		quickcontrols2_run virtualkeyboard_run
 USE_XORG=	ice sm x11 xcb xext xi
-
-.include <bsd.port.pre.mk>
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1100000
-# Base compiler clang 3.5 does not understand -Winconsistent-missing-override
-EXTRA_PATCHES=	${PATCHDIR}/extra-patch-fbsd10
-.endif
+SHEBANG_FILES=	kconf_update/kwin-5.18-move-animspeed.py
 
 post-patch:
 	${REINPLACE_CMD} '/sysmacros.h/d' \
 		${PATCH_WRKSRC}/logind.cpp
 
-.include <bsd.port.post.mk>
+.include <bsd.port.mk>

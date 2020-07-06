@@ -3,7 +3,6 @@
 
 PORTNAME=	rackmonkey
 PORTVERSION=	1.2.5
-PORTREVISION=	1
 DISTVERSIONSUFFIX=	-1
 PORTREVISION=	5
 CATEGORIES=	net-mgmt www
@@ -41,7 +40,7 @@ USES+=		sqlite
 RUN_DEPENDS+=	p5-DBD-SQLite>=0:databases/p5-DBD-SQLite
 .endif
 .if ${PORT_OPTIONS:MMYSQL}
-USE_MYSQL=	yes
+USES+=		mysql
 RUN_DEPENDS+=	p5-DBD-mysql>=0:databases/p5-DBD-mysql
 .endif
 .if ${PORT_OPTIONS:MPGSQL}

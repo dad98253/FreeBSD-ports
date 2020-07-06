@@ -13,6 +13,7 @@
 %%QT_DOCDIR%%/global/html-header-online.qdocconf
 %%QT_DOCDIR%%/global/includes-online/search.qdoc
 %%QT_DOCDIR%%/global/includes/examples-run.qdocinc
+%%QT_DOCDIR%%/global/includes/module-use.qdocinc
 %%QT_DOCDIR%%/global/macros.qdocconf
 %%QT_DOCDIR%%/global/manifest-meta.qdocconf
 %%QT_DOCDIR%%/global/qt-cpp-defines.qdocconf
@@ -61,6 +62,7 @@
 %%QT_DOCDIR%%/global/template/images/sprites-combined.png
 %%QT_DOCDIR%%/global/template/scripts/extras.js
 %%QT_DOCDIR%%/global/template/scripts/main.js
+%%QT_DOCDIR%%/global/template/style/cookie-confirm.css
 %%QT_DOCDIR%%/global/template/style/cookiebar-x.png
 %%QT_DOCDIR%%/global/template/style/doc_search.png
 %%QT_DOCDIR%%/global/template/style/gsc.css

@@ -1,9 +1,9 @@
---- chrome/browser/tracing/crash_service_uploader.cc.orig	2017-06-05 19:03:03 UTC
+--- chrome/browser/tracing/crash_service_uploader.cc.orig	2020-05-13 18:39:38 UTC
 +++ chrome/browser/tracing/crash_service_uploader.cc
-@@ -157,6 +157,8 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
+@@ -161,6 +161,8 @@ void TraceCrashServiceUploader::DoCompressOnBackground
+   const char product[] = "Chrome_Linux";
+ #elif defined(OS_ANDROID)
    const char product[] = "Chrome_Android";
- #elif defined(OS_CHROMEOS)
-   const char product[] = "Chrome_ChromeOS";
 +#elif defined(OS_FREEBSD)
 +  const char product[] = "Chrome_FreeBSD";
  #else

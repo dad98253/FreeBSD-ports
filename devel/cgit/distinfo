@@ -1,5 +1,5 @@
-TIMESTAMP = 1521825342
-SHA256 (cgit-1.1.tar.xz) = 0889af29be15fc981481caa09579f982b9740fe9fd2860ab87dff286f4635890
-SIZE (cgit-1.1.tar.xz) = 86268
-SHA256 (git-2.16.3.tar.xz) = d65d99e9e5b081c1f14ea018973806e942a2eb7d0da2ebc01bd2525adee62d48
-SIZE (git-2.16.3.tar.xz) = 4966248
+TIMESTAMP = 1578963027
+SHA256 (cgit-1.2.2.tar.xz) = 3f97ce944d0f3fe0782bea3c46eafa5ff151212ea5bec31f99e5cb1775d4b236
+SIZE (cgit-1.2.2.tar.xz) = 90204
+SHA256 (git-2.25.0.tar.xz) = c060291a3ffb43d7c99f4aa5c4d37d3751cf6bca683e7344ea407ea504d9a8d0
+SIZE (git-2.25.0.tar.xz) = 5873532

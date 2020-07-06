@@ -3,7 +3,7 @@
 
 PORTNAME=	py-jack
 PORTVERSION=	0.5.2
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	audio python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -13,10 +13,13 @@ COMMENT=	Python bindings for the Jack Audio Server
 
 LICENSE=	GPLv2
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 LIB_DEPENDS=	libjack.so:audio/jack
 BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}numpy>0:math/py-numpy@${PY_FLAVOR}
 
-USES=		python:-2.7 localbase
+USES=		python:2.7 localbase
 USE_PYTHON=	distutils autoplist
 
 post-patch:

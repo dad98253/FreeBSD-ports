@@ -16,6 +16,8 @@ LIB_DEPENDS=	libsvg-cairo.so:graphics/libsvg-cairo
 GNU_CONFIGURE=	yes
 USES=		pkgconfig
 
+LDFLAGS+=	/usr/lib/libm.so # Was labeled broken when ${/usr/bin/ld:L:tA}==/usr/bin/ld.lld: ld: error: /usr/local/lib/libsvg-cairo.so: undefined reference to atan2
+
 PLIST_FILES=	bin/svg2png \
 		man/man1/svg2png.1.gz
 

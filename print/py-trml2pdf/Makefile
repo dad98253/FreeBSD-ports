@@ -3,7 +3,7 @@
 
 PORTNAME=	trml2pdf
 PORTVERSION=	1.2
-PORTREVISION=	4
+PORTREVISION=	6
 CATEGORIES=	print python
 MASTER_SITES=	SF/kraft/${PORTNAME}/${PORTVERSION}
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -11,14 +11,20 @@ PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 MAINTAINER=	ports@caomhin.org
 COMMENT=	Tiny RML2PDF easily creates PDF documents
 
-RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pillow>0:graphics/py-pillow@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}reportlab1>=0:print/py-reportlab1@${PY_FLAVOR}
+LICENSE=	LGPL21
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
+RUN_DEPENDS=	${PY_PILLOW} \
+		${PYTHON_PKGNAMEPREFIX}reportlab>=0:print/py-reportlab@${PY_FLAVOR}
+
+USES=		python:2.7 shebangfix tar:bzip2
+USE_PYTHON=	flavors
 
 NO_BUILD=	yes
 NO_ARCH=	yes
 
-USES=		python:2.7 shebangfix tar:bzip2
-USE_PYTHON=	flavors
 SHEBANG_FILES=	trml2pdf/trml2pdf.py
 
 DOCSDIR=	${PREFIX}/share/doc/py-${PORTNAME}

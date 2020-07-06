@@ -1,7 +1,8 @@
 # $FreeBSD$
 
 PORTNAME=	openfx-misc
-PORTVERSION=	2.3.13
+PORTVERSION=	2.3.14
+PORTREVISION=	1
 CATEGORIES=	graphics
 
 MAINTAINER=	olivier@FreeBSD.org
@@ -11,7 +12,7 @@ LICENSE=	GPLv2
 
 ONLY_FOR_ARCHS=	amd64
 
-USES=		gmake
+USES=		gl gmake
 USE_GITHUB=	yes
 GH_ACCOUNT=	NatronGitHub
 GH_PROJECT=	openfx-misc

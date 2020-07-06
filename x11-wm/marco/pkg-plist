@@ -11,8 +11,8 @@ include/marco-1/marco-private/theme.h
 include/marco-1/marco-private/util.h
 lib/libmarco-private.a
 lib/libmarco-private.so
-lib/libmarco-private.so.1
-lib/libmarco-private.so.1.0.0
+lib/libmarco-private.so.2
+lib/libmarco-private.so.2.0.0
 libdata/pkgconfig/libmarco-private.pc
 man/man1/marco-message.1.gz
 man/man1/marco-theme-viewer.1.gz
@@ -47,6 +47,7 @@ share/locale/en_CA/LC_MESSAGES/marco.mo
 share/locale/en_GB/LC_MESSAGES/marco.mo
 share/locale/eo/LC_MESSAGES/marco.mo
 share/locale/es/LC_MESSAGES/marco.mo
+share/locale/es_AR/LC_MESSAGES/marco.mo
 share/locale/es_CO/LC_MESSAGES/marco.mo
 share/locale/es_MX/LC_MESSAGES/marco.mo
 share/locale/es_PR/LC_MESSAGES/marco.mo
@@ -67,6 +68,7 @@ share/locale/hr/LC_MESSAGES/marco.mo
 share/locale/hu/LC_MESSAGES/marco.mo
 share/locale/hy/LC_MESSAGES/marco.mo
 share/locale/id/LC_MESSAGES/marco.mo
+share/locale/ie/LC_MESSAGES/marco.mo
 share/locale/ig/LC_MESSAGES/marco.mo
 share/locale/is/LC_MESSAGES/marco.mo
 share/locale/it/LC_MESSAGES/marco.mo

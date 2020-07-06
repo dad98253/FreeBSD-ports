@@ -1,9 +1,10 @@
 # $FreeBSD$
 
 PORTNAME=	gsd
-DISTVERSION=	1.5.2
+DISTVERSIONPREFIX=	v
+DISTVERSION=	1.10.0
 CATEGORIES=	science python
-MASTER_SITES=	CHEESESHOP
+MASTER_SITES=	http://glotzerlab.engin.umich.edu/Downloads/gsd/
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
 MAINTAINER=	yuri@FreeBSD.org
@@ -16,6 +17,6 @@ RUN_DEPENDS=	${PYNUMPY}
 BUILD_DEPENDS=	${PYNUMPY}
 
 USES=		python
-USE_PYTHON=	distutils autoplist
+USE_PYTHON=	distutils cython autoplist
 
 .include <bsd.port.mk>

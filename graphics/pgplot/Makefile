@@ -3,7 +3,7 @@
 
 PORTNAME=	pgplot
 PORTVERSION=	5.2.2
-PORTREVISION=	21
+PORTREVISION=	27
 CATEGORIES=	graphics
 MASTER_SITES=	ftp://ftp.astro.caltech.edu/pub/pgplot/
 DISTNAME=	${PORTNAME}${PORTVERSION:R}
@@ -15,9 +15,9 @@ LIB_DEPENDS=	libpng.so:graphics/png
 
 MAKE_JOBS_UNSAFE=	yes
 
-USES=		fortran shebangfix
+USES=		fortran shebangfix xorg
 USE_LDCONFIG=	yes
-USE_XORG=	x11 xproto xt
+USE_XORG=	x11 xorgproto xt
 
 MAKE_ENV=	SSP_CFLAGS=
 SHEBANG_FILES=	makehtml maketex

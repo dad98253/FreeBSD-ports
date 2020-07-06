@@ -1,4 +1,8 @@
---- e2fsck/unix.c.orig	2018-07-10 05:14:26 UTC
+// SIGINFO is a Berkeley extension, so we need to
+// remove the #define _XOPEN_SOURCE 600
+// It would hide all non-POSIX declarations, including SIGINFO.
+
+--- e2fsck/unix.c.orig	2020-03-21 04:24:04 UTC
 +++ e2fsck/unix.c
 @@ -9,8 +9,6 @@
   * %End-Header%
@@ -9,16 +13,7 @@
  #include "config.h"
  #include <stdio.h>
  #ifdef HAVE_STDLIB_H
-@@ -37,7 +35,7 @@ extern int optind;
- #include <sys/ioctl.h>
- #endif
- #ifdef HAVE_MALLOC_H
--#include <malloc.h>
-+#include <stdlib.h>
- #endif
- #ifdef HAVE_SYS_TYPES_H
- #include <sys/types.h>
-@@ -601,6 +599,24 @@ static int e2fsck_update_progress(e2fsck
+@@ -602,6 +600,24 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pa
  	return 0;
  }
  
@@ -43,7 +38,7 @@
  #define PATH_SET "PATH=/sbin"
  
  /*
-@@ -633,6 +649,17 @@ static void signal_progress_on(int sig E
+@@ -635,6 +651,17 @@ static void signal_progress_on(int sig EXT2FS_ATTR((un
  	ctx->progress = e2fsck_update_progress;
  }
  
@@ -61,7 +56,7 @@
  static void signal_progress_off(int sig EXT2FS_ATTR((unused)))
  {
  	e2fsck_t ctx = e2fsck_global_ctx;
-@@ -1103,6 +1130,10 @@ static errcode_t PRS(int argc, char *arg
+@@ -1111,6 +1138,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t 
  	sigaction(SIGUSR1, &sa, 0);
  	sa.sa_handler = signal_progress_off;
  	sigaction(SIGUSR2, &sa, 0);

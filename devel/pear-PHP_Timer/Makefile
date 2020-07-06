@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	PHP_Timer
-PORTVERSION=	2.0.0
+PORTVERSION=	2.1.2
 CATEGORIES=	devel pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	Utility class for timing
 
 LICENSE=	BSD3CLAUSE

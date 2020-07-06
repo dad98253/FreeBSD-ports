@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	ntopng
-PORTVERSION=	3.4.d20180604
+PORTVERSION=	4.0.d20200326
+PORTREVISION=	1
 PORTEPOCH=	1
 CATEGORIES=	net
 
@@ -17,30 +18,32 @@ LIB_DEPENDS=	librrd.so:databases/rrdtool \
 		libcurl.so:ftp/curl \
 		libndpi.so:net/ndpi \
 		libjson-c.so:devel/json-c \
-		libsodium.so:security/libsodium
+		libsodium.so:security/libsodium \
+		libmaxminddb.so:net/libmaxminddb
 BUILD_DEPENDS=  bash:shells/bash
 
-USES=		autoreconf cpe gmake libtool localbase mysql pathfix pkgconfig \
-		shebangfix sqlite ssl
-SUB_FILES=	ntopng-geoipupdate.sh pkg-deinstall
-SHEBANG_FILES=	httpdocs/misc/ntopng-add-user.sh
+USES=		autoreconf compiler:c++11-lang cpe gmake libtool localbase \
+		mysql pathfix pkgconfig shebangfix sqlite ssl
+
+SUB_FILES=	ntopng-geoip2update.sh pkg-deinstall
+SHEBANG_FILES=	httpdocs/misc/ntopng-add-user.sh \
+		httpdocs/misc/ntopng-utils-manage-config.in
 GNU_CONFIGURE=	yes
+CONFIGURE_ARGS=	--with-ndpi-includes=${LOCALBASE}/include/ndpi
 
 USERS=		ntopng
 GROUPS=		ntopng
+PLIST_SUB=	NTOPNGUSER="${USERS}" NTOPNGROUP="${GROUPS}"
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	ntop
-GH_TAGNAME=	468d1eb
+GH_TAGNAME=	6d3ebbc
 
 CPE_VENDOR=	ntop
 
-OPTIONS_DEFINE=		GEOIP NLS
-OPTIONS_DEFAULT=	GEOIP
+OPTIONS_DEFINE=	NLS
 
 OPTIONS_SUB=	yes
-
-GEOIP_LIB_DEPENDS=	libGeoIP.so:net/GeoIP
 
 NLS_USES=	gettext
 
@@ -49,14 +52,14 @@ USE_RC_SUBR=	ntopng
 post-patch:
 	@${REINPLACE_CMD} -e 's|%%LOCALBASE%%|${LOCALBASE}|' \
 		${WRKSRC}/configure.seed
-	@${REINPLACE_CMD} -e 's|^\(export PREFIX=\).*|\1 ${PREFIX}|' \
-		${WRKSRC}/third-party/LuaJIT-2.1.0-beta3/Makefile
+	@${REINPLACE_CMD} -e 's/bind(/::bind(/' \
+		${WRKSRC}/src/SyslogCollectorInterface.cpp
 	cd ${WRKSRC} && ${SH} autogen.sh
 
 post-install:
 	${STRIP_CMD} ${STAGEDIR}${PREFIX}/bin/ntopng
-
-post-install-GEOIP-on:
-	${INSTALL_SCRIPT} ${WRKDIR}/ntopng-geoipupdate.sh ${STAGEDIR}${PREFIX}/bin
+	${MKDIR} ${STAGEDIR}/var/db/ntopng
+	${INSTALL_SCRIPT} ${WRKDIR}/ntopng-geoip2update.sh ${STAGEDIR}${PREFIX}/bin
+	${RM} ${STAGEDIR}${DATADIR}/httpdocs/misc/ntopng-utils-manage-updates
 
 .include <bsd.port.mk>

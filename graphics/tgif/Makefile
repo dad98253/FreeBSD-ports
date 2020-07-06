@@ -23,7 +23,7 @@ RUN_DEPENDS=	giftopnm:graphics/netpbm
 OPTIONS_DEFINE=	NLS A4SIZE DOCS
 A4SIZE_DESC=	Set default paper size to A4
 
-USES=		imake
+USES=		imake xorg
 PORTDOCS=	HISTORY README
 USE_XORG=	x11 xext xt sm ice
 
@@ -32,9 +32,9 @@ USE_XORG=	x11 xext xt sm ice
 .if ${PORT_OPTIONS:MNLS}
 USES+=		gettext
 IMAKEDEFINES+=	WITH_NLS
-PLIST_SUB=	NLS=""
+PLIST_SUB+=	NLS=""
 .else
-PLIST_SUB=	NLS="@comment "
+PLIST_SUB+=	NLS="@comment "
 .endif
 .if ${PORT_OPTIONS:MA4SIZE}
 IMAKEDEFINES+=	WITH_A4SIZE

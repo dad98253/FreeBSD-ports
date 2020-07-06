@@ -2,9 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	upp
-DISTVERSION=	11540
+DISTVERSION=	11873
+PORTREVISION=	3
 CATEGORIES=	devel x11-toolkits
-MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/2017.2/
+MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/2018.1/
 DISTNAME=	${PORTNAME}-x11-src-${PORTVERSION}
 
 MAINTAINER=	m.sund@arcor.de
@@ -13,7 +14,6 @@ COMMENT=	Ultimate++, a BSD-licensed, cross-platform, C/C++ RAD suite
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=	${BUILD_WRKSRC}/Core/Copying
 
-BROKEN_aarch64=		Does not compile on ${ARCH}: error Unknown CPU architecture
 BROKEN_powerpc=		Does not compile on ${ARCH}: error Unknown CPU architecture
 BROKEN_powerpc64=	Does not compile on ${ARCH}: error Unknown CPU architecture
 BROKEN_sparc64=		Does not compile on ${ARCH}
@@ -48,6 +48,7 @@ IDE_LIB_DEPENDS=	libexpat.so:textproc/expat2 \
 		libnotify.so:devel/libnotify \
 		libpng.so:graphics/png
 IDE_PLIST_FILES=	bin/theide ${MANPREFIX}/man/man1/theide.1.gz
+IDE_USES=	gnome xorg
 IDE_USE=	XORG=x11,xau,xcb,xcursor,xdmcp,xext,xfixes,xft,xi,xinerama,xrandr,xrender \
 		GNOME=cairo,gdkpixbuf2,gtk20
 UMK_DESC=	Build/install UMK (U++ MaKe command line utility)
@@ -57,7 +58,9 @@ USEMALLOC_VARS=	MACRO_FLAGS+=-DflagUSEMALLOC
 SCD_DESC=	Install spelling dictionaries (*.scd files)
 SCD_VARS=	PORTDATA+=*.scd
 # SDL/OPENGL/MYSQL/PGSQL dependencies are only for run-time for use by executables built by the IDE
+SDL_USES=	sdl
 SDL_USE=	SDL=sdl
+OPENGL_USES=	gl
 OPENGL_USE=	GL=gl,glu
 MYSQL_USES=	mysql
 PGSQL_USES=	pgsql
@@ -69,6 +72,8 @@ LLD_UNSAFE=	yes
 # Disable some warnings for Clang
 CXXFLAGS+=	-Wno-logical-op-parentheses
 .endif
+
+CXXFLAGS_i386+=	-msse2
 
 post-patch: .SILENT
 	${CP} ${BUILD_WRKSRC}/Makefile.in ${BUILD_WRKSRC}/Makefile
@@ -125,7 +130,7 @@ do-build-UMK-on:
 
 do-install:
 	(cd ${WRKSRC} && ${COPYTREE_SHARE} "${PORTDATA}" ${STAGEDIR}${DATADIR} \
-		"-not ( -type d -empty )")
+		"-not ( -type d -empty ) -o -name '*.orig'")
 	(cd ${STAGEDIR}${DATADIR}/uppsrc && ${RM} build_info.h *Makefile*)
 
 do-install-IDE-on:

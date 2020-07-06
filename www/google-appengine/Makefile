@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	google-appengine
-DISTVERSION=	1.9.66
+DISTVERSION=	1.9.82
+PORTREVISION=	1
 CATEGORIES=	www devel python
 MASTER_SITES=	https://storage.googleapis.com/appengine-sdks/featured/
 DISTFILES=	${PORTNAME:S|-|_|}_${PORTVERSION}.zip
@@ -13,13 +14,17 @@ COMMENT=	Development tools for Google App Engine (SDK)
 LICENSE=	APACHE20 BSD3CLAUSE GPLv2 LGPL21 MIT MPL11 PSFL
 LICENSE_COMB=	multi
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}sqlite3>=${PYTHON_VER}:databases/py-sqlite3@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}pillow>0:graphics/py-pillow@${PY_FLAVOR} \
+		${PY_PILLOW} \
 		${PYTHON_PKGNAMEPREFIX}pycrypto>=2.6:security/py-pycrypto@${PY_FLAVOR}
 
 WRKSRC=	${WRKDIR}/${PORTNAME:S,-,_,}
 
 USES=		gettext python:2.7 shebangfix zip
+NO_ARCH=	yes
 NO_BUILD=	yes
 SHEBANG_FILES=	${GAESCRIPTS}
 
@@ -33,7 +38,7 @@ PLIST_FILES=	${GAESCRIPTS:C,^| ,bin/&,g}
 LN_OPTS=	-sf
 
 GAEDATADIR=	google lib new_project_template tools
-GAESCRIPTS=	_php_runtime.py _python_runtime.py appcfg.py \
+GAESCRIPTS=	_php_runtime.py _python_runtime.py api_server.py appcfg.py \
 		backends_conversion.py bulkload_client.py bulkloader.py \
 		dev_appserver.py download_appstats.py endpointscfg.py \
 		gen_protorpc.py php_cli.py remote_api_shell.py \
@@ -41,8 +46,8 @@ GAESCRIPTS=	_php_runtime.py _python_runtime.py appcfg.py \
 
 MYSQL_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}MySQLdb>=1.2.3:databases/py-MySQLdb@${PY_FLAVOR}
 
-PHP_USE=	mysql=server
-PHP_VARS=	gaedatadir+=php want_mysql_ver=55
+PHP_USES=	mysql:server
+PHP_VARS=	gaedatadir+=php
 
 do-install:
 	@${MKDIR} ${STAGEDIR}${DATADIR}

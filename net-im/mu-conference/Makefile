@@ -3,7 +3,7 @@
 
 PORTNAME=	mu-conference
 PORTVERSION=	0.8
-PORTREVISION=	6
+PORTREVISION=	7
 CATEGORIES=	net-im
 MASTER_SITES=	http://download.gna.org/mu-conference/
 DISTNAME=	${PORTNAME}_${PORTVERSION}
@@ -11,13 +11,15 @@ DISTNAME=	${PORTNAME}_${PORTVERSION}
 MAINTAINER=	mm@FreeBSD.org
 COMMENT=	Multi-User Conferencing component for Jabber
 
+BROKEN=		unfetchable
+
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 LIB_DEPENDS=	libexpat.so:textproc/expat2 \
 		libidn.so:dns/libidn
 
-USES=		pkgconfig shebangfix
+USES=		gnome pkgconfig shebangfix
 SHEBANG_FILES=	scripts/roommaker.pl scripts/roomname.pl
 USE_GNOME=	glib20
 USE_RC_SUBR=	${PORTNAME}
@@ -25,9 +27,8 @@ USE_RC_SUBR=	${PORTNAME}
 OPTIONS_DEFINE=	MYSQL DOCS
 OPTIONS_DEFAULT=DAEMON
 OPTIONS_SINGLE=	SERVER
-OPTIONS_SINGLE_SERVER=	JABBER JABBERD EJABBERD DAEMON
+OPTIONS_SINGLE_SERVER=	JABBERD EJABBERD DAEMON
 
-JABBER_DESC=	Use with jabberd14 (net-im/jabber)
 JABBERD_DESC=	Use with jabberd 2.x (net-im/jabberd)
 EJABBERD_DESC=	Use with ejabberd (net-im/ejabberd)
 DAEMON_DESC=	Use builtin daemon
@@ -45,7 +46,7 @@ MAKE_JOBS_UNSAFE=	yes
 .include <bsd.port.options.mk>
 
 .if ${PORT_OPTIONS:MMYSQL}
-USE_MYSQL=	yes
+USES+=		mysql
 CFLAGS+=	-DHAVE_MYSQL
 LIBS+=		`${LOCALBASE}/bin/mysql_config --libs`
 DOCFILES+=	README.sql mu-conference.sql
@@ -53,13 +54,7 @@ DOCFILES+=	README.sql mu-conference.sql
 
 MUC_LOGDIR?=	/var/log/mu-conference
 
-.if ${PORT_OPTIONS:MJABBER}
-JABBER_REQUIRE?=        jabber
-JABBER_USER?=           jabber
-JABBER_PIDDIR?=         /var/run/jabberd
-JABBER_SPOOLDIR?=       /var/spool/jabberd
-RUN_DEPENDS+=           jabberd14:net-im/jabber
-.elif ${PORT_OPTIONS:MJABBERD}
+.if ${PORT_OPTIONS:MJABBERD}
 JABBER_REQUIRE?=        jabberd
 JABBER_USER?=           jabber
 JABBER_PIDDIR?=         /var/jabberd/pid

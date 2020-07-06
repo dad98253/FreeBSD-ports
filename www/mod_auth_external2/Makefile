@@ -12,6 +12,8 @@ DIST_SUBDIR=	apache2
 MAINTAINER=	apache@FreeBSD.org
 COMMENT=	Allows users authentication based on external mechanisms
 
+BROKEN=		unfetchable
+
 LICENSE=	APACHE20
 
 USES=		apache:2.2+
@@ -21,7 +23,9 @@ SHORTMODNAME=	auth_external
 
 PORTDOCS=	AUTHENTICATORS INSTALL README
 
-post-install:
+OPTIONS_DEFINE=	DOCS
+
+post-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}
 	${INSTALL_DATA} ${PORTDOCS:S|^|${WRKSRC}/|} ${STAGEDIR}${DOCSDIR}
 

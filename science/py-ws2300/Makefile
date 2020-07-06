@@ -14,6 +14,9 @@ COMMENT=	Driver for the LaCrosse WS-2300 weather station
 LICENSE=	AGPLv3
 LICENSE_FILE=	${WRKSRC}/agpl-3.0.txt
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 USES=		python:2.7
 USE_PYTHON=	distutils concurrent autoplist
 NO_ARCH=	yes
@@ -22,7 +25,7 @@ PLIST_FILES=	bin/ws2300 man/man1/ws2300.1.gz
 
 post-install:
 	${INSTALL_SCRIPT} ${FILESDIR}/ws2300 ${STAGEDIR}${PREFIX}/bin/ws2300
-	${INSTALL_MAN} ${WRKSRC}/ws2300.1 ${STAGEDIR}${PREFIX}/man/man1/
+	${INSTALL_MAN} ${WRKSRC}/ws2300.1 ${STAGEDIR}${MANPREFIX}/man/man1/
 	@${REINPLACE_CMD} -i '' -e 's|/usr/bin/env python|${PYTHON_CMD}|' ${STAGEDIR}${PREFIX}/bin/ws2300
 
 .include <bsd.port.mk>

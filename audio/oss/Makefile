@@ -2,27 +2,33 @@
 # $FreeBSD$
 
 PORTNAME=	oss
-DISTVERSION=	4.2-build2017
+DISTVERSION=	4.2-build2019
+PORTREVISION=	2
 CATEGORIES=	audio
 MASTER_SITES=	http://www.opensound.com/developer/sources/stable/bsd/
 DISTNAME=	${PORTNAME}-v${DISTVERSION}-src-bsd
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	crees@FreeBSD.org
 COMMENT=	Open Sound System from 4Front Technologies
 
 LICENSE=	BSD2CLAUSE
 
-BUILD_DEPENDS=	gawk:lang/gawk
+ONLY_FOR_ARCHS=	amd64 i386
 
-USES=		tar:bzip2 kmod pkgconfig
+BUILD_DEPENDS=	gawk:lang/gawk
+LIB_DEPENDS=	libfontconfig.so:x11-fonts/fontconfig \
+		libfreetype.so:print/freetype2
+
+USES=		gnome tar:bzip2 kmod pkgconfig
+USE_GNOME=	gtk20 cairo gdkpixbuf2
+USE_RC_SUBR=	oss
+
 HAS_CONFIGURE=	yes
 CONFIGURE_OUTSOURCE=	yes
 CONFIGURE_ENV=	HOSTCC="${CC}"
 ALL_TARGET=	all install
-USE_GNOME=	gtk20
-USE_RC_SUBR=	oss
+
 SUB_FILES=	pkg-install pkg-deinstall
-ONLY_FOR_ARCHS=	amd64 i386
 LLD_UNSAFE=	yes
 
 KMODDIR=	${PREFIX}/lib/oss/modules
@@ -58,6 +64,12 @@ post-patch:
 	${FIND} ${PATCH_WRKSRC} -name configure -or \
 	    -name make.local -or -name soundoff -or -name soundon | \
 	    ${XARGS} ${REINPLACE_CMD} -e 's|%%PREFIX%%|${PREFIX}|g'
+
+pre-build:
+	${MAKE_CMD} -C ${BUILD_WRKSRC}/kernel/OS/FreeBSD \
+		-f /usr/share/mk/bsd.kmod.mk \
+		KMOD=osscore SRCS=os_freebsd.c \
+		device_if.h bus_if.h pci_if.h
 
 do-install:
 	${INSTALL_PROGRAM} ${PROTO_BINDIR}/* ${STAGEDIR}${PREFIX}/bin/

@@ -2,13 +2,11 @@
 # $FreeBSD$
 
 PORTREVISION=	1
-PKGNAMESUFFIX=	-utils
 
-MAINTAINER=	gnome@FreeBSD.org
-COMMENT=	Poppler's xpdf-workalike command line utilities
+COMMENT=	Poppler's xpdf-workalike command line utilities # '
 
 MASTERDIR=	${.CURDIR}/../../graphics/poppler
-SLAVEPORT=	utils
+_SLAVE_PORT=	utils
 PLIST=		${.CURDIR}/pkg-plist
 
 .include "${MASTERDIR}/Makefile"

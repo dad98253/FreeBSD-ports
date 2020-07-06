@@ -1,15 +1,16 @@
-# Created by: Loïc Bartoletti <lbartoletti@tuxfamily.org>
+# Created by: Loïc Bartoletti <lbartoletti@FreeBSD.org>
 # $FreeBSD$
 
 PORTNAME=	codeblocks
 PORTVERSION=	18.04
+PORTREVISION=	8
 CATEGORIES=	devel
 MASTER_SITES=	http://download.tuxfamily.org/bartcoding/FreeBSD/ \
 		${MASTER_SITE_LOCAL}
 PKGNAMESUFFIX=	-devel
 DISTNAME=	${PORTNAME}-${PORTVERSION}-${SVN_REV}
 
-MAINTAINER=	lbartoletti@tuxfamily.org
+MAINTAINER=	lbartoletti@FreeBSD.org
 COMMENT=	Open source, cross-platform, free C/C++ IDE
 
 LICENSE=	GPLv3 LGPL3
@@ -19,10 +20,11 @@ BUILD_DEPENDS=	zip:archivers/zip
 LIB_DEPENDS=	libboost_system.so:devel/boost-libs \
 		libfontconfig.so:x11-fonts/fontconfig \
 		libfreetype.so:print/freetype2 \
-		libhunspell-1.6.so:textproc/hunspell
+		libhunspell-1.7.so:textproc/hunspell
 
-USES=		autoreconf compiler desktop-file-utils fam:gamin localbase \
-		gettext-runtime libtool pathfix pkgconfig shared-mime-info
+USES=		autoreconf compiler:c++11-lang desktop-file-utils gnome \
+		fam:gamin localbase gettext-runtime libtool pathfix pkgconfig \
+		shared-mime-info xorg
 USE_WX=		2.8
 USE_GNOME=	gtk20 cairo
 USE_XORG=	x11
@@ -41,7 +43,6 @@ SVNROOT_URI=	svn://svn.code.sf.net/p/codeblocks/code/trunk
 .include <bsd.port.pre.mk>
 
 .if ${CHOSEN_COMPILER_TYPE} == clang
-USE_CXXSTD=	c++11
 . if ${COMPILER_VERSION} >= 35
 CXXFLAGS+=	-Wno-undefined-bool-conversion
 . endif

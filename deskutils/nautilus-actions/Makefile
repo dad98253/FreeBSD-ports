@@ -3,6 +3,7 @@
 
 PORTNAME=	nautilus-actions
 PORTVERSION=	3.2.4
+PORTREVISION=	1
 CATEGORIES=	deskutils
 MASTER_SITES=	GNOME
 
@@ -14,7 +15,7 @@ LIB_DEPENDS=	libuuid.so:misc/e2fsprogs-libuuid \
 		libgtop-2.0.so:devel/libgtop \
 		libunique-3.0.so:x11-toolkits/libunique3
 
-USES=		gettext gmake libtool pkgconfig tar:xz
+USES=		gettext gmake gnome libtool pkgconfig tar:xz
 USE_GNOME=	gtk30 intltool nautilus3
 INSTALLS_ICONS=	yes
 INSTALLS_OMF=	yes
@@ -31,6 +32,8 @@ INSTALL_TARGET=	install-strip
 PORTDOCS=	AUTHORS ChangeLog ChangeLog-2008 ChangeLog-2009 ChangeLog-2010 \
 		ChangeLog-2011 ChangeLog-2012 COPYING COPYING-DOCS INSTALL \
 		MAINTAINERS NEWS README README-GCONF TODO
+
+OPTIONS_DEFINE=	DOCS
 
 .include <bsd.port.options.mk>
 

@@ -2,17 +2,17 @@
 
 PORTNAME=	mlt
 DISTVERSIONPREFIX=	v
-DISTVERSION=	6.6.0
-PORTREVISION?=	0
+DISTVERSION=	6.20.0
 CATEGORIES?=	multimedia
 
-MAINTAINER=	avilla@FreeBSD.org
+MAINTAINER=	kde@FreeBSD.org
 COMMENT?=	Multimedia framework for TV broadcasting
 
 LICENSE?=	GPLv2 GPLv3 LGPL21
 LICENSE_COMB?=	multi
 
-USES+=		alias eigen:3 gmake localbase pkgconfig
+USES+=		alias compiler:c++11-lang eigen:3 gmake gnome localbase \
+		pkgconfig
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS+=--enable-gpl --enable-gpl3 --target-os=FreeBSD
 USE_GITHUB=	yes
@@ -35,9 +35,9 @@ BROKEN_sparc64=		does not compile on sparc64 (invokes i386 asm)
 
 USE_GL=		gl
 USE_GNOME=	libxml2
-USE_SDL=	image
+USE_SDL=	image2
 USE_XORG=	x11
-USES+=		iconv pathfix
+USES+=		gl iconv pathfix sdl xorg
 PATHFIX_MAKEFILEIN=	Makefile
 CONFIGURE_ARGS+=--disable-qt --swig-languages=none
 USE_LDCONFIG=	yes
@@ -49,7 +49,7 @@ PORTEXAMPLES=	demo
 
 OPTIONS_DEFINE=	DOCS EXAMPLES FFMPEG FREI0R GTK2 JACK OPENGL \
 		SAMPLERATE SOX SWFDEC VIDSTAB # OPENCV VDPAU
-OPTIONS_DEFAULT=FFMPEG FREI0R GTK2 OPENGL SAMPLERATE SOX SWFDEC VIDSTAB
+OPTIONS_DEFAULT=FFMPEG FREI0R GTK2 OPENGL SAMPLERATE SOX VIDSTAB
 OPTIONS_SUB=	yes
 
 GTK2_DESC=	Images and text rendering via GTK+ 2
@@ -102,6 +102,8 @@ VIDSTAB_LIB_DEPENDS=	libvidstab.so:multimedia/vid.stab
 VIDSTAB_CONFIGURE_ENABLE=vid.stab
 
 pre-configure:
+	# Remove sdl1 support
+	${RM} -r ${WRKSRC}/src/modules/sdl
 	@${REINPLACE_CMD} -e 's,/usr/local,${LOCALBASE},' \
 		${WRKSRC}/src/modules/avformat/vdpau.c \
 		${WRKSRC}/src/modules/frei0r/factory.c \

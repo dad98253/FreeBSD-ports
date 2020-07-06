@@ -3,8 +3,7 @@
 #   $MCom: ports/devel/distcc/Makefile,v 1.3 2007/10/21 02:46:13 ahze Exp $
 
 PORTNAME=	distcc
-PORTVERSION=	3.1
-PORTREVISION=	6
+PORTVERSION=	3.3.2
 CATEGORIES=	devel
 
 MAINTAINER=	ports@FreeBSD.org
@@ -18,7 +17,7 @@ LIB_DEPENDS=	libpopt.so:devel/popt
 GNU_CONFIGURE=	yes
 USES=		autoreconf alias gmake libtool pkgconfig
 USE_GITHUB=	yes
-GH_ACCOUNT=     distcc
+GH_ACCOUNT=	distcc
 GH_TAGNAME=	9a09372
 
 GROUPS=		distcc
@@ -61,8 +60,10 @@ AVAHI_LIB_DEPENDS=	libavahi-client.so:net/avahi-app
 DOCS_PLIST_FILES=	${README_FILES:S|^|${DOCSDIR_REL}/|}
 DOCS_PLIST_FILES+=	${DOC_FILES:S|^|${DOCSDIR_REL}/|}
 GNOME_CONFIGURE_WITH=	gnome
+GNOME_USES=	gnome
 GNOME_USE=	GNOME=gtk20,libgnome,libgnomeui,pango
 GTK_CONFIGURE_WITH=	gtk
+GTK_USES=	gnome
 GTK_USE=	GNOME=gtk20
 IPV6_CONFIGURE_ENABLE=	rfc2553
 

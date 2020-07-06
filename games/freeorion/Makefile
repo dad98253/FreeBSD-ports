@@ -3,7 +3,7 @@
 
 PORTNAME=	freeorion
 DISTVERSIONPREFIX=	v
-DISTVERSION=	0.4.8-rc1
+DISTVERSION=	0.4.9
 CATEGORIES=	games
 
 MAINTAINER=	amdmi3@FreeBSD.org
@@ -12,12 +12,17 @@ COMMENT=	Turn-based space empire and galactic conquest game
 LICENSE=	GPLv2 CC-BY-SA-3.0
 LICENSE_COMB=	multi
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 LIB_DEPENDS=	libboost_thread.so:devel/boost-libs \
-		libboost_python27.so:devel/boost-python-libs@${PY_FLAVOR}
+		${PY_BOOST}
 
 USE_GITHUB=	yes
 
 USES=		cmake compiler:c++14-lang python:2.7
+
+LDFLAGS_i386=	-Wl,-znotext
 
 PORTDOCS=	ChangeLog.md README.md
 PORTDATA=	*
@@ -31,7 +36,7 @@ TEST_USES=		localbase
 
 HEADLESS_DESC=		Build only headless components: server and AI
 HEADLESS_CMAKE_BOOL=	BUILD_HEADLESS
-HEADLESS_USES_OFF=	openal
+HEADLESS_USES_OFF=	gl openal sdl
 HEADLESS_USE_OFF=	SDL=sdl2 GL=gl,glu,glew
 HEADLESS_LIB_DEPENDS_OFF= \
 		libfreetype.so:print/freetype2 \

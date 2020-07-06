@@ -3,12 +3,14 @@
 
 PORTNAME=	memcacheq
 PORTVERSION=	0.2.0
-PORTREVISION=	6
+PORTREVISION=	7
 CATEGORIES=	databases
 MASTER_SITES=	GENTOO
 
 MAINTAINER=	m.tsatsenko@gmail.com
 COMMENT=	Simple queue service over Memcache
+
+BROKEN=		unfetchable
 
 LICENSE=	BSD3CLAUSE
 
@@ -27,6 +29,8 @@ PORTDOCS=	README
 
 MCQDIR?=	/var/db/memcacheq
 PLIST_SUB=	MCQDIR=${MCQDIR}
+
+OPTIONS_DEFINE=	DOCS
 
 post-install:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

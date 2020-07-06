@@ -4,6 +4,7 @@
 PORTNAME=	scudcloud
 PORTVERSION=	1.65
 DISTVERSIONPREFIX=	v
+PORTREVISION=	1
 CATEGORIES=	net-im
 
 MAINTAINER=	nivit@FreeBSD.org
@@ -21,13 +22,13 @@ RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}dbus>0:devel/py-dbus@${PY_FLAVOR} \
 GH_ACCOUNT=	raelgc
 
 HUNSPELL_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}hunspell>0:textproc/py-hunspell@${PY_FLAVOR} \
-			qupzilla:www/qupzilla-qt5
+			falkon:www/falkon
 
 INSTALLS_ICONS=	yes
 
 OPTIONS_DEFINE=	HUNSPELL
 
-USES=		python:3.4+
+USES=		gnome python:3.4+
 USE_GITHUB=	yes
 USE_PYTHON=	autoplist distutils optsuffix
 NO_ARCH=	yes

@@ -2,8 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	pinot
-PORTVERSION=	1.09
-PORTREVISION=	10
+PORTVERSION=	1.10
 CATEGORIES=	deskutils
 
 MAINTAINER=	thierry@FreeBSD.org
@@ -21,9 +20,10 @@ LIB_DEPENDS=	libxapian.so:databases/xapian-core		\
 		libdbus-1.so:devel/dbus				\
 		libxml++-2.6.so:textproc/libxml++26		\
 		libboost_thread.so:devel/boost-libs		\
+		libnotify.so:devel/libnotify			\
 		libexif.so:graphics/libexif			\
 		libexiv2.so:graphics/exiv2			\
-		libgmime-2.4.so:mail/gmime24			\
+		libgmime-2.6.so:mail/gmime26			\
 		libtag.so:audio/taglib				\
 		libcurl.so:ftp/curl
 RUN_DEPENDS=	update-mime-database:misc/shared-mime-info	\
@@ -37,22 +37,21 @@ RUN_DEPENDS=	update-mime-database:misc/shared-mime-info	\
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	FabriceColin
-GH_TAGNAME=	c14d6d5
 
-GNU_CONFIGURE=	yes
-CONFIGURE_ARGS=	--with-http=curl --with-ssl=${OPENSSLBASE} --enable-libarchive	\
-		--enable-mempool=no
-CONFIGURE_ENV=	MKDIR_P="${MKDIR}" TEXTCAT_LIBS="-lexttextcat-2.0"
-CPPFLAGS+=	-I${LOCALBASE}/include
-LIBS+=		-L${LOCALBASE}/lib -lboost_system
-
-USES=		compiler:c++11-lang autoreconf gettext libarchive \
-		libtool pkgconfig python shebangfix sqlite:3 ssl
+USES=		compiler:c++11-lang autoreconf gettext gnome libarchive \
+		libtool pkgconfig python shebangfix sqlite:3 ssl xorg
 USE_CXXSTD=	c++11
 USE_XORG=	pixman
 USE_GNOME=	atkmm cairo cairomm glibmm gtk20 gtkmm24 libsigc++20 libxml2 pangomm
 USE_LDCONFIG=	${PREFIX}/lib/pinot/backends ${PREFIX}/lib/pinot/filters
 SHEBANG_FILES=	scripts/bash/*.sh
+
+GNU_CONFIGURE=	yes
+CONFIGURE_ARGS=	--with-http=curl --with-ssl=${OPENSSLBASE} --enable-libarchive	\
+		--enable-mempool=no --enable-libnotify
+CONFIGURE_ENV=	MKDIR_P="${MKDIR}" TEXTCAT_LIBS="-lexttextcat-2.0"
+CPPFLAGS+=	-I${LOCALBASE}/include
+LIBS+=		-L${LOCALBASE}/lib -lboost_system
 
 OPTIONS_DEFINE=	DEBUG CHMLIB DOCS
 OPTIONS_SUB=	yes
@@ -68,7 +67,7 @@ INSTALLS_ICONS=	yes
 DOCS=		AUTHORS ChangeLog ChangeLog-dijon INSTALL NEWS README TODO
 
 LM2FIX=		textcat_conf.txt textcat3_conf.txt textcat31_conf.txt textcat32_conf.txt
-SHR2FIX=	Core/pinot-search.1 README
+SHR2FIX=	Core/pinot-search.1
 UL2FIX=		Utils/xdgmime/xdgmime.c
 
 post-extract:
@@ -89,8 +88,6 @@ pre-configure:
 		${UL2FIX:S|^|${WRKSRC}/|}
 	${REINPLACE_CMD} -e 's|/usr/share|${PREFIX}/share|'	\
 		${SHR2FIX:S|^|${WRKSRC}/|}
-	${REINPLACE_CMD} -e 's|Icon=pinot.png|Icon=pinot|g' \
-		${WRKSRC}/*.desktop
 
 post-install:
 	${TOUCH} ${STAGEDIR}${DATADIR}/stopwords/.empty_file

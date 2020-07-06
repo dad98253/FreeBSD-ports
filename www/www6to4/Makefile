@@ -4,11 +4,13 @@
 PORTNAME=	www6to4
 PORTVERSION=	1.6
 PORTREVISION=	1
-CATEGORIES=	www ipv6
+CATEGORIES=	www
 MASTER_SITES=	ftp://ftp.pasta.cs.uit.no/pub/Vermicelli/
 
 MAINTAINER=	jmohacsi@bsd.hu
 COMMENT=	Lightweight http proxy to help IPv4 only browsers
+
+BROKEN=		unfetchable
 
 LICENSE=	GPLv2
 
@@ -19,6 +21,8 @@ USE_RC_SUBR=	www6to4
 PORTDOCS=	README
 
 ALL_TARGET=	www6to4
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	@${REINPLACE_CMD} -e 's,/etc,${ETCDIR},' \

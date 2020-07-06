@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	lolcat
-PORTVERSION=	99.9.11
+PORTVERSION=	100.0.1
 CATEGORIES=	games
 MASTER_SITES=	RG
 
@@ -11,16 +11,17 @@ COMMENT=	Rainbows and unicorns
 LICENSE=	BSD3CLAUSE
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-RUN_DEPENDS=	rubygem-manpages>=0.6.1:devel/rubygem-manpages \
-		rubygem-paint>=2.0.0:devel/rubygem-paint \
-		rubygem-trollop>=2.1.2:devel/rubygem-trollop
+RUN_DEPENDS=	rubygem-manpages>=0.6.1<0.7:devel/rubygem-manpages \
+		rubygem-optimist>=3.0.0<3.1:devel/rubygem-optimist \
+		rubygem-paint>=2.1<3:devel/rubygem-paint
+
+USES=		gem
+USE_RUBY=	yes
 
 NO_ARCH=	yes
-USE_RUBY=	yes
-USES=		gem
 
 PLIST_FILES=	bin/lolcat \
-		man/man6/lolcat.6.gz
+		share/man/man6/lolcat.6.gz
 
 post-build:
 	@${REINPLACE_CMD} -e 's|man/lolcat.6|&.gz|' ${WRKSRC}/${GEMSPEC}

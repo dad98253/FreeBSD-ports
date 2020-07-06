@@ -1,10 +1,11 @@
 # $FreeBSD$
 
 PORTNAME=	mping
-DISTVERSION=	0.1.3
+DISTVERSION=	0.1.4
 CATEGORIES=	sysutils
+PKGNAMESUFFIX=	-fraubsd
 
-MAINTAINER=	dteske@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Ping multiple hosts
 
 LICENSE=	BSD2CLAUSE

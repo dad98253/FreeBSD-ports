@@ -15,6 +15,9 @@ COMMENT=	Implementation of HPACK (Header compression for HTTP/2.0)
 LICENSE=	BSD2CLAUSE
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 BROKEN_armv6=	fails to compile: Can't define TIME_MAX #'
 BROKEN_armv7=	fails to compile: Can't define TIME_MAX #'
 
@@ -23,7 +26,7 @@ LIB_DEPENDS=	libcheck.so:devel/check
 CMAKE_OFF=	BUILD_DOCS BUILD_TESTS ENABLE_GCOV USE_VALGRIND
 MAKE_JOBS_UNSAFE=	yes
 USE_LDCONFIG=	yes
-USES=		cmake pathfix pkgconfig python:2.7,build shebangfix
+USES=		cmake:insource pathfix pkgconfig python:2.7,build shebangfix
 
 GH_ACCOUNT=	alobbs
 GH_TAGNAME=	b0ade19

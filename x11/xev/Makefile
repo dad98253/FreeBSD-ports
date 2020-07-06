@@ -1,13 +1,16 @@
 # $FreeBSD$
 
 PORTNAME=	xev
-PORTVERSION=	1.2.2
+PORTVERSION=	1.2.3
 CATEGORIES=	x11
 
 MAINTAINER=	x11@FreeBSD.org
 COMMENT=	Print contents of X events
 
-XORG_CAT=	app
+LICENSE=	MIT
+LICENSE_FILE=	${WRKSRC}/COPYING
+
+USES=		xorg xorg-cat:app
 USE_XORG=	x11 xrandr
 
 PLIST_FILES=	bin/xev man/man1/xev.1.gz

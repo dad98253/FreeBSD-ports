@@ -5,8 +5,10 @@ PORTNAME=	Event_Dispatcher
 PORTVERSION=	1.1.0
 CATEGORIES=	devel pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	miwi@FreeBSD.org
 COMMENT=	PEAR dispatch notifications using PHP callbacks
+
+LICENSE=	BSD2CLAUSE
 
 USES=		pear
 

@@ -1,6 +1,6 @@
---- misc/fts.c.orig	2016-11-30 07:03:00 UTC
+--- misc/fts.c.orig	2019-06-26 14:17:31 UTC
 +++ misc/fts.c
-@@ -32,12 +32,14 @@ static char sccsid[] = "@(#)fts.c	8.6 (B
+@@ -32,12 +32,14 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/
  #endif /* LIBC_SCCS and not lint */
  
  /* Conditional to set up proper fstat64 implementation */
@@ -12,11 +12,11 @@
  #endif
  
 +#include "system.h"
-+#include "misc/fts.h"
++#include "misc/rpmfts.h"
  #if defined(_LIBC)
  #include <sys/param.h>
  #include <include/sys/stat.h>
-@@ -51,7 +53,7 @@ static char sccsid[] = "@(#)fts.c	8.6 (B
+@@ -51,7 +53,7 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/
  #else
  
  /* Conditionals for working around non-GNU environments */
@@ -25,7 +25,7 @@
  #   define        _INCLUDE_POSIX_SOURCE
  #   define __errno_location() 	(&errno)
  #   define dirfd(dirp)		-1
-@@ -65,11 +67,9 @@ static char sccsid[] = "@(#)fts.c	8.6 (B
+@@ -65,11 +67,9 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/
  #   define __errno_location()	(__error())
  #endif
  
@@ -33,7 +33,7 @@
  #include <stdlib.h>
  #include <string.h>
  #include <errno.h>
--#include "misc/fts.h"
+-#include "misc/rpmfts.h"
  #   define __set_errno(val) (*__errno_location ()) = (val)
  #   define __open	open
  #   define __close	close

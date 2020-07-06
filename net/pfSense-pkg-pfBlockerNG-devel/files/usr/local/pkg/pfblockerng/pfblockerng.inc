@@ -3,8 +3,8 @@
  * pfblockerng.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2015-2018 BBcan177@gmail.com
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2019 BBcan177@gmail.com
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,9 @@ if (file_exists('/usr/local/pkg/pfblockerng/pfblockerng_extra.inc')) {
 }
 
 global $g, $config, $pfb;
+if (!is_array($pfb)) {
+	$pfb = array();
+}
 
 // Folders
 $pfb['dbdir']		= "{$g['vardb_path']}/pfblockerng";
@@ -83,6 +86,7 @@ $pfb['geoip_isos']	= "{$pfb['dbdir']}/geoip.txt";
 $pfb['dnsbl_info']	= "{$pfb['dbdir']}/dnsbl.sqlite";
 $pfb['dnsbl_levent']	= "{$pfb['dbdir']}/dnsbl_levent.sqlite";
 $pfb['dnsbl_cache']	= "{$pfb['dbdir']}/dnsbl_cache.sqlite";
+$pfb['asn_cache']	= "{$pfb['dbdir']}/asn_cache.sqlite";
 
 $pfb['asn_list']	= '/pfblockerng/pfblockerng_asn.txt';	// used by Ajax function in pfBlockerNG.js
 
@@ -94,6 +98,11 @@ $pfb['dnsbl_tld_txt']	= "{$pfb['dnsdir']}/DNSBL_TLD.txt";
 $pfb['dnsbl_tld_data']	= '/usr/local/pkg/pfblockerng/dnsbl_tld';
 $pfb['dnsbl_conf']	= '/var/unbound/pfb_dnsbl_lighty.conf';
 $pfb['dnsbl_cert']	= '/var/unbound/dnsbl_cert.pem';
+
+$pfb['dnsbl_safesearch']		= '/usr/local/pkg/pfblockerng/pfb_dnsbl.safesearch.conf';
+$pfb['dnsbl_youtube_restrict']		= '/usr/local/pkg/pfblockerng/pfb_dnsbl.youtube_restrict.conf';
+$pfb['dnsbl_youtube_restrictmoderate']	= '/usr/local/pkg/pfblockerng/pfb_dnsbl.youtube_restrictmoderate.conf';
+$pfb['dnsbl_firefoxdoh']		= '/usr/local/pkg/pfblockerng/pfb_dnsbl.firefoxdoh.conf';
 
 // tmp files
 $pfb['geoip_tmp']		= '/tmp/pfb_continent';
@@ -141,7 +150,7 @@ foreach (array('existing', 'actual') as $pftype) {
 }
 
 // Default cURL options
-$pfb['curl_defaults'] = array(  CURLOPT_USERAGENT	=> 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 Chrome/43.0.2357.65 Safari/537.36',
+$pfb['curl_defaults'] = array(  CURLOPT_USERAGENT	=> 'pfSense/pfBlockerNG cURL download agent',
 				CURLOPT_SSL_CIPHER_LIST	=> 'TLSv1.3, TLSv1.2',
 				CURLOPT_FOLLOWLOCATION	=> true,
 				CURLOPT_SSL_VERIFYPEER	=> true,
@@ -189,6 +198,22 @@ $pfb['rfc7231'] = array(100 => '100 Continue',			101 => '101 Switching Protocols
 			526 => 'CF 526 Invalid SSL Certificate',527 => 'CF 527 Railgun Error'
 			);
 
+function pfb_filter($input, $type) {
+
+	$result = '';
+	switch ($type) {
+		case 1:
+			$result = filter_var($input, FILTER_SANITIZE_STRING);
+			break;
+		case 2:
+			$result = filter_var($input, FILTER_SANITIZE_URL);
+			break;
+		default:
+			break;
+	}
+	return $result == FALSE ? '' : $result;
+}
+
 
 // [ $pfb ] pfBlockerNG global array. This needs to be called to get the updated settings.
 function pfb_global() {
@@ -216,6 +241,8 @@ function pfb_global() {
 	$pfb['supp']		= $pfb['ipconfig']['suppression'];		// Enable Suppression
 	$pfb['cc']		= $pfb['ipconfig']['database_cc'];		// Disable Country database CRON updates
 	$pfb['maxmind_locale']	= $pfb['ipconfig']['maxmind_locale']	?: 'en';// MaxMind Localized Language setting
+	$pfb['maxmind_key']	= $pfb['ipconfig']['maxmind_key']	?: '';	// Maxmind License Key
+	$pfb['asn_reporting']	= $pfb['ipconfig']['asn_reporting']	?: 'disabled'; // ASN Reporting
 
 	$pfb['iplocal']		= $config['interfaces']['lan']['ipaddr'];	// Lan IP address
 
@@ -278,16 +305,41 @@ function pfb_filter_service() {
 	# Ensure all processes are stopped
 	rc_stop
 
+	# Compare php/php_pfb versions
+	php_path='/usr/local/bin'
+
+	phpver="\$(/usr/bin/stat \${php_path}/php | cut -d '/' -f1)"
+	if [ -e "\${php_path}/php_pfb" ]; then
+		phppfbver="\$(/usr/bin/stat \${php_path}/php_pfb | cut -d '/' -f1)"
+	else
+		phppfbver=''
+	fi
+
+	# Create new hard link for php_pfb on version mismatch
+	if [ "\${phpver}" != "\${phppfbver}" ]; then
+		if [ -e "\${php_path}/php_pfb" ]; then
+			tmpfile="\$(/usr/bin/mktemp /tmp/pfb_php.XXXXXX)"
+			/bin/mv "\${php_path}/php_pfb" "\${tmpfile}"
+		fi
+
+		/bin/ln "\${php_path}/php" "\${php_path}/php_pfb"
+	fi
+
 	# Start pfBlockerNG Firewall filter Daemon
 	if [ -e '/var/log/filter.log' ]; then
-		/usr/local/sbin/clog_pfb -f /var/log/filter.log | /usr/local/bin/php_pfb -f /usr/local/pkg/pfblockerng/pfblockerng.inc filterlog &
+		# clog is not required for pfSense 2.5 and above
+		if [ -e "/usr/local/sbin/clog_pfb" ]; then
+			/usr/local/sbin/clog_pfb -f /var/log/filter.log | /usr/local/bin/php_pfb -f /usr/local/pkg/pfblockerng/pfblockerng.inc filterlog &
+		else
+			/usr/bin/tail_pfb -F /var/log/filter.log | /usr/local/bin/php_pfb -f /usr/local/pkg/pfblockerng/pfblockerng.inc filterlog &
+		fi
 	fi
 
 EOF;
 	$rc['stop']	= <<<EOF
 
-	# Terminate pfBlockerNG Firewall filter Daemon (clog) and filter Daemon, if found
-	pidnum="\$(/bin/ps -wax | /usr/bin/grep '[c]log_pfb -f /var/log/filter.log\|[p]fblockerng.inc filterlog' | /usr/bin/awk '{print \$1}')"
+	# Terminate pfBlockerNG Firewall filter Daemon (clog/tail) and filter Daemon, if found
+	pidnum="\$(/bin/ps -wax | /usr/bin/grep '[c]log_pfb -f /var/log/filter.log\|[t]ail_pfb -F /var/log/filter.log\|[p]fblockerng.inc filterlog' | /usr/bin/awk '{print \$1}')"
 	if [ ! -z "\${pidnum}" ]; then
 		for i in \${pidnum}; do
 			/bin/kill -9 "\${i}"
@@ -576,10 +628,12 @@ function pfb_determine_list_detail($list='', $header='', $confconfig='', $key=''
 		$pfbarr['logtab'] = "\t\t\t";
 	}
 
-	if (!empty($confconfig)) {
-		// Configure autoports/protocol and auto destination if required.
-		$conf_config = $config['installedpackages'][$confconfig]['config'][$key];
-		$autotype = array( 'autoports' => 'aliasports', 'autoaddr' => 'aliasaddr');
+	// Configure autoports/protocol and auto destination if required.
+	if (!empty($confconfig) && is_array($config['installedpackages'][$confconfig]['config'][$key])) {
+
+		$conf_config	= $config['installedpackages'][$confconfig]['config'][$key];
+		$autotype	= array( 'autoports' => 'aliasports', 'autoaddr' => 'aliasaddr');
+
 		foreach (array('_out', '_in') as $dir) {
 
 			$pfbarr['aproto' . $dir]	= $conf_config['autoproto' . $dir];
@@ -657,13 +711,13 @@ function pfblockerng_cron_exists($pfb_cmd, $pfb_min, $pfb_hour, $pfb_mday, $pfb_
 
 
 // Calculate the cron task base hour setting
-function pfb_cron_base_hour() {
+function pfb_cron_base_hour($freq) {
 	global $pfb;
 
-	switch($pfb['interval']) {
+	switch($freq) {
 		case 'Disabled':
 		case 1:
-			return array();
+			$j = 23; $k = 1;
 			break;
 		case 2:
 			$j = 11; $k = 2;
@@ -736,7 +790,7 @@ function pfb_build_if_list($show_wan=FALSE, $show_groups=FALSE) {
 	$pfb_interfaces = array();
 
 	foreach (get_configured_interface_with_descr() as $ifent => $ifdesc) {
-		if ($show_wan || $ifdesc != 'WAN') {
+		if ($show_wan || $ifent != 'wan') {
 			$pfb_interfaces[$ifent] = $ifdesc;
 		}
 	}
@@ -792,13 +846,17 @@ function dnsbl_alias_update($mode, $alias, $pfbfolder, $lists_dnsbl_current, $al
 		// Update DNSBL alias statistics
 		$dns_now = date('M d H:i:s', time());
 		$pfbfound = FALSE;
-		foreach ($pfb['dnsbl_info_stats'] as $key => $line) {
-			// Update existing alias stats
-			if ($line['groupname'] == "{$alias}") {
-				$pfbfound = TRUE;
-				$pfb['dnsbl_info_stats'][$key]['timestamp']	= "{$dns_now}";
-				$pfb['dnsbl_info_stats'][$key]['entries']	= "{$alias_cnt}";
-				break;
+
+		if (!empty($pfb['dnsbl_info_stats'])) {
+			foreach ($pfb['dnsbl_info_stats'] as $key => $line) {
+
+				// Update existing alias stats
+				if ($line['groupname'] == "{$alias}") {
+					$pfbfound = TRUE;
+					$pfb['dnsbl_info_stats'][$key]['timestamp']	= "{$dns_now}";
+					$pfb['dnsbl_info_stats'][$key]['entries']	= "{$alias_cnt}";
+					break;
+				}
 			}
 		}
 
@@ -879,18 +937,20 @@ function dnsbl_save_stats() {
 				}
 
 				if (is_numeric($group['entries'])) {
-					$group['groupname'] = filter_var($group['groupname'], FILTER_SANITIZE_STRING);
+					$group['groupname'] = pfb_filter($group['groupname'], 1);
 
 					$stmt = $db_handle->prepare($db_update);
-					$stmt->bindValue(':groupname', $group['groupname'], SQLITE3_TEXT);
+					if ($stmt) {
+						$stmt->bindValue(':groupname', $group['groupname'], SQLITE3_TEXT);
 
-					if (!$pfb_delete) {
-						$group['timestamp'] = filter_var($group['timestamp'], FILTER_SANITIZE_STRING);
+						if (!$pfb_delete) {
+							$group['timestamp'] = pfb_filter($group['timestamp'], 1);
 
-						$stmt->bindValue(':timestamp', $group['timestamp'], SQLITE3_TEXT);
-						$stmt->bindValue(':entries', $group['entries'], SQLITE3_TEXT);
+							$stmt->bindValue(':timestamp', $group['timestamp'], SQLITE3_TEXT);
+							$stmt->bindValue(':entries', $group['entries'], SQLITE3_TEXT);
+						}
+						$stmt->execute();
 					}
-					$stmt->execute();
 				}
 			}
 		}
@@ -925,6 +985,7 @@ server.event-handler		= "freebsd-kqueue"
 server.network-backend		= "freebsd-sendfile"
 server.dir-listing		= "disable"
 server.document-root		= "/usr/local/www/pfblockerng/www/"
+server.max-request-size		= "1"
 server.errorlog			= "|/usr/local/bin/php -f /usr/local/pkg/pfblockerng/pfblockerng.inc dnsbl"
 server.pid-file			= "/var/run/dnsbl.pid"
 
@@ -938,7 +999,7 @@ EOF;
 
 	$pfb_conf .= <<<EOF
 
-server.indexfiles		= ( "index.php" )
+index-file.names		= ( "index.php" )
 mimetype.assign			= ( ".html" => "text/html", ".gif" => "image/gif" )
 url.access-deny			= ( "~", ".inc" )
 fastcgi.server			= ( ".php" => ( "localhost" => ( "socket" => "/var/run/php-fpm.socket", "broken-scriptfilename" => "enable" ) ) )
@@ -949,22 +1010,28 @@ accesslog.format		= "INDEX!%r!%V!%h!%{Referer}i * %r * %{User-Agent}i"
 accesslog.filename		= "|/usr/local/bin/php -f /usr/local/pkg/pfblockerng/pfblockerng.inc index"
 
 \$HTTP["scheme"] == "http" {
-	url.rewrite-once = ( ".*" => "index.php" )
+	url.rewrite-once = ( ".*" => "/index.php" )
 }
 
 \$HTTP["remoteip"] =~ ".*" {
 	\$SERVER["socket"] == "0.0.0.0:{$pfb['dnsbl_port_ssl']}" {
 		ssl.engine	= "enable"
 		ssl.pemfile	= "/var/unbound/dnsbl_cert.pem"
+		ssl.dh-file	= "/etc/dh-parameters.4096"
+		ssl.cipher-list	= "EECDH+AESGCM:EDH+AESGCM:AES128+EECDH:AES128+EDH"
+		ssl.ec-curve	= "secp384r1"
 	}
 
 	\$SERVER["socket"] == "{$pfb['dnsbl_vip']}:443" {
 		ssl.engine	= "enable"
 		ssl.pemfile	= "/var/unbound/dnsbl_cert.pem"
+		ssl.dh-file	= "/etc/dh-parameters.4096"
+		ssl.cipher-list	= "EECDH+AESGCM:EDH+AESGCM:AES128+EECDH:AES128+EDH"
+		ssl.ec-curve	= "secp384r1"
 	}
 
 	\$HTTP["host"] =~ ".*" {
-		url.rewrite-once = ( ".*" => "index.php" )
+		url.rewrite-once = ( ".*" => "/index.php" )
 	}
 }
 
@@ -1061,7 +1128,8 @@ function pfb_create_dnsbl($mode) {
 		}
 
 		// DNSBL VIP generation
-		$dnsbl_new_vip = array();
+		$dnsbl_new_vip		= array();
+		$dnsbl_new_vip[0]	= array();
 
 		$dnsbl_new_vip[0]['interface']		= "{$pfb['dnsbl_iface']}";
 		$dnsbl_new_vip[0]['descr']		= 'pfB DNSBL - DO NOT EDIT';
@@ -1124,17 +1192,13 @@ function pfb_create_dnsbl($mode) {
 		if ($pfbupdate) {
 			$log = "\nSaving DNSBL config changes.";
 			pfb_logger("{$log}", 1);
+
+			init_config_arr(array('nat', 'rule'));
 			$config['nat']['rule'] = $new_nat;
 
-			if (!is_array($config['virtualip'])) {
-				$config['virtualip'] = array();
-			}
-
-			if (!is_array($config['virtualip']['vip'])) {
-				$config['virtualip']['vip'] = array();
-			}
-
+			init_config_arr(array('virtualip', 'vip'));
 			$config['virtualip']['vip'] = $new_vip;
+
 			write_config('pfBlockerNG: saving DNSBL changes');
 
 			// Execute ifconfig to enable VIP address
@@ -1230,6 +1294,7 @@ function pfb_unbound_dnsbl($mode) {
 	$unbound_include = "server:include: {$pfb['dnsbl_file']}.*conf";
 
 	// Collect Unbound custom option pfSense conf line
+	init_config_arr(array('unbound'));
 	$pfb['unboundconfig']	= &$config['unbound']['custom_options'];
 	if (!empty($pfb['unboundconfig'])) {
 		$unbound_custom = base64_decode($pfb['unboundconfig']);
@@ -1327,7 +1392,13 @@ function tld_analysis() {
 		while (($line = @fgets($t_handle)) !== FALSE) {
 			$line	= rtrim($line, "\x00..\x1F");
 			$tld	= substr($line, strrpos($line, '.') + 1);
-			$tlds[$tld][$line] = '';
+
+			if (!empty($tld)) {
+				if (!is_array($tlds[$tld])) {
+					$tlds[$tld] = array();
+				}
+				$tlds[$tld][$line] = '';
+			}
 		}
 		@fclose($t_handle);
 	} else {
@@ -1373,6 +1444,9 @@ function tld_analysis() {
 			}
 
 			if (!empty($tld)) {
+				if (!is_array($tld_whitelist[$tld])) {
+					$tld_whitelist[$tld] = array();
+				}
 				$tld_whitelist[$tld][] = array($domain, $resolved_host);
 				pfb_logger(" TLD Whitelist {$domain}|{$resolved_host}\n", 1);
 			} else {
@@ -1444,6 +1518,10 @@ function tld_analysis() {
 			@file_put_contents("{$pfb['dnsbl_tld_txt']}", $tld_list, LOCK_EX);
 
 			// Add 'TLD' to Alias/Feeds array
+			if (!is_array($pfb['tld_update']['DNSBL_TLD'])) {
+				$pfb['tld_update']['DNSBL_TLD'] = array();
+			}
+
 			$pfb['tld_update']['DNSBL_TLD']['feeds']	= array('DNSBL_TLD');
 			$pfb['tld_update']['DNSBL_TLD']['count']	= $tld_cnt;
 			$pfb['alias_dnsbl_all'][]			= 'DNSBL_TLD';
@@ -1603,9 +1681,11 @@ function tld_analysis() {
 
 		// Create a csv list of 'recently updated' DNSBL Feeds, as ordered by User
 		$dnsbl_feeds = '';
-		foreach ($pfb['tld_update'] as $alias => $data) {
-			foreach ($data['feeds'] as $feed) {
-				$dnsbl_feeds .= "{$feed},";
+		if (!empty($pfb['tld_update'])) {
+			foreach ($pfb['tld_update'] as $alias => $data) {
+				foreach ($data['feeds'] as $feed) {
+					$dnsbl_feeds .= "{$feed},";
+				}
 			}
 		}
 
@@ -1614,14 +1694,16 @@ function tld_analysis() {
 		pfb_logger("\nTLD finalize... completed [ NOW ]\n", 1);
 
 		// Update DNSBL Alias and Widget Stats
-		foreach ($pfb['tld_update'] as $alias => $data) {
+		if (!empty($pfb['tld_update'])) {
+			foreach ($pfb['tld_update'] as $alias => $data) {
 
-			// Create Alias summary file for each DNSBL Alias
-			$lists_dnsbl_current = array();
-			foreach ($data['feeds'] as $feed) {
-				$lists_dnsbl_current[] = "{$feed}";
+				// Create Alias summary file for each DNSBL Alias
+				$lists_dnsbl_current = array();
+				foreach ($data['feeds'] as $feed) {
+					$lists_dnsbl_current[] = "{$feed}";
+				}
+				dnsbl_alias_update('update', $alias, $pfb['dnsdir'], $lists_dnsbl_current, $data['count']);
 			}
-			dnsbl_alias_update('update', $alias, $pfb['dnsdir'], $lists_dnsbl_current, $data['count']);
 		}
 	}
 	else {
@@ -1747,6 +1829,11 @@ function pfb_update_unbound($mode, $pfbupdate) {
 					array(	'dnsbl_add_zone',	'local_zones',		'Add local-zone(s)' ),
 					array(	'dnsbl_add_data',	'local_datas',		'Add local-data(s)' ));
 
+			// Disable zone updates when TLD is disabled
+			if (!$pfb['dnsbl_tld']) {
+				unset($ucsync[0], $ucsync[2]);
+			}
+			
 			pfb_logger("\nResolver Live Sync finalizing:", 1);
 			foreach ($ucsync as $skey => $sync) {
 				$file = $pfb[$sync[0]];
@@ -2202,7 +2289,7 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 						curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 						curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1.3, TLSv1.2, TLSv1.1, TLSv1, SSLv3');
 						$log = "\n[ ! ] Downgrading SSL settings (Flex) ";
-						pfb_logger("{$log}", 1);
+						pfb_logger("{$log}", "{$logtype}");
 					}
 					else {
 						$log = curl_error($ch) . " Retry in 5 seconds...\n";
@@ -2216,16 +2303,16 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 				$http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 				if (isset($pfb['rfc7231'][$http_status])) {
-					if ($logtype != 3) {
-						pfb_logger(". {$pfb['rfc7231'][$http_status]}", 1);
+					if ($logtype < 3) {
+						pfb_logger(". {$pfb['rfc7231'][$http_status]}", $logtype);
 					} else {
-						pfb_logger(" {$file_dwn}\t\t{$pfb['rfc7231'][$http_status]}\n", 3);
+						pfb_logger(" {$file_dwn}\t\t{$pfb['rfc7231'][$http_status]}\n", $logtype);
 					}
 				} else {
-					if ($logtype != 3) {
-						pfb_logger(". unknown http status code | {$http_status}", 2);
+					if ($logtype < 3) {
+						pfb_logger(". unknown http status code | {$http_status}", $logtype);
 					} else {
-						pfb_logger(". unknown http status code | {$http_status}", 3);
+						pfb_logger(". unknown http status code | {$http_status}", $logtype);
 					}
 				}
 				curl_close($ch);
@@ -2261,11 +2348,11 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 		}
 
 		// Decompress file if required
-		if ($file_type == 'application/x-gzip') {
+		if ($file_type == 'application/x-gzip' || $file_type == 'application/gzip') {
 			if ($type == 'geoip') {
 				// Extras - MaxMind downloads
 				@rename("{$file_dwn}.raw", strstr("{$file_dwn}.raw", '.raw', TRUE));
-				exec("/usr/bin/gunzip -dfq {$file_dwn} {$pfb['geoipshare']}");
+				exec("/usr/bin/tar -xzf {$file_dwn} --strip=1 -C {$pfb['geoipshare']} >/dev/null 2>&1");
 				return TRUE;
 			}
 			elseif ($type == 'blacklist') {
@@ -2296,9 +2383,12 @@ function pfb_download($list_url, $file_dwn, $pflex=FALSE, $header, $format, $log
 			// Extras - MaxMind/TOP1M downloads
 			if ($type == 'geoip' || $type == 'top1m') {
 				// Determine if Zip contains multiple files
-				$archive = exec("/usr/bin/tar -tf {$file_dwn}.raw | grep -c ^");
-				if ($archive > 1) {
-					exec("/usr/bin/tar -xf {$file_dwn}.raw --strip=1 -C {$header}");
+				exec("/usr/bin/tar -tf {$file_dwn}.raw 2>&1", $archive_count, $retval);
+				if ($archive_count[0] == 'tar: Failed to set default locale') {
+					unset($archive_count[0]);
+				}
+				if (count($archive_count) > 1) {
+					exec("/usr/bin/tar -xf {$file_dwn}.raw --strip=1 -C {$header} >/dev/null 2>&1");
 				} else {
 					exec("/usr/bin/tar -xOf {$file_dwn}.raw > {$header}");
 				}
@@ -2766,15 +2856,22 @@ function pfb_firewall_rule($action, $pfb_alias, $vtype, $pfb_log, $agateway_in='
 // Archive IP aliastables and DNSBL database. ( Ramdisk installations only )
 function pfb_aliastables($mode) {
 	global $g, $config, $pfb;
-	$earlyshellcmd = '/usr/local/pkg/pfblockerng/pfblockerng.sh aliastables';
-	$msg = '';
 
-	// Only execute function if platform is Ramdisks are used.
-	if (($g['platform'] != 'pfSense') || isset($config['system']['use_mfs_tmpvar'])) {
+	$msg = '';
+	$earlyshellcmd = '/usr/local/pkg/pfblockerng/pfblockerng.sh aliastables';
+
+	init_config_arr(array('system', 'earlyshellcmd'));
+	$a_earlyshellcmd = &$config['system']['earlyshellcmd'];
+
+	init_config_arr(array('installedpackages', 'shellcmdsettings', 'config'));
+	$a_shellcmdsettings = &$config['installedpackages']['shellcmdsettings']['config'];
+
+	// Only execute function if Ramdisks are used.
+	if (isset($config['system']['use_mfs_tmpvar'])) {
 
 		// Archive aliastable folder
 		if ($mode == 'update') {
-			pfb_logger("\n\nArchiving Aliastable folder\n", 1);
+			pfb_logger("\nArchiving Aliastable folder", 1);
 			$files_to_backup = '';
 			if (glob("{$pfb['aliasdir']}/pfB_*.txt")) {
 				$files_to_backup = "{$pfb['aliasdir']}/pfB_*.txt";
@@ -2787,28 +2884,48 @@ function pfb_aliastables($mode) {
 			// Archive IP Aliastables/Unbound DNSBL Database as required.
 			if (!empty($files_to_backup)) {
 				exec("/usr/bin/tar -jcvf {$pfb['aliasarchive']} {$files_to_backup} >/dev/null 2>&1");
-				pfb_logger("\n\nArchiving selected pfBlockerNG files.\n", 1);
+				pfb_logger("\nArchiving selected pfBlockerNG files.\n", 1);
 			} else {
-				pfb_logger("\n\nNo Files to archive.\n", 1);
+				pfb_logger("\nNo Files to archive.\n", 1);
 			}
 		}
 
-		// Check conf file for earlyshellcmd
+		// Check conf file for earlyshellcmd/shellcmd package settings
 		elseif ($mode == 'conf') {
 
 			// Reload config.xml to get any recent changes
 			$config = parse_config(true);
 
-			if (isset($config['system']['earlyshellcmd'])) {
-				$a_earlyshellcmd = &$config['system']['earlyshellcmd'];
+			// Add earlyshellcmd settings
+			if (!empty($a_earlyshellcmd)) {
 				if (!preg_grep("/pfblockerng.sh aliastables/", $a_earlyshellcmd)) {
 					$a_earlyshellcmd[] = "{$earlyshellcmd}";
-					$msg = "\n** Adding earlyshellcmd **\n";
+					$msg = "\n** Adding earlyshellcmd settings **\n";
 				}
 			}
 			else {
-				$config['system']['earlyshellcmd'] = "{$earlyshellcmd}";
-				$msg = "\n** Adding earlyshellcmd **\n";
+				$a_earlyshellcmd = "{$earlyshellcmd}";
+				$msg = "\n** Adding earlyshellcmd settings **\n";
+			}
+
+			// Add shellcmd package settings
+			$found = FALSE;
+			if (!empty($a_shellcmdsettings)) {
+				foreach ($a_shellcmdsettings as $key => $shellcmd) {
+					if (strpos($shellcmd['cmd'], 'pfblockerng.sh aliastables') !== FALSE) {
+						$found = TRUE;
+						break;
+					}
+				}
+			}
+
+			if (!$found) {
+				$add = array(	'cmd' 		=> $earlyshellcmd,
+						'cmdtype'	=> 'earlyshellcmd',
+						'description'	=> 'pfBlockerNG earlyshellcmd. DO NOT EDIT/DELETE!');
+
+				$a_shellcmdsettings[] = $add;
+				$msg .= "\n** Adding shellcmd package settings **\n";
 			}
 		}
 	}
@@ -2818,12 +2935,21 @@ function pfb_aliastables($mode) {
 			unlink_if_exists("{$pfb['aliasarchive']}");
 		}
 
-		// Remove earlyshellcmd if found.
-		if (isset($config['system']['earlyshellcmd'])) {
-			$a_earlyshellcmd = &$config['system']['earlyshellcmd'];
+		// Remove earlyshellcmd settings
+		if (!empty($a_earlyshellcmd)) {
 			if (preg_grep("/pfblockerng.sh aliastables/", $a_earlyshellcmd)) {
 				$a_earlyshellcmd = preg_grep("/pfblockerng.sh aliastables/", $a_earlyshellcmd, PREG_GREP_INVERT);
-				$msg = "\n** Removing earlyshellcmd **\n";
+				$msg = "\n** Removing earlyshellcmd settings **\n";
+			}
+		}
+
+		// Remove shellcmd package settings
+		if (!empty($a_shellcmdsettings)) {
+			foreach ($a_shellcmdsettings as $key => $shellcmd) {
+				if (strpos($shellcmd['cmd'], 'pfblockerng.sh aliastables') !== FALSE) {
+					unset($a_shellcmdsettings[$key]);
+					$msg .= "\n** Removing shellcmd package settings**\n";
+				}
 			}
 		}
 	}
@@ -2840,6 +2966,7 @@ function pfb_filterrules() {
 	global $pfb;
 
 	$rule_list		= array();
+	$rule_list['id']	= array();
 	$rule_list['other']	= array();
 
 	exec("{$pfb['pfctl']} -vvsr 2>&1", $results);
@@ -2857,6 +2984,10 @@ function pfb_filterrules() {
 					$type	= strstr(trim($r[1]), ' ', TRUE);
 					if ($type == 'match') {
 						$type = 'unkn(%u)';
+					}
+
+					if (!is_array($rule_list[$id])) {
+						$rule_list[$id] = array();
 					}
 
 					$rule_list['id'][]	= $id;
@@ -2884,10 +3015,10 @@ function pfb_remove_states() {
 
 	$pfb_tables = array();
 	// Collect all 'pfB_' and 'pfb_' rules that are 'Block/Reject' and do not have bypass states enabled
-	if (isset($config['aliases']['alias'])) {
+	if (is_array($config['aliases']['alias'])) {
 		foreach ($config['aliases']['alias'] as $alias) {
 			if ($alias['type'] == 'urltable' && strpos($alias['name'], 'pfB_') !== FALSE && strpos($alias['descr'], '[s]') === FALSE) {
-				if (isset($config['filter']['rule'])) {
+				if (is_array($config['filter']['rule'])) {
 					foreach ($config['filter']['rule'] as $rule) {
 						if ($alias['name'] === $rule['source']['address'] || $alias['name'] === $rule['destination']['address']) {
 
@@ -2922,7 +3053,7 @@ function pfb_remove_states() {
 
 		// Convert '/24' CIDRs
 		$pfb_suppcidr = array();
-		if (strpos($line, '/24') !== FALSE) {
+		if (strpos($line, '/24') !== FALSE && is_ipaddrv4($line)) {
 			$pfb_suppcidr	= subnetv4_expand($line);
 			$pfb_local	= array_merge($pfb_local, $pfb_suppcidr);
 		}
@@ -2971,7 +3102,10 @@ function pfb_remove_states() {
 	exec("{$pfb['pfctl']} -s state > {$pfb['states_tmp']} 2>&1");
 
 	$state_count = $all_states = 0;
-	$states = array();
+	$states		= array();
+	$states[4]	= array();
+	$states[6]	= array();
+
 	if (($s_handle = @fopen("{$pfb['states_tmp']}", 'r')) !== FALSE) {
 		while (($sline = @fgets($s_handle)) !== FALSE) {
 
@@ -3057,7 +3191,11 @@ function pfb_remove_states() {
 			$state_count++;
 
 			// Collect IP for state removal verification
-			if (!isset($states[$ip_version][$s_ip]) || !in_array($state, $states[$ip_version][$s_ip])) {
+			if (!is_array($states[$ip_version][$s_ip])) {
+				$states[$ip_version][$s_ip] = array();
+			}
+
+			if (!in_array($state, $states[$ip_version][$s_ip])) {
 				$states[$ip_version][$s_ip][] = $state;
 			}
 		}
@@ -3150,7 +3288,7 @@ function pfb_collect_localip() {
 	if (is_array($config['virtualip']['vip'])) {
 		foreach ($config['virtualip']['vip'] as $list) {
 			if (!empty($list['subnet']) && !empty($list['subnet_bits'])) {
-				if ($list['subnet_bits'] >= 24) {
+				if ($list['subnet_bits'] >= 24 && is_ipaddrv4($list['subnet'])) {
 					$pfb_local	= array_merge(subnetv4_expand("{$list['subnet']}/{$list['subnet_bits']}"), $pfb_local);
 				} else {
 					$pfb_localsub[] = "{$list['subnet']}/{$list['subnet_bits']}";
@@ -3191,7 +3329,7 @@ function pfb_collect_localip() {
 		foreach ($config['interfaces'] as $int) {
 			if ($int['ipaddr'] != 'dhcp') {
 				if (!empty($int['ipaddr']) && !empty($int['subnet'])) {
-					if ($int['subnet'] >= 24) {
+					if ($int['subnet'] >= 24 && is_ipaddrv4($int['ipaddr'])) {
 						$pfb_local	= array_merge(subnetv4_expand("{$int['ipaddr']}/{$int['subnet']}"), $pfb_local);
 					} else {
 						$pfb_localsub[]	= "{$int['ipaddr']}/{$int['subnet']}";
@@ -3203,7 +3341,7 @@ function pfb_collect_localip() {
 
 	// Remove any duplicate IPs
 	if (!empty($pfb_local)) {
-		$pfb_local = array_flip(array_unique($pfb_local));
+		$pfb_local = array_flip(array_filter(array_unique($pfb_local)));
 	}
 	$pfb_localsub = array_unique($pfb_localsub);
 
@@ -3275,10 +3413,10 @@ function pfb_collect_localhosts() {
 		}
 	}
 
-	// Collect NAT IP addresses
+	// Collect NAT IP addresses by Target:Port
 	if (is_array($config['nat']['rule'])) {
 		foreach ($config['nat']['rule'] as $natent) {
-			$local_hosts[$natent['target']] = strtolower("{$natent['descr']}");
+			$local_hosts["{$natent['target']}:{$natent['local-port']}"] = strtolower("{$natent['descr']}");
 		}
 	}
 
@@ -3304,15 +3442,35 @@ function pfb_collect_localhosts() {
 function pfb_daemon_filterlog() {
 	global $config, $pfb;
 
-	// Application paths
-	$pathgeoip	= '/usr/local/bin/geoiplookup';
-	$pathgeoip6	= '/usr/local/bin/geoiplookup6';
+	// ASN Reporting - cached setting
+	if ($pfb['asn_reporting'] != 'disabled') {
+		switch ($pfb['asn_reporting']) {
+			case '1hour':
+				$asn_cache = '1 hours';
+				break;
+			case '4hour':
+				$asn_cache = '4 hours';
+				break;
+			case '12hour':
+				$asn_cache = '12 hours';
+				break;
+			case '24hour':
+				$asn_cache = '24 hours';
+				break;
+			default:
+				$asn_cache = '24 hours';
+		}
+	}
 
-	// Define file locations
-	$pathgeoipdat	= "{$pfb['geoipshare']}/GeoIP.dat";
-	$pathgeoipdat6	= "{$pfb['geoipshare']}/GeoIPv6.dat";
+	// Application paths
+	if (file_exists('/usr/local/bin/mmdblookup') && file_exists("{$pfb['geoipshare']}/GeoLite2-Country.mmdb")) {
+		$pathgeoip = "/usr/local/bin/mmdblookup -f {$pfb['geoipshare']}/GeoLite2-Country.mmdb -i";
+	} else {
+		$pathgeoip = '';
+	}
 
 	// Proofpoint ET IQRisk header name reference
+	init_config_arr(array('installedpackages', 'pfblockerngreputation', 'config', 0));
 	$et_header	= $config['installedpackages']['pfblockerngreputation']['config'][0]['et_header'] ?: '';
 	$et_enabled = TRUE;
 	if (empty($et_header)) {
@@ -3491,17 +3649,28 @@ function pfb_daemon_filterlog() {
 						$dir	= 'in';
 						$host	= $srcip;
 						$client	= $dstip;
+						$port	= $d[21];
 					} else {
 						$dir	= 'out';
 						$host	= $dstip;
 						$client	= $srcip;
+						$port	= $d[20];
 					}
 
 					if (!is_ipaddr($host)) {
 						continue;
 					}
 
-					$hostname = isset($local_hosts[$client]) ? $local_hosts[$client] : 'Unknown';
+					switch (TRUE) {
+						case isset($local_hosts["{$client}:{$port}"]):
+							$hostname = $local_hosts["{$client}:{$port}"];
+							break;
+						case isset($local_hosts[$client]):
+							$hostname = $local_hosts[$client];
+							break;
+						default:
+							$hostname = 'Unknown';
+					}
 
 					// Find the header which alerted this host
 					$pfb_query = find_reported_header($host, $folder);
@@ -3522,10 +3691,115 @@ function pfb_daemon_filterlog() {
 					}
 
 					// Determine GeoIP isocode of host
+					if (!empty($pathgeoip)) {
+						$geoip = exec("{$pathgeoip} {$host} country iso_code | grep -v '^$' | cut -d '\"' -f2 2>&1");
+						if (empty($geoip)) {
+							$geoip = 'Unk';
+						}
+					}
+					else {
+						$geoip = 'Unk';
+					}
+
+					// Modify host for ASN query
 					if ($d[8] == 4) {
-						$geoip = substr(exec("{$pathgeoip} -f {$pathgeoipdat} {$host} 2>&1"), 23, 2);
+						// For ASN, query for IP Network address (x.x.x.0)
+						$ix = ip_explode($host);
+						$ip = "{$ix['6']}0";
 					} else {
-						$geoip = substr(exec("{$pathgeoip6} -f {$pathgeoipdat6} {$host} 2>&1"), 26, 2);
+						// For ASN, query for IP Network address with /48 subnet
+						$ip = gen_subnetv6($host, 48);
+					}
+
+					// Determine ASN number of host
+					$asn = 'null';
+					if ($pfb['asn_reporting'] != 'disabled') {
+
+						$asn_cache = FALSE;
+						$db_handle = pfb_open_sqlite(5, 'Query ASN cache');
+						if ($db_handle) {
+
+							// Clear cached entries older than defined cache setting
+							$db_update = "DELETE FROM asncache WHERE timestamp <= datetime('now', 'localtime', :asn_cache)";
+							$stmt = $db_handle->prepare($db_update);
+							if ($stmt) {
+								$stmt->bindValue(':asn_cache', $asn_cache, SQLITE3_TEXT);
+								$stmt->execute();
+							}
+
+							// Query for cached Host IP
+							$db_update = "SELECT * FROM asncache WHERE host = :host;";
+							$stmt = $db_handle->prepare($db_update);
+							if ($stmt) {
+								$stmt->bindValue(':host', $ip, SQLITE3_TEXT);
+								$result = $stmt->execute();
+								if ($result) {
+									$asn_cache = $result->fetchArray(SQLITE3_ASSOC);
+								}
+							}
+						}
+						pfb_close_sqlite($db_handle);
+
+						// If Host IP is not in ASN cache, collect ASN from BGPview API
+						if (!$asn_cache) {
+
+							$asn		= '';
+							$bgp_url	= "https://api.bgpview.io/ip/{$ip}";
+
+							$ch = curl_init();
+							curl_setopt_array($ch, $pfb['curl_defaults']);	// Load curl default settings
+							curl_setopt($ch, CURLOPT_TIMEOUT, 300);		// Set cURL download timeout
+							curl_setopt($ch, CURLOPT_URL, $bgp_url);
+							curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+							// Attempt 3 Downloads before failing.
+							for ($retries = 1; $retries <= 3; $retries++) {
+								if ($result = curl_exec($ch)) {
+
+									// Create string '| ASN | Name | Description |' from json fields
+									$final = json_decode($result);
+									if (is_object($final)) {
+										foreach ($final->data->prefixes[0]->asn as $key => $line) {
+											if ($key == 'country_code') {
+												break;
+											}
+											$asn .= "| {$line} ";
+										}
+										$asn = str_replace(array("'", ','), '', $asn) . '|';
+									}
+
+									break;	// On download success
+								}
+								$asn = 'cURL Error | ' . curl_errno($ch);
+							}
+							curl_close($ch);
+
+							if (empty($asn)) {
+								$asn = 'Unknown';
+							}
+
+							// Save entry to ASN cache
+							else {
+
+								$db_update = "INSERT into asncache ( asn, host, timestamp ) VALUES ( :asn, :host, datetime('now', 'localtime'))";
+								$db_handle = pfb_open_sqlite(5, 'Add to ASN cache');
+								if ($db_handle) {
+									$asn = pfb_filter($asn, 1);
+									$stmt = $db_handle->prepare($db_update);
+									if ($stmt) {
+										$stmt->bindValue(':asn', $asn, SQLITE3_TEXT);
+										$stmt->bindValue(':host', $ip, SQLITE3_TEXT);
+										$stmt->execute();
+									}
+								}
+								pfb_close_sqlite($db_handle);
+							}
+						}
+
+						// Use cached ASN Entry
+						else {
+							$asn = "{$asn_cache['asn']}"	?: 'Unknown';
+						}
 					}
 
 					// Log:		"Date/Timestamp/Tracker ID/Interface/Interface Name/Action/IP Version"
@@ -3537,7 +3811,7 @@ function pfb_daemon_filterlog() {
 					}
 
 					// Details:	"Direction/GeoIP/Aliasname/IP evaluated/Feed Name/Resolved Hostname/Client Hostname"
-					$details	= "{$dir},{$geoip},{$pfb_alias},{$pfb_query[1]},{$pfb_query[0]},{$resolved_host},{$hostname}";
+					$details	= "{$dir},{$geoip},{$pfb_alias},{$pfb_query[1]},{$pfb_query[0]},{$resolved_host},{$hostname},{$asn}";
 
 					// Reverse Match text
 					if ($d[6] == 'match') {
@@ -3597,10 +3871,12 @@ function pfb_dnsbl_parse($domain, $src_ip, $req_agent) {
 	if ($db_handle) {
 		$db_update = "SELECT * FROM dnsblcache WHERE domain = :domain;";
 		$stmt = $db_handle->prepare($db_update);
-		$stmt->bindValue(':domain', $domain, SQLITE3_TEXT);
-		$result = $stmt->execute();
-		if ($result) {
-			$dnsbl_cache = $result->fetchArray(SQLITE3_ASSOC);
+		if ($stmt) {
+			$stmt->bindValue(':domain', $domain, SQLITE3_TEXT);
+			$result = $stmt->execute();
+			if ($result) {
+				$dnsbl_cache = $result->fetchArray(SQLITE3_ASSOC);
+			}
 		}
 	}
 	pfb_close_sqlite($db_handle);
@@ -3663,18 +3939,20 @@ function pfb_dnsbl_parse($domain, $src_ip, $req_agent) {
 		$db_update = "INSERT into dnsblcache ( type, domain, groupname, final, feed ) VALUES ( :type, :domain, :groupname, :final, :feed )";
 		$db_handle = pfb_open_sqlite(4, 'Add to DNSBL cache');
 		if ($db_handle) {
-			$domain		= filter_var($domain, FILTER_SANITIZE_STRING);
-			$pfb_group	= filter_var($pfb_group, FILTER_SANITIZE_STRING);
-			$pfb_final	= filter_var($pfb_final, FILTER_SANITIZE_STRING);
-			$pfb_feed	= filter_var($pfb_feed, FILTER_SANITIZE_STRING);
+			$domain		= pfb_filter($domain, 1);
+			$pfb_group	= pfb_filter($pfb_group, 1);
+			$pfb_final	= pfb_filter($pfb_final, 1);
+			$pfb_feed	= pfb_filter($pfb_feed, 1);
 
 			$stmt = $db_handle->prepare($db_update);
-			$stmt->bindValue(':type', $pfb_type, SQLITE3_TEXT);
-			$stmt->bindValue(':domain', $domain, SQLITE3_TEXT);
-			$stmt->bindValue(':groupname', $pfb_group, SQLITE3_TEXT);
-			$stmt->bindValue(':final', $pfb_final, SQLITE3_TEXT);
-			$stmt->bindValue(':feed', $pfb_feed, SQLITE3_TEXT);
-			$stmt->execute();
+			if ($stmt) {
+				$stmt->bindValue(':type', $pfb_type, SQLITE3_TEXT);
+				$stmt->bindValue(':domain', $domain, SQLITE3_TEXT);
+				$stmt->bindValue(':groupname', $pfb_group, SQLITE3_TEXT);
+				$stmt->bindValue(':final', $pfb_final, SQLITE3_TEXT);
+				$stmt->bindValue(':feed', $pfb_feed, SQLITE3_TEXT);
+				$stmt->execute();
+			}
 		}
 		pfb_close_sqlite($db_handle);
 	}
@@ -3819,16 +4097,24 @@ function pfb_open_sqlite($table, $message) {
 
 	if ($table == 1) {
 		$database	= $pfb['dnsbl_info'];
+		$db_table	= 'dnsbl';
 		$db_create	= "CREATE TABLE IF NOT EXISTS dnsbl ( groupname TEXT, timestamp TEXT, entries TEXT, counter INTEGER );";
 	} elseif ($table == 2) {
 		$database	= $pfb['dnsbl_levent'];
+		$db_table	= 'lastevent';
 		$db_create	= "CREATE TABLE IF NOT EXISTS lastevent ( row INTEGER, groupname TEXT, entry TEXT, details TEXT );";
 	} elseif ($table == 3) {
 		$database	= $pfb['dnsbl_levent'];
+		$db_table	= 'resolver';
 		$db_create	= "CREATE TABLE IF NOT EXISTS resolver ( row INTEGER, totalqueries INTEGER, queries INTEGER );";
 	} elseif ($table == 4) {
 		$database	= $pfb['dnsbl_cache'];
+		$db_table	= 'dnsblcache';
 		$db_create	= "CREATE TABLE IF NOT EXISTS dnsblcache ( type TEXT, domain TEXT, groupname TEXT, final TEXT, feed TEXT );";
+	} elseif ($table == 5) {
+		$database	= $pfb['asn_cache'];
+		$db_table	= 'asncache';
+		$db_create	= "CREATE TABLE IF NOT EXISTS asncache ( asn TEXT, host TEXT, timestamp TEXT );";
 	}
 
 	try {
@@ -3848,10 +4134,39 @@ function pfb_open_sqlite($table, $message) {
 	}
 
 	if ($db_handle) {
-		$db_handle->exec("PRAGMA journal_mode = wal;");
-		$db_handle->exec("BEGIN TRANSACTION;"
-				. "{$db_create}"
-				. "END TRANSACTION;");
+
+		// Validate database integrity
+		$validate = $pfb_validate = FALSE;
+		try {
+			$validate = $db_handle->query("PRAGMA integrity_check;");
+		}
+		catch (Exception $e) {
+			@file_put_contents($pfb['errlog'], "\nDNSBL_SQL: Failed to validate database - {$message}", FILE_APPEND | LOCK_EX);
+		}
+
+		if ($validate) {
+			while ($res = $validate->fetchArray(SQLITE3_ASSOC)) {
+				if ($res['integrity_check'] == 'ok') {
+					$pfb_validate = TRUE;
+				}
+			}
+		}
+
+		if (!$pfb_validate) {
+			log_error("[pfBlockerNG] DNSBL SQLite3 database [ {$db_table} ] corrupt. Table deletion/re-creation completed.");
+			@copy("{$database}", "{$database}.invalid");
+			$db_create = "DROP TABLE {$db_table}; {$db_create}";
+		}
+
+		try {
+			$db_handle->exec("BEGIN TRANSACTION; PRAGMA journal_mode = delete;"
+					. "{$db_create}"
+					. "END TRANSACTION;");
+		}
+		catch (Exception $e) {
+			@file_put_contents($pfb['errlog'], "\nDNSBL_SQL: Database failure - {$message}", FILE_APPEND | LOCK_EX);
+			return;
+		}
 		return $db_handle;
 	}
 	return;
@@ -3860,8 +4175,10 @@ function pfb_open_sqlite($table, $message) {
 
 // Function to close SQLite3 database
 function pfb_close_sqlite($db_handle) {
-	$db_handle->close();
-	unset($db_handle);
+	if (!empty($db_handle)) {
+		$db_handle->close();
+		unset($db_handle);
+	}
 }
 
 
@@ -3872,8 +4189,8 @@ function pfb_log_event($type, $domain, $src_ip, $req_agent) {
 	$datereq = date('M d H:i:s', time());
 
 	// Sanitize values
-	$domain		= filter_var($domain, FILTER_SANITIZE_STRING);
-	$req_agent	= filter_var($req_agent, FILTER_SANITIZE_STRING);
+	$domain		= pfb_filter($domain, 1);
+	$req_agent	= pfb_filter($req_agent, 1);
 	$req_agent	= str_replace("'", '', $req_agent);
 
 	// Collect lastevent without saving new event
@@ -3908,12 +4225,14 @@ function pfb_log_event($type, $domain, $src_ip, $req_agent) {
 		$db_handle = pfb_open_sqlite(1, 'Increment Counter');
 		if ($db_handle) {
 
-			$pfb_group	= filter_var($pfb_group, FILTER_SANITIZE_STRING);
+			$pfb_group	= pfb_filter($pfb_group, 1);
 			$db_update	= "UPDATE dnsbl SET counter = counter + 1 WHERE groupname = :pfb_group";
 
 			$stmt = $db_handle->prepare($db_update);
-			$stmt->bindValue(':pfb_group', $pfb_group, SQLITE3_TEXT);
-			$stmt->execute();
+			if ($stmt) {
+				$stmt->bindValue(':pfb_group', $pfb_group, SQLITE3_TEXT);
+				$stmt->execute();
+			}
 		}
 		pfb_close_sqlite($db_handle);
 	}
@@ -3959,15 +4278,17 @@ function pfb_dnsbl_lastevent($p_group, $p_entry, $p_details) {
 		$db_handle = pfb_open_sqlite(2, 'LastEvent');
 		if ($db_handle) {
 
-			$p_group	= filter_var($p_group, FILTER_SANITIZE_STRING);
-			$p_entry	= filter_var($p_entry, FILTER_SANITIZE_STRING);
-			$p_details	= filter_var($p_details, FILTER_SANITIZE_STRING);
+			$p_group	= pfb_filter($p_group, 1);
+			$p_entry	= pfb_filter($p_entry, 1);
+			$p_details	= pfb_filter($p_details, 1);
 
 			$stmt = $db_handle->prepare($db_update);
-			$stmt->bindValue(':p_group', $p_group, SQLITE3_TEXT);
-			$stmt->bindValue(':p_entry', $p_entry, SQLITE3_TEXT);
-			$stmt->bindValue(':p_details', $p_details, SQLITE3_TEXT);
-			$stmt->execute();
+			if ($stmt) {
+				$stmt->bindValue(':p_group', $p_group, SQLITE3_TEXT);
+				$stmt->bindValue(':p_entry', $p_entry, SQLITE3_TEXT);
+				$stmt->bindValue(':p_details', $p_details, SQLITE3_TEXT);
+				$stmt->execute();
+			}
 		}
 		pfb_close_sqlite($db_handle);
 	}
@@ -3985,6 +4306,7 @@ function pfb_daemon_queries() {
 		$sleep_freq = $config['installedpackages']['pfblockerngglobal']['widget-dnsblquery'] ?: 5;
 	}
 
+	$nice		= '/usr/bin/nice -n20';
 	$unbound_pid	= "{$g['varrun_path']}/unbound.pid";
 	$cmd		= '/usr/local/sbin/unbound-control -c /var/unbound/unbound.conf stats_noreset';
 
@@ -3996,29 +4318,26 @@ function pfb_daemon_queries() {
 			continue;
 		}
 
-		$query = '';
-		$now = date('M d H:i:s', time());
-
 		// Collect Unbound Resolver pid
-		$pid = exec("/usr/bin/pgrep -anx 'unbound' 2>&1") ?: 0;
-		if ($pid > 0) {
-
-			// Collect Unbound Resolver pid file timestamp (For cron reload task, which doesn't change pid #)
-			clearstatcache(FALSE, $unbound_pid);
-			$pidt	= @filemtime($unbound_pid);
-
-			$output	= exec("{$cmd} | {$pfb['grep']} 'total.num.queries=' | cut -d '=' -f2 2>&1");
+		$pid = exec("{$nice} /usr/bin/pgrep -anx 'unbound' 2>&1");
+		if (!empty($pid)) {
+			$output	= exec("{$nice} {$cmd} | {$nice} {$pfb['grep']} 'total.num.queries=' | cut -d '=' -f2 2>&1");
 			$query	= intval($output);
-
 			if (!is_numeric($query)) {
 				$query = '';
+			}
+
+			// On an Unbound Reload, the query stat is reset, therefore reuse previous query value
+			if ($query < $p_query) {
+				$t_query	= $query;
+				$query		= $query + $p_query;
+				$pid		= '';
 			}
 		}
 
 		// On initial daemon load
 		if (empty($p_pid)) {
-			$p_pid	= $pid;
-			$p_pidt = $pidt;
+			$p_pid = $pid;
 			continue;
 		}
 
@@ -4031,7 +4350,8 @@ function pfb_daemon_queries() {
 		if ($db_handle) {
 			$result = $db_handle->query("SELECT * FROM resolver WHERE row = 0;");
 			if ($result) {
-				while ($stats = $result->fetchArray(SQLITE3_ASSOC)) {
+				while ($res = $result->fetchArray(SQLITE3_ASSOC)) {
+					$stats = $res;
 					$pfb_found = TRUE;
 				}
 			}
@@ -4047,8 +4367,8 @@ function pfb_daemon_queries() {
 		pfb_close_sqlite($db_handle);
 
 		// If Unbound Resolver pid has changed, clear SQLite database 'queries' entry, and update 'totalqueries/pid' entries
-		if ($pfb_found && ($pid != $p_pid || $pidt != $p_pidt)) {
-			$totalqueries = ($stats['totalqueries'] ?: 0) + ($stats['queries'] ?: 0) + ($query ?: 0);
+		if ($pfb_found && $pid != $p_pid) {
+			$totalqueries = ($stats['totalqueries'] ?: 0) + ($query ?: 0);
 			pfBlockerNG_cleardnsbl('update_totalqueries', $totalqueries);
 		}
 		else {
@@ -4059,16 +4379,22 @@ function pfb_daemon_queries() {
 				if ($db_handle) {
 					$db_update = "UPDATE resolver SET queries = :query WHERE row = 0";
 					$stmt = $db_handle->prepare($db_update);
-					$stmt->bindValue(':query', $query, SQLITE3_INTEGER);
-					$stmt->execute();
+					if ($stmt) {
+						$stmt->bindValue(':query', $query, SQLITE3_INTEGER);
+						$stmt->execute();
+					}
 				}
 				pfb_close_sqlite($db_handle);
 			}
 		}
 
-		$p_pid		= $pid;
-		$p_pidt		= $pidt;
-		$p_query	= $query;
+		$p_pid = $pid;
+		if (isset($t_query)) {
+			$p_query = $t_query;
+			unset($t_query);
+		} else {
+			$p_query = $query;
+		}
 	}
 }
 
@@ -4209,6 +4535,13 @@ function convert_feeds_json() {
 				}
 			}
 
+			if (!is_array($pfb['feeds_list'][$type])) {
+				$pfb['feeds_list'][$type] = array();
+			}
+			if (!is_array($feed_info[$type])) {
+				$feed_info[$type] = array();
+			}
+
 			// Use alternative Aliasname(s) and/or merge multiple aliasname Feeds together (if user configured)
 			if (!empty($aconfig['feed_' . $l_aliasname])) {
 
@@ -4218,8 +4551,8 @@ function convert_feeds_json() {
 				if (!is_array($merge_feeds[$alt_feed])) {
 					$merge_feeds[$alt_feed] = array();
 				}
-
 				$merge_feeds[$alt_feed] = array_merge( $merge_feeds[$alt_feed], (array)$data['feeds'] );
+
 				if (!isset($feed_info[$type][$alt_feed])) {
 
 					// Modify 'info' and 'description' fields to reference user-defined aliasname
@@ -4309,8 +4642,10 @@ function pfBlockerNG_cleardnsbl($mode, $totalqueries = 0) {
 				if ($mode == 'update_totalqueries') {
 					if (is_numeric($totalqueries)) {
 						$stmt = $db_handle->prepare($data[2]);
-						$stmt->bindValue(':totalqueries', $totalqueries, SQLITE3_INTEGER);
-						$stmt->execute();
+						if ($stmt) {
+							$stmt->bindValue(':totalqueries', $totalqueries, SQLITE3_INTEGER);
+							$stmt->execute();
+						}
 					}
 				}
 				else {
@@ -4381,6 +4716,30 @@ function pfb_unlock($mode, $type, $remove='', $r_type='', $filename_unlock) {
 }
 
 
+// Function to clear pfBlockerNG folder/files
+function pfb_clear_contents() {
+	global $config, $pfb;
+
+	unlink_if_exists("{$pfb['dbdir']}/masterfile");
+	unlink_if_exists("{$pfb['dbdir']}/mastercat");
+	unlink_if_exists("{$pfb['supptxt']}");
+	unlink_if_exists("{$pfb['dnsbl_supptxt']}");
+	unlink_if_exists("{$pfb['dnsbl_info']}");
+	unlink_if_exists("{$pfb['dnsbl_levent']}");
+	unlink_if_exists("{$pfb['dnsbl_cache']}");
+	unlink_if_exists("{$pfb['asn_cache']}");
+	rmdir_recursive("{$pfb['origdir']}");
+	rmdir_recursive("{$pfb['matchdir']}");
+	rmdir_recursive("{$pfb['permitdir']}");
+	rmdir_recursive("{$pfb['denydir']}");
+	rmdir_recursive("{$pfb['nativedir']}");
+	rmdir_recursive("{$pfb['etdir']}");
+	rmdir_recursive("{$pfb['dnsdir']}");
+	rmdir_recursive("{$pfb['dnsorigdir']}");
+	rmdir_recursive("{$pfb['dnsalias']}");
+}
+
+
 // Main pfBlockerNG function
 function sync_package_pfblockerng($cron='') {
 	global $g, $config, $pfb, $pfbarr;
@@ -4395,7 +4754,7 @@ function sync_package_pfblockerng($cron='') {
 		if ($pfb['dnsbl'] == 'on') {
 			pfb_create_dnsbl('enable');
 		}
-		$log = 'Sync terminated during boot process.';
+		$log = 'Update terminated during boot process. If the boot process has completed, delete the file: /var/run/booting.';
 		pfb_logger("\n{$log}\nUPDATE PROCESS ENDED [ NOW ]\n", 1);
 		log_error("[pfBlockerNG] {$log}");
 		return;
@@ -4486,7 +4845,13 @@ function sync_package_pfblockerng($cron='') {
 	$pfb['dnsbl_alexa_inc']	= $pfb['dnsblconfig']['alexa_inclusion'] ?: '';		// TOP1M TLDs inclusions for whitelisting
 	$pfb['dnsbl_tld']	= $pfb['dnsblconfig']['pfb_tld'];			// Enable TLD Function
 
+	init_config_arr(array('installedpackages', 'pfblockerngsafesearch'));
+	$pfb['safesearch_enable']	= $config['installedpackages']['pfblockerngsafesearch']['safesearch_enable']	?: 'Disabled';
+	$pfb['safesearch_youtube']	= $config['installedpackages']['pfblockerngsafesearch']['safesearch_youtube']	?: 'Disabled';
+	$pfb['safesearch_firefoxdoh']	= $config['installedpackages']['pfblockerngsafesearch']['safesearch_firefoxdoh']?: 'Disabled';
+
 	// Reputation config variables
+	init_config_arr(array('installedpackages', 'pfblockerngreputation', 'config', 0));
 	$pfb['config_rep'] = $config['installedpackages']['pfblockerngreputation']['config'][0];
 
 	$pfb['rep']	= $pfb['config_rep']['enable_rep'];				// Enable/Disable 'Max' Reputation
@@ -4571,7 +4936,7 @@ function sync_package_pfblockerng($cron='') {
 
 	// Configure auto rule suffix. pfBlockerNG must be disabled to change suffix and to avoid duplicate rules
 	$pfbfound = FALSE;
-	if (isset($config['filter']['rule'])) {
+	if (is_array($config['filter']['rule'])) {
 		foreach ($config['filter']['rule'] as $rule) {
 
 			// Query for previous IPv4 pfBlockerNG 'alias type' aliasnames which are not in the new '_v4' suffix format
@@ -4584,12 +4949,13 @@ function sync_package_pfblockerng($cron='') {
 			}
 
 			// Collect any pre-existing suffix
-			if (preg_match('/pfB_\w+(\s.*)/', $rule['descr'], $pfb_suffix_real) && $count == 0) {
+			if (preg_match('/^pfB_\w+(\s.*)/', $rule['descr'], $pfb_suffix_real) && $count == 0) {
 				$pfb_suffix_match = $pfb_suffix_real[1];
 			}
 
 			// Query for existing pfB rules
-			if (strpos($rule['descr'], 'pfB_') !== FALSE && $rule['descr'] != 'pfB_DNSBL_Permit') {
+			if (substr($rule['descr'], 0, 4) == 'pfB_' &&
+			    $rule['descr'] != 'pfB_DNSBL_Permit' && $rule['descr'] != 'pfB_DNSBL_Ping') {
 				$pfbfound = TRUE;
 				break;
 			}
@@ -4625,19 +4991,16 @@ function sync_package_pfblockerng($cron='') {
 	#########################################################
 
 	// Collect pfSense interface order
-	$ifaces = get_configured_interface_list();
+	$ifaces = pfb_build_if_list(TRUE, FALSE);
 
 	foreach (array('inbound', 'outbound') as $type) {
 		$pfb["{$type}_interfaces"] = $pfb["{$type}_floating"] = array();
 
 		if (!empty($pfb['ipconfig']["{$type}_interface"])) {
-
-			// Sort interface array to match pfSense interface order to allow floating rules to populate.
-			$selected_interfaces	= explode(',', $pfb['ipconfig']["{$type}_interface"]);
-			$sort_interfaces	= array_intersect($ifaces, $selected_interfaces);
+			$interfaces = explode(',', $pfb['ipconfig']["{$type}_interface"]);
 
 			// CSV string for 'pfB_' match rules
-			$pfb["{$type}_floating"]		= ltrim(implode(',', $sort_interfaces), ',');
+			$pfb["{$type}_floating"]		= ltrim(implode(',', $interfaces), ',');
 
 			// Assign base rule/interfaces
 			if ($pfb['float'] == 'on') {
@@ -4645,7 +5008,7 @@ function sync_package_pfblockerng($cron='') {
 				$pfb["{$type}_interfaces"]	= explode(' ', $pfb["{$type}_floating"]);
 			} else {
 				$pfb['base_rule']		= $pfb['base_rule_reg'];
-				$pfb["{$type}_interfaces"]	= $sort_interfaces;
+				$pfb["{$type}_interfaces"]	= $interfaces;
 			}
 		}
 	}
@@ -4716,8 +5079,7 @@ function sync_package_pfblockerng($cron='') {
 		// Find all enabled IPv4 'Custom List' header names and check if 'Emerging Threats Update' and 'Custom List Update' needs force updating
 		$list_types = array(	'pfblockernglistsv4'		=> '_v4',
 					'pfblockernglistsv6'		=> '_v6',
-					'pfblockerngdnsbl'		=> '_v4',
-					'pfblockerngdnsbleasylist'	=> '_v4'
+					'pfblockerngdnsbl'		=> '_v4'
 					);
 
 		$pfb_invalid = FALSE;
@@ -4781,7 +5143,7 @@ function sync_package_pfblockerng($cron='') {
 								$config['installedpackages'][$ltype]['config'][$key]['row'][$hkey]['header'] = $row['header'];
 							}
 
-							if (in_array($ltype, array('pfblockerngdnsbl', 'pfblockerngdnsbleasylist'))) {
+							if ($ltype == 'pfblockerngdnsbl') {
 								$header = "{$row['header']}";
 							} else {
 								$header = "{$row['header']}{$vtype}";
@@ -4902,7 +5264,7 @@ function sync_package_pfblockerng($cron='') {
 			if ($pfb['enable'] == 'on' && $pftype != 'dnsbl') {
 				foreach ($ip_types as $ltype => $vtype) {
 					foreach ($results as $removed_header) {
-						if (isset($config['installedpackages'][$ltype]['config'])) {
+						if (is_array($config['installedpackages'][$ltype]['config'])) {
 							foreach ($config['installedpackages'][$ltype]['config'] as $list) {
 								if (!empty($list['row'])) {
 									foreach ($list['row'] as $row) {
@@ -4932,25 +5294,8 @@ function sync_package_pfblockerng($cron='') {
 	if ($pfb['enable'] == '' && $pfb['keep'] == '' && !$pfb['install']) {
 		$log = "\n  Removing DB Files/Folders \n";
 		pfb_logger("{$log}", 1);
-
-		unlink_if_exists("{$pfb['dbdir']}/masterfile");
-		unlink_if_exists("{$pfb['dbdir']}/mastercat");
-		unlink_if_exists("{$pfb['supptxt']}");
-		unlink_if_exists("{$pfb['dnsbl_supptxt']}");
-		unlink_if_exists("{$pfb['dnsbl_info']}");
-		unlink_if_exists("{$pfb['dnsbl_levent']}");
-		unlink_if_exists("{$pfb['dnsbl_cache']}");
-		rmdir_recursive("{$pfb['origdir']}");
-		rmdir_recursive("{$pfb['matchdir']}");
-		rmdir_recursive("{$pfb['permitdir']}");
-		rmdir_recursive("{$pfb['denydir']}");
-		rmdir_recursive("{$pfb['nativedir']}");
-		rmdir_recursive("{$pfb['etdir']}");
-		rmdir_recursive("{$pfb['dnsdir']}");
-		rmdir_recursive("{$pfb['dnsorigdir']}");
-		rmdir_recursive("{$pfb['dnsalias']}");
+		pfb_clear_contents();
 	}
-
 
 	#################################################
 	#	Create IP Suppression Txt File		#
@@ -4982,7 +5327,9 @@ function sync_package_pfblockerng($cron='') {
 
 	if ($pfb['enable'] == 'on' && $pfb['dnsbl'] == 'on' && !$pfb['save'] && !$dnsbl_error) {
 		if (isset($config['installedpackages']['pfblockerngdnsbl']['config']) ||
-		    isset($config['installedpackages']['pfblockerngdnsbleasylist']['config'])) {
+		    (isset($pfb['blconfig']) && $pfb['blconfig']['blacklist_enable'] != 'Disable' &&
+		    !empty($pfb['blconfig']['blacklist_selected']))) {
+			
 			$dnsbl_missing = FALSE;
 
 			// Collect existing DNSBL group statistics
@@ -5020,16 +5367,66 @@ function sync_package_pfblockerng($cron='') {
 			}
 
 			if ($dnsbl_missing) {
-				$log = "Missing DNSBL stats and/or Unbound DNSBL conf file - Rebuilding\n";
+				$log = "\n Missing DNSBL stats and/or Unbound DNSBL conf file - Rebuilding\n";
 				pfb_logger("{$log}", 1);
 				$pfb['reuse_dnsbl'] = 'on';
 				touch("{$pfb['dnsbl_file']}.reload");
 			}
 
+			// SafeSearch
+			pfb_logger("\n Loading DNSBL SafeSearch...", 1);
+			$safesearch_hosts = array();
+			$safesearch_types = array(	array( 'safesearch_enable',	'Enable',	'safesearch'),
+							array( 'safesearch_youtube',	'Strict',	'youtube_restrict'),
+							array( 'safesearch_youtube',	'Moderate',	'youtube_restrictmoderate'),
+							array( 'safesearch_firefoxdoh',	'Enable',	'firefoxdoh')
+							);
+
+			$safesearch_update = $pfb_found = FALSE;
+			foreach ($safesearch_types as $safe_type) {
+				if ($pfb[$safe_type[0]] == $safe_type[1]) {
+					$pfb_found = TRUE;
+
+					if (!file_exists("{$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf") ||
+					    @md5_file($pfb["dnsbl_{$safe_type[2]}"]) !==
+					    @md5_file("{$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf")) {
+						@copy($pfb["dnsbl_{$safe_type[2]}"], "{$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf");
+						$safesearch_update = TRUE;
+					}
+
+					// Collect SafeSearch domains for wildcard whitelisting
+					exec("cut -d '\"' -f2 {$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf | cut -d ' ' -f1", $safesearch_hosts);
+				}
+				elseif (file_exists("{$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf")) {
+					unlink("{$pfb['dnsbldir']}/pfb_dnsbl.{$safe_type[2]}.conf");
+					$safesearch_update = TRUE;
+				}
+			}
+
+			// Wildcard whitelist SafeSearch domains
+			$pfb_whitelist = '';
+			if (!empty($safesearch_hosts)) {
+				$safesearch_hosts = array_unique($safesearch_hosts);
+				foreach ($safesearch_hosts as $line) {
+					if (!empty($line)) {
+						// Remove 'www.' prefix
+						if (substr($line, 0, 4) == 'www.') {
+							$line = substr($line, 4);
+						}
+						$pfb_whitelist .= ".{$line} 60\n\"{$line} 60\n";
+					}
+				}
+			}
+
+			$s_log = ' disabled';
+			if ($pfb_found) {
+				$s_log = ' enabled';
+			}
+			pfb_logger(" {$s_log}", 1);
+
 			// Collect Whitelist, create string, and save to file (for grep -vF -f cmd)
 			pfb_logger("\n Loading DNSBL Whitelist...", 1);
 			$pfb_white = pfbng_text_area_decode($pfb['dnsblconfig']['suppression'], TRUE, FALSE);
-			$pfb_whitelist = '';
 			if (!empty($pfb_white)) {
 				foreach ($pfb_white as $line) {
 					if (!empty($line)) {
@@ -5052,9 +5449,17 @@ function sync_package_pfblockerng($cron='') {
 					}
 				}
 			}
+
 			$pfb_whitelist .= "\"localhost.localdomain 60\n";	// Added due to SWC Feed
 			@file_put_contents("{$pfb['dnsbl_supptxt']}", $pfb_whitelist, LOCK_EX);
 			pfb_logger(" completed", 1);
+
+			if ($safesearch_update) {
+				$log = "\n DNSBL - SafeSearch changes found - Rebuilding!\n";
+				pfb_logger("{$log}", 1);
+				$pfb['reuse_dnsbl'] = 'on';
+				touch("{$pfb['dnsbl_file']}.reload");
+			}
 
 			// Call TOP1M whitelist process
 			if ($pfb['dnsbl_alexa'] == 'on') {
@@ -5216,14 +5621,7 @@ function sync_package_pfblockerng($cron='') {
 				}
 			}
 
-			// Add DNSBL EasyList to '$lists array'
-			if (!empty($config['installedpackages']['pfblockerngdnsbleasylist']['config'])) {
-				foreach ($config['installedpackages']['pfblockerngdnsbleasylist']['config'] as $list) {
-					$lists[] = $list;
-				}
-			}
-
-			if (isset($config['installedpackages']['pfblockerngdnsbl']['config'])) {
+			if (is_array($config['installedpackages']['pfblockerngdnsbl']['config'])) {
 				foreach ($config['installedpackages']['pfblockerngdnsbl']['config'] as $list) {
 					// If only the 'customlist' is defined. Remove the 'List row' data.
 					if (isset($list['row']) && empty($list['row'][0]['url'])) {
@@ -5238,7 +5636,7 @@ function sync_package_pfblockerng($cron='') {
 									);
 					}
 
-					// Move DNSBL Group to primary position before the EasyList and Blacklist settings
+					// Move DNSBL Group to primary position before the Blacklist settings
 					if ($list['order'] == 'primary') {
 						$list_primary = array();
 						$list_primary[] = $list;
@@ -5281,18 +5679,6 @@ function sync_package_pfblockerng($cron='') {
 								$custom = TRUE;
 							} else {
 								$custom = FALSE;
-							}
-
-							// EasyList - collect enabled EasyList categories
-							if (isset($row['easycat'])) {
-								if (empty($row['easycat'])) {
-									pfb_logger("\n [ {$row['header']} ] - Terminated - No categories defined.\n", 1);
-									continue;
-								}
-								$easylist = ",{$row['easycat']},";
-							}
-							else {
-								unset($easylist);
 							}
 
 							// If Logging is enabled, utilize DNSBL Web Server & DNSBL VIP, otherwise use '0.0.0.0'
@@ -5388,9 +5774,10 @@ function sync_package_pfblockerng($cron='') {
 								}
 
 								// Variables for Easylists
-								$e_skip = $e_found = $e_lang = FALSE;
-								$run_once = $run_once_2 = FALSE;
-								$csv_parser = FALSE;
+								$easylist = $validate_header = FALSE;
+								$e_replace = array( '||', '.^', '^' );
+
+								$run_once = $csv_parser = FALSE;
 								$csv_type = '';
 								$ipcount = $ip_cnt = 0;
 
@@ -5402,121 +5789,43 @@ function sync_package_pfblockerng($cron='') {
 											// Collect original line
 											$oline = $line;
 
-											// On 'category match', parse EasyList feed
-											if (isset($easylist)) {
-
-												// Workaround for EasyList language feed nuances
-												// $e_1 & $e_2 (usable lines), $e_3 start of non-usable lines
-												if (!$e_found && !$e_lang) {
-
-													$e_lang = TRUE;
-													if (strpos($line, 'Title: EasyList Dutch') !== FALSE) {
-														$e_head	= '!---';
-														$e_1 	= '-Advertentiedomeinen ';
-														$e_2	= '-Advertentiedomeinen-';
-														$e_3	= '-Specifieke blokkeerregels ';
-													}
-													elseif (strpos($line, 'Title: Liste FR') !== FALSE) {
-														$e_head	= '!---';
-														$e_1	= '- Annonceurs';
-														$e_2	= '- Annonceurs popup';
-														$e_3	= html_entity_decode("Publicit\xc3\xa9s tierces");
-													}
-													elseif (strpos($line, 'Title: EasyList China') !== FALSE) {
-														$e_head	= '!---';
-														$e_1	= '-Ads-Union-';
-														$e_2	= '-Popups-';
-														$e_3	= 'Specific advert blocking filters';
-													}
-													elseif (strpos($line, 'Title: Liste AR') !== FALSE) {
-														$e_head = '!---';
-														$e_1	= ' Annonceurs ';
-														$e_2	= 'N/A';
-														$e_3	= html_entity_decode("Publicit\xc3\xa9s tierces");
-													}
-													elseif (strpos($line, 'Title: Easylist Czech') !== FALSE) {
-														$e_head = '! ---';
-														$e_1	= 'Czech 3rd party blocking rules';
-														$e_2	= 'Slovak 3rd party blocking rules';
-														$e_3	= 'Czech Whitelist';
-													}
-													elseif (strpos($line, 'Title: Latvian List') !== FALSE) {
-														$e_head = '! ---';
-														$e_1	= '3rd party ad blocking filters';
-														$e_2	= 'N/A';
-														$e_3	= '1st party whitelists';
-													}
-													elseif (strpos($line, 'Title: EasyList Hebrew') !== FALSE) {
-														$e_head = '!---';
-														$e_1	= '3rd party blocking rules';
-														$e_2	= 'N/A';
-														$e_3	= 'Site specific ad blocking rules';
-													}
-													elseif (strpos($line, 'Title: RU AdList') !== FALSE) {
-														$e_head = '! ***';
-														$e_1	= '! *** advblock/adservers.txt';
-														$e_2	= 'N/A';
-
-														// To be verified
-														//$e_3	= 'specific_hide.txt';
-														$e_3	= '!#adforce.clients';
-													}
-													elseif (strpos($line, 'Title: Adguard Turkish Filter') !== FALSE) {
-														$e_head = '!---';
-														$e_1	= 'Advertising networks';
-														$e_2	= 'N/A';
-														$e_3	= 'Anti-adblock rules';
-													}
-													else {
-														$e_lang = FALSE;
-													}
-												}
-
-												if ($e_lang) {
-
-													// Convert usable header lines to English language syntax
-													if (strpos($line, $e_head) !== FALSE) {
-														$line = str_replace($e_1, '! *** _adservers.', $line);
-														$line = str_replace($e_2, '! *** _adservers_popup.', $line);
-														$line = str_replace($e_3, '! *** _thirdparty.', $line);
-													}
-
-													// Remove any duplicated header lines
-													if ($e_head != '! ***' && substr($line, 0, 5) == '! ***') {
-														continue;
-													}
-												}
-
-												// Start of usable lines
-												if (!$e_found && strpos($line, '! ***') !== FALSE) {
-													if (strpos($line, '_adservers.') !== FALSE ||
-													    strpos($line, 'easyprivacy_trackingservers.') !== FALSE) {
-														$e_found = TRUE;
-													}
-												}
-
-												// Skip un-usable EasyList lines
-												if (isset($easylist) && !$e_found) {
+											// Validate EasyList/AdBlock/uBlock/ADGuard Feeds
+											if (!$validate_header) {
+												if (strpos($line, '[Adblock Plus ') !== FALSE ||
+												    strpos($line, '[uBlock Origin') !== FALSE ||
+												    strpos($line, '! Title: AdGuard') !== FALSE) {
+													$easylist = $validate_header = TRUE;
 													continue;
 												}
+												elseif (substr($line, 0, 1) === '!') {
+													continue;
+												}
+												else {
+													$validate_header = TRUE;
+												}
+											}
+
+											// Remove any '^M' characters
+											if (strpos($line, "\r") !== FALSE) {
+												$line = rtrim($line, "\x00..\x1F");
+											}
+
+											// Remove invalid charaters
+											$line = trim($line, " \t\n\r\0\x0B\xC2\xA0");
+
+											if ($easylist) {
+												if (substr($line, 0, 2) !== '||' ||
+												    substr($line, -1) !== '^' ||
+												    strpos($line, '$') !== FALSE ||
+											    	    strpos($line, '*') !== FALSE ||
+											            strpos($line, '/') !== FALSE) {
+													continue;
+												}
+
+												$lite = TRUE;
+												$line = str_replace($e_replace, '', $line);
 											}
 											else {
-												if (!$run_once && strpos($line, '[Adblock Plus ') !== FALSE) {
-													$log = 'Terminated - Only the EasyList Feeds available in'
-														. ' the EasyList tab are usable.';
-													pfb_logger("\n\n {$log}\n", 1);
-													break;
-												}
-												$run_once = TRUE;
-
-												// Remove any '^M' characters
-												if (strpos($line, "\r") !== FALSE) {
-													$line = rtrim($line, "\x00..\x1F");
-												}
-
-												// Remove invalid charaters
-												$line = trim($line, " \t\n\r\0\x0B\xC2\xA0");
-
 												// If 'tab' character found, replace with whitespace
 												if (strpos($line, "\x09") !== FALSE) {
 													$line = str_replace("\x09", ' ', $line);
@@ -5561,12 +5870,12 @@ function sync_package_pfblockerng($cron='') {
 												if ($csv_parser) {
 													$csvline = str_getcsv($line, ',', '', '"');
 												}
-												elseif (!$run_once_2) {
+												elseif (!$run_once) {
 													if (substr_count($line, ',') >= 2) {
 														$csvline = str_getcsv($line, ',', '', '"');
 														$csv_parser = TRUE;
 													}
-													$run_once_2 = TRUE;
+													$run_once = TRUE;
 												}
 											}
 
@@ -5576,7 +5885,7 @@ function sync_package_pfblockerng($cron='') {
 											}
 
 											// CSV parser
-											if (!isset($easylist) && $csv_parser) {
+											if ($csv_parser) {
 
 												$csv_found = FALSE;
 												$csv_count = count($csvline);
@@ -5601,6 +5910,9 @@ function sync_package_pfblockerng($cron='') {
 													case 'h3x':
 														if ($csv_count == 8) {
 															$line		= $csvline[2];
+															if (strpos($line, 'btc://') !== FALSE) {
+																continue 2;
+															}
 															$csv_found	= TRUE;
 														}
 														break;
@@ -5679,7 +5991,7 @@ function sync_package_pfblockerng($cron='') {
 
 														// Reset variables for CSV determination
 														else {
-															$csv_parser = $run_once_2 = FALSE;
+															$csv_parser = $run_once = FALSE;
 														}
 														break;
 												}
@@ -5692,68 +6004,8 @@ function sync_package_pfblockerng($cron='') {
 											}
 											$line = trim($line);
 
-											// Only collect defined EasyList categories
-											if (isset($easylist) && strpos($line, '! ***') !== FALSE) {
-												$e_skip = TRUE;
+											if (!$easylist) {
 
-												if (strpos($line, '_thirdparty.') !== FALSE) {
-													break;	// End of usable EasyList/EasyPrivacy feed
-
-												} elseif (strpos($easylist, ',ea,') !== FALSE &&
-												    strpos($line, 'adult_adservers.') === FALSE &&
-												    strpos($line, '_adservers.') !== FALSE) {
-													$e_skip = FALSE;
-												} elseif (strpos($easylist, ',eap,') !== FALSE &&
-												    strpos($line, '_adservers_popup.') !== FALSE) {
-													$e_skip = FALSE;
-												} elseif (strpos($easylist, ',aa,') !== FALSE &&
-												    strpos($line, 'adult_adservers.') !== FALSE) {
-													$e_skip = FALSE;
-												} elseif (strpos($easylist, ',aap,') !== FALSE &&
-												    strpos($line, 'adult_adservers_popup.') !== FALSE) {
-													$e_skip = FALSE;
-												} elseif (strpos($easylist, ',epts,') !== FALSE &&
-												    strpos($line, 'easyprivacy_trackingservers.') !== FALSE) {
-													$e_skip = FALSE;
-												} elseif (strpos($easylist, ',epti,') !== FALSE &&
-												    strpos($line, 'easyprivacy_trackingservers_international.') !== FALSE) {
-													$e_skip = FALSE;
-												}
-											}
-
-											// Parse EasyList line
-											if (isset($easylist)) {
-												if (!$e_skip) {
-
-													if (substr($line, 0, 2) != '||') {
-														continue;
-													}
-
-													// Remove trailing dot (issues.adblockplus.org/ticket/4302)
-													if (strpos($line, '.^') !== FALSE) {
-														$line = str_replace('.^', '^', $line);
-													}
-
-													if (strpos($line, '^') !== FALSE) {
-														$line = trim(str_replace('|', '', strstr($line, '^', TRUE)));
-													} elseif (strpos($line, '$') !== FALSE) {
-														$line = trim(str_replace('|', '', strstr($line, '$', TRUE)));
-													} else {
-														$line = trim(str_replace('|', '', $line));
-													}
-
-													if (strpos($line, '/') !== FALSE) {
-														$line = strstr($line, '/', TRUE);
-													}
-													if (strpos($line, '*') !== FALSE) {
-														$line = strstr($line, '*', TRUE);
-													}
-												}
-												else {
-													continue;
-												}
-											}
-											else {
 												// Typical Host Feed format - Remove characters before space
 												if (!$rev_format && strpos($line, ' ') !== FALSE) {
 													$line = trim(strstr($line, ' ', FALSE));
@@ -5776,43 +6028,43 @@ function sync_package_pfblockerng($cron='') {
 												else {
 													$lite = TRUE;
 												}
+											}
 
-												if (!$lite) {
+											if (!$lite) {
 
-													// If 'http|https|telnet|ftp://' found, remove
-													if (strpos($line, '://') !== FALSE) {
-														$line = substr($line, strpos($line, '://') + 3);
+												// If 'http|https|telnet|ftp://' found, remove
+												if (strpos($line, '://') !== FALSE) {
+													$line = substr($line, strpos($line, '://') + 3);
+												}
+
+												// If '/' character found, remove characters after '/'
+												if (strpos($line, '/') !== FALSE) {
+													$line = strstr($line, '/', TRUE);
+												}
+
+												// If '#' character found, remove characters after '#'
+												if (strpos($line, '#') !== FALSE) {
+													$line = strstr($line, '#', TRUE);
+												}
+
+												// If '?' character found, remove characters after '?'
+												if (strpos($line, '?') !== FALSE) {
+													$line = strstr($line, '?', TRUE);
+												}
+
+												// If special characters found, parse line for host
+												if (strpos($line, ';') !== FALSE) {
+													$host = parse_url($line);
+													if (isset($host['host'])) {
+														$line = $host['host'];
+													} else {
+														$line = strstr($line, ';', TRUE);
 													}
+												}
 
-													// If '/' character found, remove characters after '/'
-													if (strpos($line, '/') !== FALSE) {
-														$line = strstr($line, '/', TRUE);
-													}
-
-													// If '#' character found, remove characters after '#'
-													if (strpos($line, '#') !== FALSE) {
-														$line = strstr($line, '#', TRUE);
-													}
-
-													// If '?' character found, remove characters after '?'
-													if (strpos($line, '?') !== FALSE) {
-														$line = strstr($line, '?', TRUE);
-													}
-
-													// If special characters found, parse line for host
-													if (strpos($line, ';') !== FALSE) {
-														$host = parse_url($line);
-														if (isset($host['host'])) {
-															$line = $host['host'];
-														} else {
-															$line = strstr($line, ';', TRUE);
-														}
-													}
-
-													// Remove any Port numbers at end of line
-													if (strpos($line, ':') !== FALSE) {
-														$line = preg_replace("/:[0-9]{1,5}$/", '', $line);
-													}
+												// Remove any Port numbers at end of line
+												if (strpos($line, ':') !== FALSE) {
+													$line = preg_replace("/:[0-9]{1,5}$/", '', $line);
 												}
 											}
 											$line = trim($line);
@@ -5837,12 +6089,10 @@ function sync_package_pfblockerng($cron='') {
 												$line = mb_convert_encoding($line, 'UTF-8',
 													mb_detect_encoding($line, 'UTF-8, ASCII, ISO-8859-1'));
 
-												if (function_exists('idn_to_ascii')) {
-													$log = "\n  IDN converted: [ {$line} ]\t";
-													$line = idn_to_ascii($line);
-													if (!empty($line)) {
-														pfb_logger("{$log} [ {$line} ]", 1);
-													}
+												$log = "\n  IDN converted: [ {$line} ]\t";
+												$line = idn_to_ascii($line);
+												if (!empty($line)) {
+													pfb_logger("{$log} [ {$line} ]", 1);
 												}
 												else {
 													// Record failed parsed line
@@ -5886,7 +6136,7 @@ function sync_package_pfblockerng($cron='') {
 									@fclose($dhandle);
 								}
 								@fclose($fhandle);
-								unset($csvline, $easylist);
+								unset($csvline);
 
 								// Remove duplicates and save any IPs found in domain feed
 								if (!empty($domain_data_ip)) {
@@ -5985,6 +6235,9 @@ function sync_package_pfblockerng($cron='') {
 
 					// Collect Alias/Feeds for post TLD function
 					if ($pfb['dnsbl_tld']) {
+						if (!is_array($pfb['tld_update'][$alias])) {
+							$pfb['tld_update'][$alias] = array();
+						}
 						$pfb['tld_update'][$alias]['feeds']	= $lists_dnsbl_current;
 						$pfb['tld_update'][$alias]['count']	= $alias_cnt;
 					}
@@ -6103,7 +6356,7 @@ function sync_package_pfblockerng($cron='') {
 		}
 
 		// Load new DNSBL updates to Unbound Resolver
-		if ($pfb['domain_update'] || $pfbupdate || $pfb['domain_clear']) {
+		if ($pfb['domain_update'] || $pfbupdate || $pfbpython ||$pfb['domain_clear'] || $safesearch_update) {
 			pfb_update_unbound('enabled', $pfbupdate);
 		}
 
@@ -6149,11 +6402,45 @@ function sync_package_pfblockerng($cron='') {
 		pfb_logger("{$log}", 1);
 	}
 
+	// Download MaxMind Databases if not found
+	$maxmind_verify = FALSE;
+	if (!empty($pfb['maxmind_key'])) {
+
+		$maxmind_verify = TRUE;
+		if (!file_exists("{$pfb['geoipshare']}/GeoLite2-Country.mmdb") ||
+		    !file_exists("{$pfb['geoipshare']}/GeoLite2-Country-Blocks-IPv4.csv") ||
+		    !file_exists("{$pfb['dbdir']}/geoip.txt") ||
+		    !file_exists("{$pfb['ccdir']}/Top_Spammers_v4.info")) {
+
+			// Check if MaxMind download already in progress
+			exec('/bin/ps -wax', $result_cron);
+			if (!preg_grep("/pfblockerng[.]php\s+dc/", $result_cron)) {
+				$log = "\nMaxMind Database downloading and processing ( approx 4MB ) ... Please wait ...\n";
+				pfb_logger("{$log}", 1);
+				exec("/usr/local/bin/php /usr/local/www/pfblockerng/pfblockerng.php dc >> {$pfb['log']} 2>&1");
+				restart_service('pfb_filter');
+			}
+			else {
+				$log = "\nMaxMind download already in process...\n";
+				pfb_logger("{$log}", 1);
+			}
+		}
+	}
+
+	$maxmind_run_once = TRUE;
 	foreach ($pfb['continents'] as $continent => $pfb_alias) {
 		if (isset($config['installedpackages']['pfblockerng' . strtolower(str_replace(' ', '', $continent))]['config'])) {
 			$continent_config = $config['installedpackages']['pfblockerng' . strtolower(str_replace(' ', '', $continent))]['config'][0];
 			$cc_name = 'pfblockerng' . strtolower(str_replace(' ', '', $continent));
-			if ($continent_config['action'] != 'Disabled' && $pfb['enable'] == 'on') {
+			if (isset($continent_config['action']) && $continent_config['action'] != 'Disabled' && $pfb['enable'] == 'on') {
+
+				// Maxmind License Key verification and user notification
+				if ($maxmind_run_once && !$maxmind_verify) {
+					$mmsg = 'MaxMind now requires a License Key! Review the IP tab: MaxMind settings for more information.';
+					pfb_logger("\n\nURGENT:\n    {$mmsg}\n", 1);
+					file_notice('pfBlockerNG MaxMind', $mmsg, 'pfBlockerNG', '/pfblockerng/pfblockerng_ip.php', 2);
+					$maxmind_run_once = FALSE;
+				}
 
 				$urlvalue = '';	// Firewall: Aliases value field
 
@@ -6328,6 +6615,10 @@ function sync_package_pfblockerng($cron='') {
 					if (!is_array($list)) {
 						$list = array();
 					}
+					if (!is_array($list['row'])) {
+						$list['row'] = array();
+					}
+
 					$list['vtype']	= "{$vtype}";	// Collect list IP type
 					$list['key']	= "{$key}";	// Collect list array key location
 
@@ -6365,6 +6656,7 @@ function sync_package_pfblockerng($cron='') {
 			}
 		}
 
+		$maxmind_run_once = TRUE;
 		foreach	($lists	as $list) {
 			if ($runonce_v4 && $list['vtype'] == '_v4') {
 				$runonce_v4 = FALSE;
@@ -6388,6 +6680,16 @@ function sync_package_pfblockerng($cron='') {
 							$custom	= TRUE;
 						} else {
 							$custom	= FALSE;
+						}
+
+						// Maxmind License Key verification
+						if ($maxmind_run_once && $row['format'] == 'geoip') {
+							$mmsg = 'MaxMind now requires a License Key! Review the IP tab: MaxMind settings for more information.';
+							if (empty($pfb['maxmind_key'])) {
+								pfb_logger("\n\nURGENT:\n    {$mmsg}.\n", 1);
+								file_notice('pfBlockerNG MaxMind', $mmsg, 'pfBlockerNG', '/pfblockerng/pfblockerng_ip.php', 2);
+							}
+							$maxmind_run_once = FALSE;
 						}
 
 						// IPv4 Advanced Tunables
@@ -6977,7 +7279,7 @@ function sync_package_pfblockerng($cron='') {
 	}
 
 	$exist_aliases = $config['aliases']['alias'];
-	if (isset($config['aliases']['alias'])) {
+	if (is_array($config['aliases']['alias'])) {
 		foreach ($config['aliases']['alias'] as $cbalias) {
 
 			if (substr($cbalias['name'], 0, 4) == 'pfB_') {
@@ -6997,9 +7299,7 @@ function sync_package_pfblockerng($cron='') {
 		$config['aliases']['alias'] = $new_aliases;
 		write_config('pfBlockerNG: saving Aliases');
 	}
-
 	unset($new_aliases, $exist_aliases);
-
 
 	#########################
 	#	Assign Rules	#
@@ -7029,20 +7329,12 @@ function sync_package_pfblockerng($cron='') {
 			$orig_rules_nocreated = $new_rules_nocreated = array();
 
 			// Collect all existing rules
+			init_config_arr(array('filter', 'rule'));
 			$rules = $config['filter']['rule'];
 
 			// Collect existing pfSense rules 'pass', 'match' and 'other' pfSense rules into new arrays.
 			if (!empty($rules)) {
 				foreach ($rules as $rule) {
-					// Remove DNSBL floating rule
-					if ($rule['descr'] == 'pfB_DNSBL_Permit') {
-						// Remove 'created' tag
-						if (isset($rule['created'])) {
-							unset($rule['created']);
-						}
-						$orig_rules_nocreated[] = $rule;
-						continue;
-					}
 
 					// Remove all existing rules that start with 'pfB_' in the Rule Description
 					if (substr($rule['descr'], 0, 4) != 'pfB_') {
@@ -7109,28 +7401,25 @@ function sync_package_pfblockerng($cron='') {
 			}
 
 			#################################################################################
-			#			PASS/MATCH RULES ORDER(p/m)				#
-			#  ORDER 0 |	pfB (all)	| All other	|				#
+			#			IP FIREWALL RULES ORDER					#
+			#  ORDER 0 |	pfB (p/m/b/r)	| All other	|				#
 			#  ORDER 1 |	pfSense (p/m)	| pfB (p/m)	| pfB (b/r) 	| pfSense (b/r)	#
 			#  ORDER 2 |	pfB (p/m)	| pfSense (p/m) | pfB (b/r)	| pfSense (b/r)	#
 			#  ORDER 3 |	pfB (p/m)	| pfB (b/r) 	| pfSense (p/m)	| pfSense (b/r)	#
 			#  ORDER 4 |	pfB (p/m)	| pfB (b/r)	| pfSense (b/r)	| pfSense (p/m)	#
 			#################################################################################
 
-			if ($pfb['float'] == '') {
-				if (!empty($fother_rules)) {
-					foreach ($fother_rules as $cb_rules) {
-						$new_rules[] = $cb_rules;
-					}
+
+			if ($pfb['float'] == '' && $pfb['order'] == 'order_1' && !empty($fother_rules)) {
+				foreach ($fother_rules as $cb_rules) {
+					$new_rules[] = $cb_rules;
 				}
 			}
-			else {
-				if ($pfb['order'] == 'order_1') {
-					foreach (array($fpermit_rules, $fmatch_rules, $fother_rules) as $rtype) {
-						if (!empty($rtype)) {
-							foreach ($rtype as $cb_rules) {
-								$new_rules[] = $cb_rules;
-							}
+			if ($pfb['float'] == 'on' && $pfb['order'] == 'order_1') {
+				foreach (array($fpermit_rules, $fmatch_rules) as $rtype) {
+					if (!empty($rtype)) {
+						foreach ($rtype as $cb_rules) {
+							$new_rules[] = $cb_rules;
 						}
 					}
 				}
@@ -7178,6 +7467,13 @@ function sync_package_pfblockerng($cron='') {
 							}
 						}
 					}
+					if (!empty($pfb['permit_inbound'])) {
+						foreach ($pfb['permit_inbound'] as $cb_rules) {
+							$cb_rules['interface'] = $inbound_interface;
+							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $inbound_interface, 'permit_in');
+							$new_rules[] = $cb_rules;
+						}
+					}
 					// Match inbound rules defined as floating only.
 					if ($pfbrunonce && !empty($pfb['match_inbound'])) {
 						foreach ($pfb['match_inbound'] as $cb_rules) {
@@ -7185,13 +7481,6 @@ function sync_package_pfblockerng($cron='') {
 							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $inbound_interface, 'match_in');
 							$new_rules[] = $cb_rules;
 							$pfbrunonce = FALSE;
-						}
-					}
-					if ($pfb['order'] != 'order_0' && !empty($pfb['permit_inbound'])) {
-						foreach ($pfb['permit_inbound'] as $cb_rules) {
-							$cb_rules['interface'] = $inbound_interface;
-							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $inbound_interface, 'permit_in');
-							$new_rules[] = $cb_rules;
 						}
 					}
 					if ($pfb['order'] == 'order_2') {
@@ -7217,13 +7506,6 @@ function sync_package_pfblockerng($cron='') {
 							$new_rules[] = $cb_rules;
 						}
 					}
-					if ($pfb['order'] == 'order_0' && !empty($pfb['permit_inbound'])) {
-						foreach ($pfb['permit_inbound'] as $cb_rules) {
-							$cb_rules['interface'] = $inbound_interface;
-							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $inbound_interface, 'permit_in');
-							$new_rules[] = $cb_rules;
-						}
-					}
 				}
 			}
 
@@ -7238,6 +7520,13 @@ function sync_package_pfblockerng($cron='') {
 							}
 						}
 					}
+					if (!empty($pfb['permit_outbound'])) {
+						foreach ($pfb['permit_outbound'] as $cb_rules) {
+							$cb_rules['interface'] = $outbound_interface;
+							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $outbound_interface, 'permit_out');
+							$new_rules[] = $cb_rules;
+						}
+					}
 					// Match outbound rules defined as floating only.
 					if ($pfbrunonce && !empty($pfb['match_outbound'])) {
 						foreach ($pfb['match_outbound'] as $cb_rules) {
@@ -7245,13 +7534,6 @@ function sync_package_pfblockerng($cron='') {
 							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $outbound_interface, 'match_out');
 							$new_rules[] = $cb_rules;
 							$pfbrunonce = FALSE;
-						}
-					}
-					if ($pfb['order'] != 'order_0' && !empty($pfb['permit_outbound'])) {
-						foreach ($pfb['permit_outbound'] as $cb_rules) {
-							$cb_rules['interface'] = $outbound_interface;
-							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $outbound_interface, 'permit_out');
-							$new_rules[] = $cb_rules;
 						}
 					}
 					if ($pfb['order'] == 'order_2' && !empty($permit_rules)) {
@@ -7268,18 +7550,11 @@ function sync_package_pfblockerng($cron='') {
 							$new_rules[] = $cb_rules;
 						}
 					}
-					if ($pfb['order'] == 'order_0' && !empty($pfb['permit_outbound'])) {
-						foreach ($pfb['permit_outbound'] as $cb_rules) {
-							$cb_rules['interface'] = $outbound_interface;
-							$cb_rules['tracker'] = pfb_tracker($cb_rules['descr'], $outbound_interface, 'permit_out');
-							$new_rules[] = $cb_rules;
-						}
-					}
 				}
 			}
 
 			if ($pfb['float'] == 'on' && in_array($pfb['order'], array('order_0', 'order_3', 'order_4'))) {
-				if ($pfb['order'] == 'order_0') {
+				if ($pfb['order'] != 'order_3') {
 					$rule_order = array($fother_rules, $fpermit_rules, $fmatch_rules);
 				} else {
 					$rule_order = array($fpermit_rules, $fmatch_rules, $fother_rules);
@@ -7292,7 +7567,12 @@ function sync_package_pfblockerng($cron='') {
 					}
 				}
 			}
-			if ($pfb['float'] == 'on' && $pfb['order'] == 'order_2' && !empty($fother_rules)) {
+			if ($pfb['float'] == 'on' && in_array($pfb['order'], array('order_1', 'order_2')) && !empty($fother_rules)) {
+				foreach ($fother_rules as $cb_rules) {
+					$new_rules[] = $cb_rules;
+				}
+			}
+			if ($pfb['float'] == '' && $pfb['order'] != 'order_1' && !empty($fother_rules)) {
 				foreach ($fother_rules as $cb_rules) {
 					$new_rules[] = $cb_rules;
 				}
@@ -7449,7 +7729,7 @@ function sync_package_pfblockerng($cron='') {
 	$pfb_found	= FALSE;
 	$config		= parse_config(true);
 
-	if (isset($config['nat']['rule'])) {
+	if (is_array($config['nat']['rule'])) {
 		$nat_config = &$config['nat']['rule'];
 
 		foreach ($nat_config as $key => $ex_nat) {
@@ -7551,7 +7831,7 @@ function sync_package_pfblockerng($cron='') {
 		} elseif ($pfb['interval'] == 24) {
 			$pfb_hour = $pfb['24hour'];
 		} else {
-			$pfb_hour = implode(',', pfb_cron_base_hour());
+			$pfb_hour = implode(',', pfb_cron_base_hour($pfb['interval']));
 		}
 
 		$pfb_mday	= '*';
@@ -7680,52 +7960,16 @@ function pfblockerng_php_pre_deinstall_command() {
 				$a_earlyshellcmd = preg_grep("/pfblockerng.sh aliastables/", $a_earlyshellcmd, PREG_GREP_INVERT);
 			}
 		}
+		if (is_array($config['installedpackages']['shellcmdsettings']['config'])) {
+			foreach ($config['installedpackages']['shellcmdsettings']['config'] as $key => $shellcmd) {
+				if (strpos($shellcmd['cmd'], 'pfblockerng.sh aliastables') !== FALSE) {
+					unset($config['installedpackages']['shellcmdsettings']['config'][$key]);
+				}
+			}
+		}
 
-		// Remove settings from config
-		if (isset($config['installedpackages']['pfblockerng']))
-			unset($config['installedpackages']['pfblockerng']);
-		if (isset($config['installedpackages']['pfblockerngglobal']))
-			unset($config['installedpackages']['pfblockerngglobal']);
-		if (isset($config['installedpackages']['pfblockerngsync']))
-			unset($config['installedpackages']['pfblockerngsync']);
-		if (isset($config['installedpackages']['pfblockerngreputation']))
-			unset($config['installedpackages']['pfblockerngreputation']);
-		if (isset($config['installedpackages']['pfblockerngipsettings']))
-			unset($config['installedpackages']['pfblockerngipsettings']);
-		if (isset($config['installedpackages']['pfblockernglistsv4']))
-			unset($config['installedpackages']['pfblockernglistsv4']);
-		if (isset($config['installedpackages']['pfblockernglistsv6']))
-			unset($config['installedpackages']['pfblockernglistsv6']);
-		if (isset($config['installedpackages']['pfblockerngdnsbl']))
-			unset($config['installedpackages']['pfblockerngdnsbl']);
-		if (isset($config['installedpackages']['pfblockerngdnsblsettings']))
-			unset($config['installedpackages']['pfblockerngdnsblsettings']);
-		if (isset($config['installedpackages']['pfblockerngdnsbleasylist']))
-			unset($config['installedpackages']['pfblockerngdnsbleasylist']);
-		if (isset($config['installedpackages']['pfblockerngblacklist']))
-			unset($config['installedpackages']['pfblockerngblacklist']);
-		if (isset($config['installedpackages']['pfblockerngafrica']))
-			unset($config['installedpackages']['pfblockerngafrica']);
-		if (isset($config['installedpackages']['pfblockerngantarctica']))
-			unset($config['installedpackages']['pfblockerngantarctica']);
-		if (isset($config['installedpackages']['pfblockerngasia']))
-			unset($config['installedpackages']['pfblockerngasia']);
-		if (isset($config['installedpackages']['pfblockerngeurope']))
-			unset($config['installedpackages']['pfblockerngeurope']);
-		if (isset($config['installedpackages']['pfblockerngnorthamerica']))
-			unset($config['installedpackages']['pfblockerngnorthamerica']);
-		if (isset($config['installedpackages']['pfblockerngoceania']))
-			unset($config['installedpackages']['pfblockerngoceania']);
-		if (isset($config['installedpackages']['pfblockerngsouthamerica']))
-			unset($config['installedpackages']['pfblockerngsouthamerica']);
-		if (isset($config['installedpackages']['pfblockerngtopspammers']))
-			unset($config['installedpackages']['pfblockerngtopspammers']);
-		if (isset($config['installedpackages']['pfblockerngproxyandsatellite']))
-			unset($config['installedpackages']['pfblockerngproxyandsatellite']);
-
-		unlink_if_exists('/usr/local/sbin/lighttpd_pfb');
-		unlink_if_exists('/usr/local/bin/php_pfb');
-		unlink_if_exists('/usr/local/sbin/clog_pfb');
+		// Remove settings from config.xml
+		pfb_remove_config_settings();
 
 		unlink_if_exists("{$pfb['dnsbl_conf']}");
 		unlink_if_exists("{$pfb['dnsbl_cert']}");
@@ -7734,6 +7978,11 @@ function pfblockerng_php_pre_deinstall_command() {
 	else {
 		update_status(" All customizations/data will be retained...");
 	}
+
+	unlink_if_exists('/usr/local/sbin/lighttpd_pfb');
+	unlink_if_exists('/usr/local/bin/php_pfb');
+	unlink_if_exists('/usr/local/sbin/clog_pfb');
+	unlink_if_exists('/usr/bin/tail_pfb');
 
 	// Remove incorrect xml setting
 	if (isset($config['installedpackages']['pfblockerngantartica'])) {
@@ -7745,7 +7994,7 @@ function pfblockerng_php_pre_deinstall_command() {
 	if (!empty($pfb['widgets'])) {
 		$widgetlist = explode(',', $pfb['widgets']);
 		foreach ($widgetlist as $key => $widget) {
-			if (strpos($widget, 'pfblockerng-container') !== FALSE) {
+			if (strpos($widget, 'pfblockerng') !== FALSE) {
 				unset($widgetlist[$key]);
 			}
 		}
@@ -7755,6 +8004,38 @@ function pfblockerng_php_pre_deinstall_command() {
 
 	update_status(" done.\n");
 }
+
+
+// Remove settings from config.xml
+function pfb_remove_config_settings() {
+	global $config, $pfb;
+
+	foreach (array(	'pfblockerng',
+			'pfblockerngglobal',
+			'pfblockerngsync',
+			'pfblockerngreputation',
+			'pfblockerngipsettings',
+			'pfblockernglistsv4',
+			'pfblockernglistsv6',
+			'pfblockerngdnsbl',
+			'pfblockerngdnsblsettings',
+			'pfblockerngblacklist',
+			'pfblockerngafrica',
+			'pfblockerngantarctica',
+			'pfblockerngasia',
+			'pfblockerngeurope',
+			'pfblockerngnorthamerica',
+			'pfblockerngoceania',
+			'pfblockerngsouthamerica',
+			'pfblockerngtopspammers',
+			'pfblockerngproxyandsatellite' ) as $type) {
+
+		if (isset($config['installedpackages'][$type])) {
+			unset($config['installedpackages'][$type]);
+		}
+	}
+}
+
 
 /* Uses XMLRPC to synchronize the changes to a remote node */
 function pfblockerng_sync_on_changes() {
@@ -7877,18 +8158,19 @@ function pfblockerng_do_xmlrpc_sync($sync_to_ip, $port, $protocol, $username, $p
 	/* xml will hold the sections to sync */
 	$xml = array();
 
-	// If User Disabled, remove 'General Tab Customizations' from Sync
+	// If User Disabled, remove 'General/IP/DNSBL Tab Customizations' from Sync
 	if ($config['installedpackages']['pfblockerngsync']['config'][0]['syncinterfaces'] != 'on') {
 		if (isset($config['installedpackages']['pfblockerng'])) {
 			$xml['pfblockerng']		= $config['installedpackages']['pfblockerng'];
+		}
+		if (isset($config['installedpackages']['pfblockerngipsettings'])) {
+			$xml['pfblockerngipsettings']	= $config['installedpackages']['pfblockerngipsettings'];
 		}
 		if (isset($config['installedpackages']['pfblockerngdnsblsettings'])) {
 			$xml['pfblockerngdnsblsettings']= $config['installedpackages']['pfblockerngdnsblsettings'];
 		}
 	}
 
-	if (isset($config['installedpackages']['pfblockerngipsettings']))
-		 $xml['pfblockerngipsettings']		= $config['installedpackages']['pfblockerngipsettings'];
 	if (isset($config['installedpackages']['pfblockernglistsv4']))
 		$xml['pfblockernglistsv4']		= $config['installedpackages']['pfblockernglistsv4'];
 	if (isset($config['installedpackages']['pfblockernglistsv6']))
@@ -7913,8 +8195,6 @@ function pfblockerng_do_xmlrpc_sync($sync_to_ip, $port, $protocol, $username, $p
 		$xml['pfblockerngsouthamerica']		= $config['installedpackages']['pfblockerngsouthamerica'];
 	if (isset($config['installedpackages']['pfblockerngproxyandsatellite']))
 		$xml['pfblockerngproxyandsatellite']	= $config['installedpackages']['pfblockerngproxyandsatellite'];
-	if (isset($config['installedpackages']['pfblockerngdnsbleasylist']))
-		$xml['pfblockerngdnsbleasylist']	= $config['installedpackages']['pfblockerngdnsbleasylist'];
 	if (isset($config['installedpackages']['pfblockerngdnsbl']))
 		$xml['pfblockerngdnsbl']		= $config['installedpackages']['pfblockerngdnsbl'];
 	if (isset($config['installedpackages']['pfblockerngblacklist']))

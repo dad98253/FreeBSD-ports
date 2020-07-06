@@ -17,14 +17,14 @@ RUN_DEPENDS=	p5-Time-modules>=0:devel/p5-Time-modules \
 MAN5S=		dirvish.conf.5
 MAN8S=		dirvish.8 dirvish-expire.8 dirvish-locate.8 dirvish-runall.8
 
-WRKSRC=		${WRKDIR}
-NO_BUILD=	yes
 USES=		perl5 tar:tgz
 USE_PERL5=	run
 
+NO_BUILD=	yes
+
 EXECUTABLES=	dirvish   dirvish-expire   dirvish-locate   dirvish-runall
 
-do-patch:
+post-patch:
 	@${SED} -e 's:%%CONFDIR%%:${PREFIX}/etc/dirvish:' -e 's:%%PERL%%:${PERL}:' \
 		${FILESDIR}/header.pl > ${WRKDIR}/header.pl
 .for _E in ${EXECUTABLES}

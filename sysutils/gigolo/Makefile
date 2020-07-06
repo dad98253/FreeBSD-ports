@@ -2,24 +2,25 @@
 # $FreeBSD$
 
 PORTNAME=	gigolo
-PORTVERSION=	0.4.2
-PORTREVISION=	1
+PORTVERSION=	0.5.1
 CATEGORIES=	sysutils
-MASTER_SITES=	XFCE/src/apps/${PORTNAME}/${PORTVERSION:R}
+MASTER_SITES=	XFCE/apps
 
-MAINTAINER=	koalative@gmail.com
+MAINTAINER=	xfce@FreeBSD.org
 COMMENT=	Frontend to easily manage filesystem connections
 
 LICENSE=	GPLv2
 
-ONLY_FOR_ARCHS=		amd64 i386 powerpc64
+ONLY_FOR_ARCHS=         aarch64 amd64 armv6 armv7 i386 powerpc \
+			powerpc64 powerpcspe
 ONLY_FOR_ARCHS_REASON=	Does not compile
 
 BUILD_DEPENDS=	p5-XML-Parser>=0:textproc/p5-XML-Parser
 
-USES=		gmake fuse pkgconfig gettext-tools xfce tar:bzip2
-USE_GNOME=	cairo gtk20 gvfs intlhack
+USES=		fuse gettext-tools gmake gnome pkgconfig tar:bzip2 xfce xorg
+USE_GNOME=	cairo gdkpixbuf2 gtk30 gvfs intltool
 USE_XORG=	x11
+
 GNU_CONFIGURE=	yes
 
 PORTDOCS=	AUTHORS ChangeLog NEWS README

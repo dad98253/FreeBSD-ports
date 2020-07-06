@@ -2,7 +2,8 @@
 
 PORTNAME=	libzmq4
 DISTVERSIONPREFIX=	v
-DISTVERSION=	4.2.3
+DISTVERSION=	4.3.1
+PORTREVISION=	1
 CATEGORIES=	net
 MASTER_SITES=	https://github.com/zeromq/libzmq/releases/download/${DISTVERSIONFULL}/
 DISTNAME=	zeromq-${DISTVERSION}
@@ -13,15 +14,16 @@ COMMENT=	ZeroMQ core library (Version 4)
 LICENSE=	LGPL3
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-CONFLICTS=	zmq-[0-9]* libzmq[^4]-[0-9]*
-
 USES=		gmake libtool pkgconfig
 USE_LDCONFIG=	yes
+
+CONFLICTS=	zmq-[0-9]* libzmq[^4]-[0-9]*
+
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
 TEST_TARGET=	check
 
-OPTIONS_DEFINE=			DEBUG LIBUNWIND MANPAGES
+OPTIONS_DEFINE=			LIBUNWIND MANPAGES
 OPTIONS_RADIO=			CURVE
 OPTIONS_RADIO_CURVE=		SODIUM TWEETNACL
 OPTIONS_GROUP=			MULTICAST
@@ -36,9 +38,6 @@ TWEETNACL_DESC=	Use tweetnacl
 SODIUM_DESC=	Use libsodium
 PGM_DESC=	Enable PGM transport via OpenPGM
 NORM_DESC=	Enable NORM via NRL
-
-DEBUG_CONFIGURE_ENABLE=	debug
-DEBUG_VARS=		WITH_DEBUG=yes
 
 PGM_CONFIGURE_WITH=	pgm
 PGM_LIB_DEPENDS=	libpgm.so:net/openpgm
@@ -59,12 +58,18 @@ SODIUM_PLIST_FILES=	bin/curve_keygen
 
 TWEETNACL_PLIST_FILES=	bin/curve_keygen
 
-CONFIGURE_ARGS+=	--with-pkgconfigdir=${PREFIX}/libdata/pkgconfig --disable-static
+CONFIGURE_ARGS+=	--with-pkgconfigdir=${PREFIX}/libdata/pkgconfig \
+			--disable-static \
+			--disable-Werror \
+			--disable-silent-rules
 CFLAGS+=		-Wno-long-long
-CPPFLAGS+=		-Wno-error
-MAKE_ENV=		V=1
 
 .include <bsd.port.options.mk>
+
+.if defined(WITH_DEBUG)
+CONFIGURE_ARGS+=	--enable-debug
+.endif
+
 
 .if !${PORT_OPTIONS:MSODIUM} && !${PORT_OPTIONS:MTWEETNACL}
 CONFIGURE_ARGS+=	--disable-curve

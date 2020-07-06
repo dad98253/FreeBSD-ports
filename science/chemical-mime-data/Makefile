@@ -7,12 +7,13 @@ PORTREVISION=	7
 CATEGORIES=	science
 MASTER_SITES=	SF/chemical-mime/${PORTNAME}/${PORTVERSION}
 
-MAINTAINER=	kwm@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Collection of chemical MIME types for UNIX desktops
 
 BUILD_DEPENDS=	${LOCALBASE}/libdata/pkgconfig/librsvg-2.0.pc:graphics/librsvg2
 
-USES=		gettext-tools gmake pathfix pkgconfig tar:bzip2 shared-mime-info
+USES=		gettext-tools gmake gnome pathfix pkgconfig shared-mime-info \
+		tar:bzip2
 USE_GNOME=	gnomemimedata intlhack libxslt:build
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-update-database

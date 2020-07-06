@@ -32,7 +32,7 @@ SHEBANG_FILES=	cbpadmin \
 WWWDIR=		${PREFIX}/www/policyd
 PORTDOCS=	AUTHORS ChangeLog INSTALL TODO WISHLIST
 
-OPTIONS_DEFINE=	MYSQL PGSQL SQLITE WEBUI
+OPTIONS_DEFINE=	MYSQL PGSQL SQLITE WEBUI DOCS
 OPTIONS_DEFAULT=MYSQL WEBUI
 MYSQL_DESC=	Add a dependency on DBD::mysql
 PGSQL_DESC=	Add a dependency on DBD::Pg
@@ -47,12 +47,15 @@ PGSQL_RUN_DEPENDS=	p5-DBD-Pg>=0:databases/p5-DBD-Pg
 
 .if ${PORT_OPTIONS:MWEBUI}
 . if ${PORT_OPTIONS:MMYSQL}
+USES+=		php
 USE_PHP=	pdo_mysql
 . endif
 . if ${PORT_OPTIONS:MSQLITE}
+USES+=		php
 USE_PHP=	pdo_sqlite
 . endif
 . if ${PORT_OPTIONS:MPGSQL}
+USES+=		php
 USE_PHP=	pdo_pgsql
 . endif
 .endif

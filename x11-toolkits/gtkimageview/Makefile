@@ -16,10 +16,11 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--disable-static --with-html-dir=${PREFIX}/share/doc
-USES=		libtool pathfix pkgconfig
+USES=		gnome libtool pathfix pkgconfig
 USE_GNOME=	gtk20
 USE_LDCONFIG=	yes
 INSTALL_TARGET=	install-strip
+LIBS=		-lm
 
 OPTIONS_DEFINE=	DOCS
 

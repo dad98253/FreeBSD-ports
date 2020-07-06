@@ -16,8 +16,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 
 ONLY_FOR_ARCHS=	amd64
 ONLY_FOR_ARCHS_REASON=	"Only builds on amd64"
-BROKEN_FreeBSD_10=	libc++ is too old
-USES=		gmake ssl cmake:outsource,noninja python:2.7 compiler
+USES=		gmake ssl cmake:noninja python:2.7 compiler
 USE_GITHUB=	yes
 
 CMAKE_ARGS=	-DUSE_JEMALLOC:BOOL=off \
@@ -28,6 +27,8 @@ USERS=		arangodb
 GROUPS=		arangodb
 USE_RC_SUBR=	arangod
 
+OPTIONS_DEFINE=	DOCS
+
 .include <bsd.port.options.mk>
 
 .if ${OPSYS} == FreeBSD && ${OSVERSION} >= 1200057
@@ -37,11 +38,6 @@ SUB_LIST+=	LEGACY_LIMITS="" MODERN_LIMITS="@comment "
 .endif
 
 post-install:
-.for section in 1 8
-	${MV} ${STAGEDIR}${PREFIX}/share/man/man${section}/* ${STAGEDIR}${PREFIX}/man/man${section}/
-	${RMDIR} ${STAGEDIR}${PREFIX}/share/man/man${section}
-.endfor
-	${RMDIR} ${STAGEDIR}${PREFIX}/share/man
 	${REINPLACE_CMD} -e 's|/usr/local/var/lib/arangodb3|/var/db/arangodb|g' ${STAGEDIR}${PREFIX}/etc/arangodb/*.conf
 	${REINPLACE_CMD} -e 's|/usr/local/var/log/arangodb3|/var/log/arangodb|g' ${STAGEDIR}${PREFIX}/etc/arangodb/arangod.conf
 	${FIND} ${STAGEDIR}${PREFIX}/etc/arangodb/ -type f -name *.conf -exec ${MV} {} {}.sample \;

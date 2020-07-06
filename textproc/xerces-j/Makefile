@@ -13,7 +13,6 @@ COMMENT=	XML parser for Java
 LICENSE=	APACHE20
 
 USE_JAVA=	yes
-JAVA_VERSION=	1.6+
 NO_BUILD=	yes
 NO_ARCH=	yes
 
@@ -25,6 +24,8 @@ PORTEXAMPLES=	*
 JARFILES=	xercesImpl.jar xml-apis.jar
 
 PLIST_FILES=	${JARFILES:S,^,%%JAVAJARDIR%%/,}
+
+OPTIONS_DEFINE=	DOCS EXAMPLES
 
 do-install:
 	@${ECHO_MSG} -n ">> Installing JAR files in ${JAVAJARDIR}..."

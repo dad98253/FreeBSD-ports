@@ -5,7 +5,7 @@ PORTNAME=		corosync
 CATEGORIES=		net
 MASTER_SITES=		http://build.clusterlabs.org/corosync/releases/
 
-MAINTAINER=		dpejesh@yahoo.com
+MAINTAINER=		egypcio@FreeBSD.org
 COMMENT=		Corosync Cluster Engine
 
 LICENSE=		BSD3CLAUSE
@@ -26,7 +26,7 @@ LDFLAGS+=		-B${LOCALBASE}/bin
 INSTALL_TARGET=		install-strip
 TEST_TARGET=		check
 
-OPTIONS_DEFINE=		DBUS SNMP
+OPTIONS_DEFINE=		DBUS DOCS SNMP
 OPTIONS_SUB=		yes
 
 DBUS_LIB_DEPENDS+=	libdbus-1.so:devel/dbus

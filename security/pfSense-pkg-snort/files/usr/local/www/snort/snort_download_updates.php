@@ -3,8 +3,8 @@
  * snort_download_updates.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2004-2016 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2018 Bill Meeks
+ * Copyright (c) 2004-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2019 Bill Meeks
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,12 @@ $snortdir = SNORTDIR;
 $snortbinver = SNORT_BIN_VERSION;
 $snortbinver = str_replace(".", "", $snortbinver);
 
+// Make sure the rules version is at least 5 characters in length
+// by adding trailing zeros if required.
+if (strlen($snortbinver) < 5) {
+	$snortbinver = str_pad($snortbinver, 5, '0', STR_PAD_RIGHT);
+}
+
 $snort_rules_file = "snortrules-snapshot-{$snortbinver}.tar.gz";
 $snort_community_rules_filename = SNORT_GPLV2_DNLD_FILENAME;
 $snort_openappid_filename = SNORT_OPENAPPID_DNLD_FILENAME;
@@ -41,14 +47,15 @@ $openappid_detectors = $config['installedpackages']['snortglobal']['openappid_de
 $openappid_rules_detectors = $config['installedpackages']['snortglobal']['openappid_rules_detectors'];
 
 /* Get last update information if available */
-if (!empty($config['installedpackages']['snortglobal']['last_rule_upd_time']))
-	$last_rule_upd_time = date('M-d Y H:i', $config['installedpackages']['snortglobal']['last_rule_upd_time']);
-else
+if (file_exists(SNORTDIR . "/rulesupd_status")) {
+	$status = explode("|", file_get_contents(SNORTDIR . "/rulesupd_status"));
+	$last_rule_upd_time = date('M-d Y H:i', $status[0]);
+	$last_rule_upd_status = gettext($status[1]);
+}
+else {
 	$last_rule_upd_time = gettext("Unknown");
-if (!empty($config['installedpackages']['snortglobal']['last_rule_upd_status']))
-	$last_rule_upd_status = htmlspecialchars($config['installedpackages']['snortglobal']['last_rule_upd_status']);
-else
 	$last_rule_upd_status = gettext("Unknown");
+}
 
 if ($etpro == "on") {
 	$emergingthreats_filename = SNORT_ETPRO_DNLD_FILENAME;
@@ -161,17 +168,11 @@ if (isset($_POST['clear'])) {
 
 if (isset($_POST['mode'])) {
 	if ($_POST['mode'] == 'force') {
-		// Mount file system R/W since we need to remove files
-		conf_mount_rw();
-
 		// Remove the existing MD5 signature files to force a download
 		unlink_if_exists("{$snortdir}/{$emergingthreats_filename}.md5");
 		unlink_if_exists("{$snortdir}/{$snort_community_rules_filename}.md5");
 		unlink_if_exists("{$snortdir}/{$snort_rules_file}.md5");
 		unlink_if_exists("{$snortdir}/{$snort_openappid_filename}.md5");
-
-		// Revert file system to R/O.
-		conf_mount_ro();
 	}
 	
 	// Launch a background process to download the updates
@@ -243,7 +244,7 @@ display_top_tabs($tab_array, true);
 					<td><?=gettext($openappid_detectors_sig_date);?></td>
 				</tr>
 				<tr>
-                                        <td><?=gettext("Snort OpenAppID RULES Detectors");?></td>
+                                        <td><?=gettext("Snort AppID Open Text Rules");?></td>
                                         <td><?=trim($openappid_detectors_rules_sig_chk_local);?></td>
                                         <td><?=gettext($openappid_detectors_rules_sig_date);?></td>
                                 </tr>

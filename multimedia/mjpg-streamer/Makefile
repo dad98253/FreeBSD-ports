@@ -3,12 +3,14 @@
 
 PORTNAME=	mjpg-streamer
 PORTVERSION=	r63
-PORTREVISION=	1
+PORTREVISION=	2
 CATEGORIES=	multimedia net
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/Sourcecode
 
-MAINTAINER=	kozlov.sergey.404@gmail.com
+MAINTAINER=	skozlov@FreeBSD.org
 COMMENT=	HTTP video streaming daemon
+
+BROKEN=		unfetchable
 
 LICENSE=	GPLv2
 

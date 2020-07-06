@@ -1,3 +1,6 @@
+[
+{ type: install
+  message: <<EOM
 ----------------------------------------------------------------------------
 limesurvey has been installed, but is not quite ready to be used yet!
 
@@ -13,3 +16,6 @@ configure your installation of limesurvey:
   http://localhost/%%PHPSURVEYORURL%%/
 
 ----------------------------------------------------------------------------
+EOM
+}
+]

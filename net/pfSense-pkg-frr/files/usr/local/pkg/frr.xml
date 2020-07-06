@@ -8,7 +8,7 @@
  * frr.xml
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2012-2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2012-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +54,12 @@
 		<url>/pkg_edit.php?xml=frr/frr_ospf6.xml</url>
 	</menu>
 	<menu>
+		<name>FRR BFD</name>
+		<section>Services</section>
+		<configfile>frr.xml</configfile>
+		<url>/pkg_edit.php?xml=frr/frr_bfd.xml</url>
+	</menu>
+	<menu>
 		<name>FRR</name>
 		<section>Status</section>
 		<configfile>frr.xml</configfile>
@@ -94,6 +100,10 @@
 			<url>pkg_edit.php?xml=frr/frr_ospf6.xml</url>
 		</tab>
 		<tab>
+			<text>[BFD]</text>
+			<url>pkg_edit.php?xml=frr/frr_bfd.xml</url>
+		</tab>
+		<tab>
 			<text>Status</text>
 			<url>/status_frr.php</url>
 		</tab>
@@ -103,6 +113,12 @@
 		<rcfile>frr.sh</rcfile>
 		<executable>zebra</executable>
 		<description>FRR core/abstraction daemon</description>
+	</service>
+	<service>
+		<name>FRR staticd</name>
+		<rcfile>frr.sh</rcfile>
+		<executable>staticd</executable>
+		<description>FRR static route daemon</description>
 	</service>
 	<service>
 		<name>FRR bgpd</name>
@@ -121,6 +137,12 @@
 		<rcfile>frr.sh</rcfile>
 		<executable>ospf6d</executable>
 		<description>FRR OSPF6 routing daemon</description>
+	</service>
+	<service>
+		<name>FRR bfdd</name>
+		<rcfile>frr.sh</rcfile>
+		<executable>bfdd</executable>
+		<description>FRR BFD daemon</description>
 	</service>
 	<plugins>
 		<item>
@@ -170,6 +192,18 @@
 				]]>
 			</description>
 			<type>input</type>
+		</field>
+		<field>
+			<fielddescr>Ignore IPsec Restart</fielddescr>
+			<fieldname>ignoreipsecrestart</fieldname>
+			<description>
+				<![CDATA[
+					Ignore IPsec restart events.
+					When unchecked, IPsec VTI interfaces will be reset in FRR when IPsec restarts.
+					This reset can prevent routes from becoming inactive in the routing table after interface events.
+				]]>
+			</description>
+			<type>checkbox</type>
 		</field>
 		<field>
 			<name>Route Handling</name>
@@ -234,4 +268,8 @@
 	<custom_php_validation_command>
 		frr_global_validate_input();
 	</custom_php_validation_command>
+	<custom_php_install_command>
+		frr_package_install();
+	</custom_php_install_command>
+	<ipsec_reload_function>frr_ipsec_reload</ipsec_reload_function>
 </packagegui>

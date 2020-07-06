@@ -1,14 +1,23 @@
---- src/cpp/desktop/DesktopMain.cpp.orig	2018-05-16 18:21:36 UTC
+--- src/cpp/desktop/DesktopMain.cpp.orig	2020-01-23 23:30:24 UTC
 +++ src/cpp/desktop/DesktopMain.cpp
-@@ -40,6 +40,7 @@
- #include "DesktopProgressActivator.hpp"
+@@ -46,6 +46,7 @@
  #include "DesktopNetworkProxyFactory.hpp"
  #include "DesktopActivationOverlay.hpp"
+ #include "DesktopSessionServersOverlay.hpp"
 +#include "global-setenv.h"
  
- QProcess* pRSessionProcess;
- QString sharedSecret;
-@@ -262,6 +263,7 @@ bool useChromiumDevtools()
+ #ifdef _WIN32
+ #include <core/system/RegistryKey.hpp>
+@@ -372,7 +373,7 @@ QString inferDefaultRenderingEngine()
+ 
+ #endif
+ 
+-#ifdef Q_OS_LINUX
++#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+ 
+ QString inferDefaultRenderingEngine()
+ {
+@@ -461,6 +462,7 @@ std::string getSessionUrl()
  
  int main(int argc, char* argv[])
  {

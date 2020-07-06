@@ -1,13 +1,15 @@
---- Makefile.in.orig	2015-06-28 01:03:37 UTC
+--- Makefile.in.orig	2019-09-30 14:39:22 UTC
 +++ Makefile.in
-@@ -569,51 +569,19 @@ install: install-shared install-archive 
+@@ -573,7 +573,7 @@ install: install-shared install-archive libpcap.pc pca
  		    $(DESTDIR)$(includedir)/$$i; done
  	[ -d $(DESTDIR)$(bindir) ] || \
  	    (mkdir -p $(DESTDIR)$(bindir); chmod 755 $(DESTDIR)$(bindir))
 -	$(INSTALL_PROGRAM) pcap-config $(DESTDIR)$(bindir)/pcap-config
-+	$(INSTALL_DATA) pcap-config $(DESTDIR)$(bindir)/pcap-config
-+	chmod 755 $(DESTDIR)$(bindir)/pcap-config
- 	for i in $(MAN1); do \
++	$(BSD_INSTALL_SCRIPT) pcap-config $(DESTDIR)$(bindir)/pcap-config
+ 	[ -d $(DESTDIR)$(libdir)/pkgconfig ] || \
+ 	    (mkdir -p $(DESTDIR)$(libdir)/pkgconfig; chmod 755 $(DESTDIR)$(libdir)/pkgconfig)
+ 	$(INSTALL_DATA) libpcap.pc $(DESTDIR)$(libdir)/pkgconfig/libpcap.pc
+@@ -581,49 +581,13 @@ install: install-shared install-archive libpcap.pc pca
  		$(INSTALL_DATA) $(srcdir)/$$i \
  		    $(DESTDIR)$(mandir)/man1/$$i; done
  	for i in $(MAN3PCAP_NOEXPAND); do \
@@ -23,6 +25,9 @@
 -	rm -f pcap_datalink_val_to_description.3pcap && \
 -	$(LN_S) pcap_datalink_val_to_name.3pcap \
 -		 pcap_datalink_val_to_description.3pcap && \
+-	rm -f pcap_datalink_val_to_description_or_dlt.3pcap && \
+-	$(LN_S) pcap_datalink_val_to_name.3pcap \
+-		 pcap_datalink_val_to_description_or_dlt.3pcap && \
 -	rm -f pcap_dump_fopen.3pcap && \
 -	$(LN_S) pcap_dump_open.3pcap pcap_dump_fopen.3pcap && \
 -	rm -f pcap_freealldevs.3pcap && \
@@ -54,7 +59,7 @@
 -	$(LN_S) pcap_tstamp_type_val_to_name.3pcap pcap_tstamp_type_val_to_description.3pcap && \
 -	rm -f pcap_getnonblock.3pcap && \
 -	$(LN_S) pcap_setnonblock.3pcap pcap_getnonblock.3pcap)
-+			$(DESTDIR)$(mandir)/man3/$$j; done
++		    $(DESTDIR)$(mandir)/man3/$$j; done
  	for i in $(MANFILE); do \
  		$(INSTALL_DATA) `echo $$i | sed 's/.manfile.in/.manfile/'` \
  		    $(DESTDIR)$(mandir)/man@MAN_FILE_FORMATS@/`echo $$i | sed 's/.manfile.in/.@MAN_FILE_FORMATS@/'`; done

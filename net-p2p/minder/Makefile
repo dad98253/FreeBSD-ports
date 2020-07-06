@@ -14,7 +14,7 @@ LICENSE=	GPLv2+
 
 LIB_DEPENDS=	libSockets.so:net/Sockets
 
-USES=		gmake pkgconfig ssl
+USES=		gmake gnome pkgconfig ssl
 USE_GNOME=	libxml2
 
 CFLAGS+=	-DHAVE_OPENSSL
@@ -25,6 +25,8 @@ LDFLAGS+=	$$(pkg-config --libs libxml-2.0) \
 
 PORTEXAMPLES=	minder.cfg
 PLIST_FILES=	bin/minder
+
+OPTIONS_DEFINE=	EXAMPLES
 
 post-patch:
 	@${REINPLACE_CMD} -e \

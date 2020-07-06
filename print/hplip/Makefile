@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	hplip
-PORTVERSION=	3.17.11
+PORTVERSION=	3.19.12
+PORTREVISION=	2
 CATEGORIES=	print
 MASTER_SITES=	SF
 
@@ -21,10 +22,11 @@ RUN_DEPENDS=	cups-filters>=0:print/cups-filters \
 CONFLICTS_INSTALL=	hpijs-[0-9]*
 
 INSTALL_TARGET=	install-strip
-USES=		jpeg libtool pkgconfig python shebangfix
-USE_GNOME=	pygobject
+USES=		dos2unix gnome jpeg libtool pkgconfig python shebangfix
+USE_GNOME=	pygobject3
 USE_LDCONFIG=	yes
 SHEBANG_GLOB=	*.py hpps pstotiff
+DOS2UNIX_FILES=	scan/sane/orblite.c
 
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--with-cupsbackenddir=${PREFIX}/libexec/cups/backend \
@@ -34,13 +36,13 @@ CONFIGURE_ARGS=	--with-cupsbackenddir=${PREFIX}/libexec/cups/backend \
 		--with-mimedir=${PREFIX}/share/cups/mime \
 		--with-docdir=${DOCSDIR} \
 		--with-htmldir=${DOCSDIR} \
-		--with-drvdir=${PREFIX}/share/cups/drv
-CPPFLAGS+=	-I${LOCALBASE}/include
+		--with-drvdir=${PREFIX}/share/cups/drv \
+		--disable-qt4
+CONFIGURE_ENV+=	PYTHONINCLUDEDIR=${PYTHON_INCLUDEDIR}
+CPPFLAGS+=	-I${LOCALBASE}/include -I${PYTHON_INCLUDEDIR}
 LIBS+=		-L${LOCALBASE}/lib
 
-OPTIONS_DEFINE=		DOCS FAX SCAN SNMP X11 XSANE
-OPTIONS_RADIO=		GUI
-OPTIONS_RADIO_GUI=	QT4 QT5
+OPTIONS_DEFINE=		DOCS FAX SCAN SNMP X11 XSANE QT5
 OPTIONS_DEFAULT=	QT5 SCAN SNMP X11
 OPTIONS_SUB=		yes
 
@@ -51,8 +53,8 @@ FAX_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}reportlab>=0:print/py-reportlab@${PY_FLA
 FAX_CONFIGURE_ENABLE=	fax-build
 
 SCAN_DESC=		Scanning support
+SCAN_RUN_DEPENDS=	${PY_PILLOW}
 SCAN_LIB_DEPENDS=	libsane.so:graphics/sane-backends
-SCAN_RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pillow>0:graphics/py-pillow@${PY_FLAVOR}
 SCAN_CONFIGURE_ENABLE=	scan-build
 
 SNMP_DESC=		Network/JetDirect support
@@ -69,14 +71,6 @@ XSANE_RUN_DEPENDS=	xsane:graphics/xsane
 
 .include <bsd.port.options.mk>
 
-.if ${PORT_OPTIONS:MQT4} && ${PORT_OPTIONS:MX11}
-USES+=			pyqt:4
-USE_PYQT=		core_run dbussupport_run gui_run sip
-CONFIGURE_ARGS+=	--enable-qt4
-.else
-CONFIGURE_ARGS+=	--disable-qt4
-.endif
-
 .if ${PORT_OPTIONS:MQT5} && ${PORT_OPTIONS:MX11}
 USES+=			pyqt:5
 USE_PYQT=		core_run dbussupport_run gui_run sip widgets_run
@@ -85,8 +79,8 @@ CONFIGURE_ARGS+=	--enable-qt5
 CONFIGURE_ARGS+=	--disable-qt5
 .endif
 
-.if ${PORT_OPTIONS:MX11} && ! ${PORT_OPTIONS:MQT4} && ! ${PORT_OPTIONS:MQT5}
-BROKEN=			The X11 option requires one of the QT4 or QT5 options
+.if ${PORT_OPTIONS:MX11} && ! ${PORT_OPTIONS:MQT5}
+BROKEN=			The X11 option requires the QT5 option
 .endif
 
 post-patch:

@@ -2,13 +2,13 @@
 
 PORTNAME=	biococoa
 PORTVERSION=	2.2.2
-PORTREVISION=	4
+PORTREVISION=	6
 CATEGORIES=	biology gnustep
 MASTER_SITES=	http://bioinformatics.org/biococoa/downloads/
 DISTNAME=	biococoa-${PORTVERSION}-src
 EXTRACT_SUFX=	.tgz
 
-MAINTAINER=	theraven@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Bioinformatics framework
 
 LICENSE=	LGPL21

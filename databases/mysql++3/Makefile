@@ -11,6 +11,8 @@ PKGNAMESUFFIX=	-mysql${MYSQL_VER}
 MAINTAINER=	dudu@dudu.ro
 COMMENT=	Complex C++ API for MySQL${MYSQL_VER}
 
+BROKEN=		unfetchable
+
 USES=		gmake mysql
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS+=--with-mysql=${LOCALBASE} --enable-thread-check
@@ -23,6 +25,11 @@ PORTDOCS=	*
 PORTEXAMPLES=	*
 
 OPTIONS_DEFINE=	DOCS EXAMPLES
+
+post-patch:
+# Avoid conflict with C++20 <version> by ignoring <...> under WRKSRC
+	@${REINPLACE_CMD} -i .c++20 '/MYSQLPP_CXXFLAGS/s/-I/-iquote/' \
+		${WRKSRC}/Makefile.in
 
 post-install-DOCS-on:
 	${MKDIR} ${STAGEDIR}${DOCSDIR}

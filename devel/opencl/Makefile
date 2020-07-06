@@ -3,6 +3,7 @@
 
 PORTNAME=	opencl
 PORTVERSION=	2.2
+PORTREVISION=	1
 CATEGORIES=	devel
 
 MAINTAINER=	ohartman@zedat.fu-berlin.de
@@ -25,7 +26,7 @@ HEADER_TAG=	f039db6
 CLHPP_TAG=	8b6a312
 
 USES=		python:build
-NO_CONFIGURE=	yes
+NO_ARCH=	yes
 
 WRKSRC=		${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME}/opencl${PORTVERSION:S/.//}/CL
 

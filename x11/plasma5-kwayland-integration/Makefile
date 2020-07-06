@@ -9,10 +9,10 @@ COMMENT=	Integration plugins for a Wayland-based desktop
 
 LIB_DEPENDS=	libepoxy.so:graphics/libepoxy \
 		libwayland-client.so:graphics/wayland
-BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:multimedia/v4l_compat
+BUILD_DEPENDS=	${LOCALBASE}/include/linux/input.h:devel/evdev-proto
 
-USES=		cmake:outsource compiler:c++11-lib cpe kde:5 qt:5 tar:xz
-USE_KDE=	ecm idletime wayland windowsystem
+USES=		cmake compiler:c++11-lib cpe kde:5 qt:5 tar:xz
+USE_KDE=	ecm guiaddons idletime wayland windowsystem
 USE_QT=		core gui widgets \
 		buildtools_build qmake_build
 

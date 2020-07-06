@@ -1,8 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	libxshmfence
-PORTVERSION=	1.2
-PORTREVISION=	2
+PORTVERSION=	1.3
 CATEGORIES=	x11
 
 MAINTAINER=	x11@FreeBSD.org
@@ -10,8 +9,8 @@ COMMENT=	Shared memory 'SyncFence' synchronization primitive
 
 LICENSE=	MIT
 
-USE_XORG=	xproto
-XORG_CAT=	lib
+USES=		xorg xorg-cat:lib
+USE_XORG=	xorgproto
 
 CONFIGURE_ARGS=	--with-shared-memory-dir=/tmp
 INSTALL_TARGET=	install-strip

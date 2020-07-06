@@ -1,6 +1,6 @@
---- base/test/launcher/test_launcher.cc.orig	2017-12-15 02:04:05.000000000 +0100
-+++ base/test/launcher/test_launcher.cc	2017-12-30 02:02:22.630578000 +0100
-@@ -51,6 +51,7 @@
+--- base/test/launcher/test_launcher.cc.orig	2020-03-16 18:40:27 UTC
++++ base/test/launcher/test_launcher.cc
+@@ -55,6 +55,7 @@
  #include "testing/gtest/include/gtest/gtest.h"
  
  #if defined(OS_POSIX)
@@ -8,3 +8,12 @@
  #include <fcntl.h>
  
  #include "base/files/file_descriptor_watcher_posix.h"
+@@ -551,7 +552,7 @@ ChildProcessResults DoLaunchChildTestProcess(
+ #if !defined(OS_FUCHSIA)
+   options.new_process_group = true;
+ #endif
+-#if defined(OS_LINUX)
++#if defined(OS_LINUX) || defined(OS_BSD)
+   options.kill_on_parent_death = true;
+ #endif
+ 

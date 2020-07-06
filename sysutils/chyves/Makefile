@@ -16,7 +16,9 @@ USE_GITHUB=	yes
 NO_BUILD=	yes
 NO_ARCH=	yes
 
-do-patch:
+MAKE_ARGS+=	-e
+
+post-patch:
 	${REINPLACE_CMD} 's%\$$(PREFIX)%${STAGEDIR}/$$(PREFIX)%g' ${WRKSRC}/Makefile
 
 .include <bsd.port.mk>

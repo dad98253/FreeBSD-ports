@@ -3,8 +3,8 @@
  * pfblockerng_general.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2016 Rubicon Communications, LLC (Netgate)
- * Copyright (c) 2015-2018 BBcan177@gmail.com
+ * Copyright (c) 2016-2020 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2019 BBcan177@gmail.com
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
@@ -27,10 +27,19 @@ require_once('/usr/local/pkg/pfblockerng/pfblockerng.inc');
 global $config, $pfb;
 pfb_global();
 
-$pfb['gconfig'] = &$config['installedpackages']['pfblockerng']['config'][0];
-if (!is_array($pfb['gconfig'])) {
-	$pfb['gconfig'] = array();
+// Add Wizard tab on new installations only
+$pfb_wizard = TRUE;
+if ($_GET && isset($_GET['wizard']) && $_GET['wizard'] == 'skip') {
+	$pfb_wizard = FALSE;
 }
+elseif (is_array($config['installedpackages']['pfblockerng']) &&
+	!empty($config['installedpackages']['pfblockerng']['config'][0])) {
+	$pfb_wizard = FALSE;
+}
+
+init_config_arr(array('installedpackages', 'pfblockerng', 'config', 0));
+$pfb['gconfig'] = &$config['installedpackages']['pfblockerng']['config'][0];
+
 $pconfig = array();
 $pconfig['enable_cb']			= $pfb['gconfig']['enable_cb']				?: '';
 
@@ -92,19 +101,27 @@ $pgtitle = array(gettext('Firewall'), gettext('pfBlockerNG'));
 $pglinks = array('', '@self');
 include_once('head.inc');
 
-// Define default Alerts Tab href link (Top row)
-$get_req = pfb_alerts_default_page();
+// Load Wizard on new installations only
+if ($pfb_wizard) {
+	header('Location: /wizard.php?xml=pfblockerng_wizard.xml');
+	exit;
+}
+else {
+	// Define default Alerts Tab href link (Top row)
+	$get_req = pfb_alerts_default_page();
 
-$tab_array	= array();
-$tab_array[]	= array(gettext('General'),	true,	'/pfblockerng/pfblockerng_general.php');
-$tab_array[]	= array(gettext('IP'),		false,	'/pfblockerng/pfblockerng_ip.php');
-$tab_array[]	= array(gettext('DNSBL'),	false,	'/pfblockerng/pfblockerng_dnsbl.php');
-$tab_array[]	= array(gettext('Update'),	false,	'/pfblockerng/pfblockerng_update.php');
-$tab_array[]	= array(gettext('Reports'),	false,	"/pfblockerng/pfblockerng_alerts.php{$get_req}");
-$tab_array[]	= array(gettext('Feeds'),	false,	'/pfblockerng/pfblockerng_feeds.php');
-$tab_array[]	= array(gettext('Logs'),	false,	'/pfblockerng/pfblockerng_log.php');
-$tab_array[]	= array(gettext('Sync'),	false,	'/pfblockerng/pfblockerng_sync.php');
-display_top_tabs($tab_array, true);
+	$tab_array	= array();
+	$tab_array[]	= array(gettext('General'),	true,	'/pfblockerng/pfblockerng_general.php');
+	$tab_array[]	= array(gettext('IP'),		false,	'/pfblockerng/pfblockerng_ip.php');
+	$tab_array[]	= array(gettext('DNSBL'),	false,	'/pfblockerng/pfblockerng_dnsbl.php');
+	$tab_array[]	= array(gettext('Update'),	false,	'/pfblockerng/pfblockerng_update.php');
+	$tab_array[]	= array(gettext('Reports'),	false,	"/pfblockerng/pfblockerng_alerts.php{$get_req}");
+	$tab_array[]	= array(gettext('Feeds'),	false,	'/pfblockerng/pfblockerng_feeds.php');
+	$tab_array[]	= array(gettext('Logs'),	false,	'/pfblockerng/pfblockerng_log.php');
+	$tab_array[]	= array(gettext('Sync'),	false,	'/pfblockerng/pfblockerng_sync.php');
+	$tab_array[]	= array(gettext('Wizard'),	false,	'/wizard.php?xml=pfblockerng_wizard.xml');
+	display_top_tabs($tab_array, true);
+}
 
 if (isset($input_errors)) {
 	print_input_errors($input_errors);
@@ -215,8 +232,8 @@ $section->addInput(new Form_StaticText(
 	'
 <div>
 <div style="width: 75%; height: 180px; float: left;">
-	<strong>pfBlockerNG</strong> created in 2015 by:
-	<a target="_blank" href="https://forum.pfsense.org/index.php?action=profile;u=238481">BBcan177</a><br />
+	<strong>pfBlockerNG</strong> is created, designed, developed, supported and maintained by:
+	<a target="_blank" href="https://forum.netgate.com/user/bbcan177">BBcan177</a><br />
 
 	<ul class="list-inline" style="margin-top: 4px; margin-bottom: -2px; border-style: outset; border-bottom-color: #8B181B; border-right-color: #8B181B; border-width: 2px;">
 		<li class="list-inline-item"><a target="_blank" href="http://pfblockerng.com">
@@ -225,7 +242,7 @@ $section->addInput(new Form_StaticText(
 			<span style="color: #8B181B;" class="fa fa-twitter"></span> Follow on Twitter</a></li>
 		<li class="list-inline-item"><a target="_blank" href="https://plus.google.com/u/0/109775911285900340944">
 			<span style="color: #8B181B;" class="fa fa-google-plus"></span> Google+</a></li>
-		<li class="list-inline-item"><a target="_blank" href="https://www.reddit.com/user/BBCan177/">
+		<li class="list-inline-item"><a target="_blank" href="https://www.reddit.com/r/pfBlockerNG/new/">
 			<span style="color: #8B181B;" class="fa fa-reddit"></span> Reddit</a></li>
 		<li class="list-inline-item"><a target="_blank" href="https://github.com/BBcan177">
 			<span style="color: #8B181B;" class="fa fa-github"></span> GitHub</a></li>

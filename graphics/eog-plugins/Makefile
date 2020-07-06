@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	eog-plugins
-PORTVERSION=	3.16.6
+PORTVERSION=	3.26.2
 CATEGORIES=	graphics gnome
 MASTER_SITES=	GNOME
 DIST_SUBDIR=	gnome3
@@ -18,12 +18,17 @@ LIB_DEPENDS=	libgdata.so:devel/libgdata \
 		libjson-glib-1.0.so:devel/json-glib \
 		libsoup-2.4.so:devel/libsoup \
 		libexif.so:graphics/libexif \
-		libpeas-1.0.so:devel/libpeas
+		libpeas-1.0.so:devel/libpeas \
+		libclutter-gtk-1.0.so:graphics/clutter-gtk3 \
+		libclutter-1.0.so:graphics/clutter \
+		libcogl.so:graphics/cogl \
+		libjson-glib-1.0.so:devel/json-glib \
+		libsoup-2.4.so:devel/libsoup
 RUN_DEPENDS=	eog:graphics/eog
 
 PORTSCOUT=	limitw:1,even
 
-USE_GNOME=	cairo gdkpixbuf2 gtk30 intltool introspection libxml2
+USE_GNOME=	cairo gdkpixbuf2 gtk30 introspection libxml2
 USES=		gettext gmake gnome libtool localbase pathfix pkgconfig tar:xz
 GNU_CONFIGURE=	yes
 INSTALL_TARGET=	install-strip
@@ -39,6 +44,7 @@ CHAMPLAIN_LIB_DEPENDS=	libcogl.so:graphics/cogl \
 			libclutter-1.0.so:graphics/clutter \
 			libclutter-gtk-1.0.so:graphics/clutter-gtk3 \
 			libchamplain-0.12.so:graphics/libchamplain
+CHAMPLAIN_USES=		gl xorg
 CHAMPLAIN_USE=		GL=egl XORG=x11,xcomposite,xdamage,xext,xfixes,xi,xrandr
 
 PYTHON_CONFIGURE_ENABLE=python

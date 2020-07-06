@@ -3,29 +3,29 @@
 
 PORTNAME=	vtun
 PORTVERSION=	3.0.4
-PORTREVISION=	5
+PORTREVISION=	8
 CATEGORIES=	net
-MASTER_SITES=	SF
+MASTER_SITES=	SF LOCAL/mat/vtun
 
-MAINTAINER=	cy@FreeBSD.org
+MAINTAINER=	mat@FreeBSD.org
 COMMENT=	Virtual Tunnels over TCP/IP networks with traffic shaping
 
 LICENSE=	GPLv2
 
-BROKEN_SSL=	openssl-devel
-
 LIB_DEPENDS=	liblzo2.so:archivers/lzo2
 
-CFLAGS+=	-ansi -Wno-pointer-sign
 USES=		autoreconf localbase ssl
+USE_RC_SUBR=	vtunclient vtund
 GNU_CONFIGURE=	yes
+
 CONFIGURE_ARGS=	--localstatedir=/var \
 		--with-ssl-headers=${OPENSSLINC} \
 		--with-ssl-lib=${OPENSSLLIB} \
 		--with-lzo-headers=${LOCALBASE}/include/lzo \
 		--with-lzo-lib=${LOCALBASE}/lib
 CONFIGURE_ENV=	YACC=${YACC}
-USE_RC_SUBR=	vtunclient vtund
+
+CFLAGS+=	-ansi -Wno-pointer-sign
 
 ALL_TARGET=	vtund
 
@@ -45,13 +45,12 @@ post-patch:
 		${WRKSRC}/configure
 
 post-install:
-	@${STRIP_CMD} ${STAGEDIR}${PREFIX}/sbin/vtund
-	@${INSTALL_DATA} ${WRKSRC}/vtund.conf ${STAGEDIR}${PREFIX}/etc/vtund.conf.sample
-	@${MKDIR} ${STAGEDIR}${DOCSDIR}
+	${STRIP_CMD} ${STAGEDIR}${PREFIX}/sbin/vtund
+	${INSTALL_DATA} ${WRKSRC}/vtund.conf ${STAGEDIR}${PREFIX}/etc/vtund.conf.sample
+	${MKDIR} ${STAGEDIR}${DOCSDIR}
 .for doc in ${DOCS}
-	@${INSTALL_DATA} ${WRKSRC}/${doc} ${STAGEDIR}${DOCSDIR}
+	${INSTALL_DATA} ${WRKSRC}/${doc} ${STAGEDIR}${DOCSDIR}
 .endfor
-	@cd ${STAGEDIR}${PREFIX}/man/man1/ && \
-	${LN} -s vtund.8 ../man1/vtun.1
+	${RLN} ${STAGEDIR}${PREFIX}/man/man8/vtund.8 ${STAGEDIR}${PREFIX}/man/man1/vtun.1
 
 .include <bsd.port.mk>

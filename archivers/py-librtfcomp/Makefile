@@ -14,6 +14,9 @@ COMMENT=	Python bindings for library for handling compressed RTF documents
 LICENSE=	LGPL21
 LICENSE_FILE=	${WRKSRC}/LICENCE
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pyrex>0:devel/pyrex@${PY_FLAVOR}
 LIB_DEPENDS=	librtfcomp.so:archivers/librtfcomp
 
@@ -25,8 +28,8 @@ USES=		libtool python:2.7
 BUILD_WRKSRC=	${WRKSRC}/python
 INSTALL_WRKSRC=	${WRKSRC}/python
 
-PLIST_FILES=	%%PYTHON_SITELIBDIR%%/pyrtfcomp.a \
-		%%PYTHON_SITELIBDIR%%/pyrtfcomp.so
+PLIST_FILES=	${PYTHON_SITELIBDIR}/pyrtfcomp.a \
+		${PYTHON_SITELIBDIR}/pyrtfcomp.so
 
 post-patch:
 	@${REINPLACE_CMD} -e '/VISIBILITY=/ s| -fvisibility=hidden||' ${WRKSRC}/configure

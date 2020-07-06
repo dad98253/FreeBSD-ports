@@ -5,7 +5,7 @@ PORTNAME=	spread
 PORTVERSION=	3.17.4
 PORTREVISION=	5
 CATEGORIES=	net perl5
-MASTER_SITES=	http://bsdforge.com/projects/source/net/spread/
+MASTER_SITES=	https://BSDforge.com/projects/source/net/spread/
 DISTNAME=	${PORTNAME}-src-${PORTVERSION}
 
 MAINTAINER=	portmaster@bsdforge.com
@@ -32,6 +32,8 @@ PKGMESSAGE=	${WRKSRC}/license.txt
 PORTDOCS=	Readme.txt LICENSE
 HEADERFILES=	sp_func.h sp_func.h sp_events.h
 
+OPTIONS_DEFINE=	DOCS
+
 # The configure script fails to find nroff in LOCALBASE, but works fine if
 # 'groff' is used directly
 
@@ -41,6 +43,12 @@ PERL_CONFIGURE_ARGS=	CC="${CC}" CCFLAGS="${CFLAGS}" PREFIX="${PREFIX}" \
 			INSTALLPRIVLIB="${PREFIX}/lib" INSTALLARCHLIB="${PREFIX}/lib"
 
 TARGET_ORDER_OVERRIDE=	710:fix-perl-things
+
+.include <bsd.port.pre.mk>
+
+.if defined(PPC_ABI) && ${PPC_ABI} == ELFv2
+CFLAGS+=	-mcpu=power7
+.endif
 
 post-configure:
 	@${REINPLACE_CMD} -e 's|%%PREFIX%%|${PREFIX}|g' \
@@ -72,4 +80,4 @@ post-install:
 	${STRIP_CMD} ${STAGEDIR}${PREFIX}/lib/libtspread.so.1
 	${STRIP_CMD} ${STAGEDIR}${PREFIX}/${SITE_ARCH_REL}/auto/Spread/Spread.so
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

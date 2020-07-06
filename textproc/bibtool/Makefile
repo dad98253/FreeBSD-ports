@@ -7,7 +7,7 @@ CATEGORIES=	textproc print
 MASTER_SITES=	TEX_CTAN/biblio/bibtex/utils/${PORTNAME}
 DISTNAME=	BibTool-${PORTVERSION}
 
-MAINTAINER=	johans@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Command line manipulation of BibTeX files
 
 LICENSE=	GPLv2+
@@ -22,6 +22,8 @@ MAKEFILE=	makefile
 INSTALL_TARGET=	install install.man
 
 PORTDOCS=	bibtool.pdf ref_card.pdf c_lib.pdf
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	${REINPLACE_CMD} 's/bibtex$$/&8/' ${WRKSRC}/doc/Makefile

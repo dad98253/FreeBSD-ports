@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	XML-LibXSLT
-PORTVERSION=	1.96
+PORTVERSION=	1.99
 CATEGORIES=	textproc perl5
 MASTER_SITES=	CPAN
 PKGNAMEPREFIX=	p5-
@@ -13,10 +13,10 @@ COMMENT=	Perl interface to the GNOME XSLT library
 LICENSE=	ART10 GPLv1+
 LICENSE_COMB=	dual
 
-BUILD_DEPENDS=	p5-XML-LibXML>=1.70:textproc/p5-XML-LibXML
+BUILD_DEPENDS=	${RUN_DEPENDS}
 LIB_DEPENDS=	libgcrypt.so:security/libgcrypt \
 		libgpg-error.so:security/libgpg-error
-RUN_DEPENDS:=	${BUILD_DEPENDS}
+RUN_DEPENDS=	p5-XML-LibXML>=1.70:textproc/p5-XML-LibXML
 
 USES=		gnome perl5 pkgconfig
 USE_GNOME=	libxml2 libxslt

@@ -3,7 +3,7 @@
  * zabbix-proxy.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2013 Danilo G. Baio
  * Copyright (c) 2013 Marcello Coutinho
  * All rights reserved.
@@ -91,10 +91,11 @@ function validate_input_zabbix_proxy($post, &$input_errors) {
 function sync_package_zabbix_proxy() {
 	global $config, $g;
 
-	conf_mount_rw();
 
 	// Check zabbix proxy config
-	if (is_array($config['installedpackages']['%%ZABBIXUNIQNAME%%'])) {
+	if (isset($config['installedpackages']['%%ZABBIXUNIQNAME%%']) &&
+	    is_array($config['installedpackages']['%%ZABBIXUNIQNAME%%'])) {
+		init_config_arr(array('installedpackages', '%%ZABBIXUNIQNAME%%', 'config', 0));
 		$zbproxy_config = $config['installedpackages']['%%ZABBIXUNIQNAME%%']['config'][0];
 		if ($zbproxy_config['proxyenabled'] == "on") {
 			$ListenIp = $zbproxy_config['listenip'] ?: "0.0.0.0";
@@ -249,19 +250,19 @@ EOF;
 
 	if [ ! -d /var/log/zabbix-proxy ]; then
 		/bin/mkdir -p /var/log/zabbix-proxy
-		/usr/sbin/chmod 755 /var/log/zabbix-proxy
+		/bin/chmod 755 /var/log/zabbix-proxy
 	fi
 	/usr/sbin/chown -R zabbix:zabbix /var/log/zabbix-proxy
 
 	if [ ! -d /var/run/zabbix-proxy ]; then
 		/bin/mkdir -p /var/run/zabbix-proxy
-		/usr/sbin/chmod 755 /var/run/zabbix-proxy
+		/bin/chmod 755 /var/run/zabbix-proxy
 	fi
 	/usr/sbin/chown -R zabbix:zabbix /var/run/zabbix-proxy
 
 	if [ ! -d /var/db/zabbix-proxy ]; then
 		/bin/mkdir -p /var/db/zabbix-proxy
-		/usr/sbin/chmod 755 /var/db/zabbix-proxy
+		/bin/chmod 755 /var/db/zabbix-proxy
 	fi
 	/usr/sbin/chown -R zabbix:zabbix /var/db/zabbix-proxy
 
@@ -303,7 +304,6 @@ EOF;
 		unlink_if_exists($zproxy_rcfile);
 	}
 
-	conf_mount_ro();
 }
 
 // Based on openvpn_add_keyfile() function
@@ -314,6 +314,26 @@ function zabbix_proxy_add_keyfile($data, $directive) {
 	file_put_contents($fpath, base64_decode($data));
 	@chmod($fpath, 0600);
 	@chown($fpath, "zabbix");
+}
+
+function zabbix_proxy_certca($type) {
+        global $config;
+        $c_arr = array();
+        $c_arr[] = array('refid' => 'none', 'descr' => 'none (auto)');
+        if (isset($config[$type]) && is_array($config[$type])) {
+                foreach ($config[$type] as $c) {
+                        if (!empty($c['prv'])) {
+                                $res_key = openssl_pkey_get_private(base64_decode($c['prv']));
+                                $key_details = openssl_pkey_get_details($res_key);
+                                if ($key_details['type'] == OPENSSL_KEYTYPE_RSA) {
+                                        $c_arr[] = $c;
+                                }
+                        } elseif ($type == 'ca') {
+                                $c_arr[] = $c;
+                        }
+                }
+        }
+        return $c_arr;
 }
 
 ?>

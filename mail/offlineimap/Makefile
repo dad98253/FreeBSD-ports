@@ -3,7 +3,7 @@
 
 PORTNAME=	offlineimap
 DISTVERSIONPREFIX=	v
-DISTVERSION=	7.2.1
+DISTVERSION=	7.2.4
 CATEGORIES=	mail python
 
 MAINTAINER=	mp39590@gmail.com
@@ -13,6 +13,9 @@ COMMENT=	Powerful IMAP/Maildir synchronization and reader support
 LICENSE=	GPLv2 GPLv3
 LICENSE_COMB=	dual
 LICENSE_FILE=	${WRKSRC}/COPYING
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 ## later versions have sqlite3 backend, which is recommended for local storages
 ## with large amount of emails

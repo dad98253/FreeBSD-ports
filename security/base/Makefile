@@ -3,6 +3,7 @@
 
 PORTNAME=	base
 PORTVERSION=	1.4.5
+PORTREVISION=	1
 CATEGORIES=	security
 MASTER_SITES=	SF/secureideas/BASE/${PORTNAME}-${PORTVERSION}
 
@@ -17,6 +18,7 @@ RUN_DEPENDS=	${ADODB_DIR}/adodb.inc.php:databases/adodb5 \
 		${LOCALBASE}/share/pear/Mail.php:mail/pear-Mail@${PHP_FLAVOR} \
 		${LOCALBASE}/share/pear/Mail/mime.php:mail/pear-Mail_Mime@${PHP_FLAVOR}
 
+USES=		php
 USE_PHP=	gd gettext pcre session zlib ctype
 
 ADODB_DIR=	${LOCALBASE}/share/adodb
@@ -26,9 +28,8 @@ SUB_FILES=	pkg-message
 DOCS=		docs/CHANGELOG docs/CREDITS docs/README docs/README.mssql \
 		docs/TODO docs/UPGRADE docs/GPL docs/base_faq.rtf
 
-OPTIONS_DEFINE=	MYSQL PGSQL PDF DOCS
+OPTIONS_DEFINE=	PGSQL PDF DOCS
 
-MYSQL_USE=	MYSQL=yes PHP=mysql
 PGSQL_USES=	pgsql
 PGSQL_USE=	PHP=pgsql
 PDF_RUN_DEPENDS=${LOCALBASE}/share/fpdf/fpdf.php:print/fpdf

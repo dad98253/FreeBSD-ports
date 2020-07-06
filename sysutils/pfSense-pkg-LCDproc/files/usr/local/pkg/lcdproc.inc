@@ -3,7 +3,7 @@
  * lcdproc.inc
  *
  * part of pfSense (http://www.pfsense.org/)
- * Copyright (c) 2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2012 Michele Di Maria
  * Copyright (c) 2007-2009 Seth Mos <seth.mos@dds.nl>
  * All rights reserved.
@@ -80,7 +80,6 @@ function validate_form_lcdproc($post, &$input_errors) {
 			case "ugen1.2":
 			case "ugen1.3":
 			case "ugen2.2":
-				continue;
 				break;
 			default:
 				$input_errors[] = "The chosen COM port is not valid";
@@ -99,7 +98,6 @@ function validate_form_lcdproc($post, &$input_errors) {
 			case "20x2":
 			case "20x4":
 			case "40x2":
-				continue;
 				break;
 			default:
 				$input_errors[] = "The chosen display size is not valid";
@@ -115,7 +113,6 @@ function validate_form_lcdproc($post, &$input_errors) {
 			case "19200":
 			case "57600":
 			case "115200":
-				continue;
 				break;
 			default:
 				$input_errors[] = "The chosen port speed is not valid";
@@ -314,26 +311,42 @@ function sync_package_lcdproc() {
 				$config_text .= "[{$lcdproc_config['driver']}]\n";
 				$config_text .= "driverpath=/usr/local/lib/lcdproc/\n";
 				$config_text .= "ConnectionType={$lcdproc_config['connection_type']}\n";
-				if ($lcdproc_config['comport'] != "none") {
+				if ($lcdproc_config['comport'] != "none" && $lcdproc_config['connection_type'] != "ezio") {
 					$config_text .= "Device={$realport}\n";
 					$config_text .= "Port=0x378\n";
 					$config_text .= "Speed=0\n";
-					$config_text .= "Keypad=yes\n";
 					$config_text .= set_lcd_value("contrast", 1000, 850);
 					$config_text .= set_lcd_value("brightness", 1000, 800);
 					$config_text .= set_lcd_value("offbrightness", 1000, 0);
 					$config_text .= "Backlight=yes\n";
 					$config_text .= "OutputPort=no\n";
 					$config_text .= "Charmap=hd44780_default\n";
-					$config_text .= "DelayMult=1\n";
 					$config_text .= "DelayBus=true\n";
 					$config_text .= "Size={$lcdproc_config['size']}\n";
+					if ($lcdproc_config['connection_type'] = "pertelian") {
+						$config_text .= "DelayMult=32\n";
+						$config_text .= "Keypad=no\n";
+					} else {
+						$config_text .= "DelayMult=1\n";
+						$config_text .= "Keypad=yes\n";
+					}
 				}
 				if ($lcdproc_config['connection_type'] == "winamp") {
 					$config_text .= "KeyDirect_1=Enter\n";
 					$config_text .= "KeyDirect_2=Up\n";
 					$config_text .= "KeyDirect_3=Down\n";
 					$config_text .= "KeyDirect_4=Escape\n";
+				}
+				if ($lcdproc_config['connection_type'] == "ezio") {
+					$config_text .= "Device={$realport}\n";
+					$config_text .= "Charmap=hd44780_default\n";
+					$config_text .= "Size=16x2\n";
+					$config_text .= "Backlight=no\n";
+					$config_text .= "Keypad=yes\n";
+					$config_text .= "KeyMatrix_4_1=Enter\n";
+					$config_text .= "KeyMatrix_4_2=Up\n";
+					$config_text .= "KeyMatrix_4_3=Down\n";
+					$config_text .= "KeyMatrix_4_4=Escape\n";
 				}
 				break;
 			case "icp_a106":
@@ -426,6 +439,12 @@ function sync_package_lcdproc() {
 				$config_text .= "Device={$realport}\n";
 				$config_text .= "Size={$lcdproc_config['size']}\n";
 				break;
+			case "rawserial":
+				$config_text .= "[{$lcdproc_config['driver']}]\n";
+				$config_text .= "Device={$realport}\n";
+				$config_text .= "Size={$lcdproc_config['size']}\n";
+				$config_text .= "UpdateRate=1\n";
+				break;
 			case "sdeclcd":
 				$config_text .= "[{$lcdproc_config['driver']}]\n";
 				break;
@@ -480,7 +499,7 @@ function sync_package_lcdproc() {
 
 		/* Generate rc file start and stop */
 		$stop = <<<EOD
-if [ `pgrep -f lcdproc_client.ph` ];then
+if [ `pgrep -fo lcdproc_client.ph` ];then
 		pkill -f lcdproc_client.ph
 		sleep 1
 fi
@@ -495,14 +514,12 @@ EOD;
 		$start .= "\t/usr/bin/nice -20 /usr/local/bin/php -f /usr/local/pkg/lcdproc_client.php &\n";
 
 		/* Write out the configuration */
-		conf_mount_rw();
 		lcdproc_write_config(LCDPROC_CONFIG, $config_text);
 		write_rcfile(array(
 				'file' => 'lcdproc.sh',
 				'start' => $start,
 				'stop' => $stop
 				));
-		conf_mount_ro();
 		/* Or restart lcdproc if settings were changed*/
 		if (is_service_running(LCDPROC_SERVICE_NAME)) {
 			lcdproc_notice("Sync: Restarting the service");
@@ -520,10 +537,8 @@ EOD;
 				lcdproc_notice('Stopping service: no COM port selected');
 			}
 			stop_service(LCDPROC_SERVICE_NAME);
-			conf_mount_rw();
 			unlink(LCDPROC_RCFILE);
 			unlink(LCDPROC_CONFIG);
-			conf_mount_ro();
 		}
 	}
 	lcdproc_notice("Sync: End package sync");

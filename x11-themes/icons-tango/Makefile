@@ -12,11 +12,11 @@ MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Basic set of icons for the most common usage
 
 BUILD_DEPENDS=	${LOCALBASE}/libexec/icon-name-mapping:x11-themes/icon-naming-utils \
-		Magick-config:graphics/ImageMagick
+		Magick-config:graphics/ImageMagick6
 
 GNU_CONFIGURE=	yes
 USE_GNOME=	intlhack
-USES+=		gettext-tools gmake pathfix pkgconfig
+USES+=		gettext-tools gmake gnome pathfix pkgconfig
 INSTALLS_ICONS=	yes
 
 .include <bsd.port.mk>

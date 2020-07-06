@@ -3,12 +3,12 @@
 
 PORTNAME=	gchemutils
 PORTVERSION=	0.14.16
-PORTREVISION=	1
+PORTREVISION=	4
 CATEGORIES=	science
 MASTER_SITES=	SAVANNAH/${PORTNAME}/${PORTVERSION:R}
 DISTNAME=	gnome-chemistry-utils-${PORTVERSION}
 
-MAINTAINER=	kwm@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	C++ classes and Gtk3 widgets related to chemistry
 
 LICENSE=	GPLv3+
@@ -18,17 +18,18 @@ BUILD_DEPENDS=	${LOCALBASE}/libdata/pkgconfig/bodr.pc:science/bodr \
 		${LOCALBASE}/libdata/pkgconfig/chemical-mime-data.pc:science/chemical-mime-data
 LIB_DEPENDS=	libgtkglext-x11-1.0.so:x11-toolkits/gtkglext \
 		libopenbabel.so:science/openbabel \
-		libgoffice-0.10.so:devel/goffice010
+		libgoffice-0.10.so:devel/goffice
 RUN_DEPENDS=	${LOCALBASE}/libdata/pkgconfig/bodr.pc:science/bodr \
 		${LOCALBASE}/libdata/pkgconfig/chemical-mime-data.pc:science/chemical-mime-data
 
 PORTSCOUT=	limitw:1,even
 
+USES=		compiler:c++11-lang desktop-file-utils gettext gl gmake gnome \
+		libtool:keepla localbase:ldflags pathfix pkgconfig \
+		shared-mime-info tar:xz xorg
 USE_XORG=	x11
-USE_GNOME=	cairo gnomedocutils gtk30 intlhack libgsf libxml2
+USE_GNOME=	cairo gtk30 intlhack libgsf libxml2
 USE_GL=		gl
-USES=		desktop-file-utils gettext gmake libtool:keepla localbase:ldflags \
-		pathfix pkgconfig shared-mime-info tar:xz
 USE_LDCONFIG=	yes
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS=	--with-omf-dir=${PREFIX}/share/omf
@@ -47,8 +48,7 @@ OPTIONS_SUB=	yes
 GNUMERIC_DESC=	Build gnumeric plugin
 XUL_DESC=	Build browser plugin (requires libxul)
 
-XUL_BROKEN=	No gecko type specified (firefox, seamonkey, thunderbird)	
-XUL_USES=	gecko
+XUL_BROKEN=	XULrunner and non-Flash plugins are no longer supported
 XUL_CONFIGURE_ON=--enable-mozilla-plugin \
 		--with-mozilla-libdir=${PREFIX}/lib/xulrunner
 XUL_CONFIGURE_OFF=--disable-mozilla-plugin

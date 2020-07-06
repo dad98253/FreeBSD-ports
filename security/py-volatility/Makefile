@@ -2,10 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	volatility
-PORTVERSION=	2.6
-PORTREVISION=	2
+DISTVERSION=	2.6.1-34
+DISTVERSIONSUFFIX=	-g753bfa87
+PORTREVISION=	1
 CATEGORIES=	security python
-MASTER_SITES=	http://downloads.volatilityfoundation.org/releases/${PORTVERSION}/
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
 MAINTAINER=	antoine@FreeBSD.org
@@ -14,30 +14,37 @@ COMMENT=	Advanced memory forensics framework
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}sqlite3>=0:databases/py-sqlite3@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}distorm>=0:devel/py-distorm@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}pillow>=0:graphics/py-pillow@${PY_FLAVOR} \
+		${PY_PILLOW} \
 		${PYTHON_PKGNAMEPREFIX}pycrypto>=0:security/py-pycrypto@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}yara>=0:security/py-yara@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}openpyxl>=0:textproc/py-openpyxl@${PY_FLAVOR}
 
-NO_ARCH=	yes
-USES=		python:2.7 shebangfix zip
+USE_GITHUB=	yes
+GH_ACCOUNT=	volatilityfoundation
+
+USES=		python:2.7 shebangfix
 USE_PYTHON=	distutils autoplist
 SHEBANG_FILES=	tools/*.py tools/mac/*.py
 
 OPTIONS_DEFINE=	DOCS
 
-WRKSRC=		${WRKDIR}/volatility-master
-DATADIR=	${PREFIX}/share/py-${PORTNAME}
+NO_ARCH=	yes
 PORTDOCS=	AUTHORS.txt CHANGELOG.txt CREDITS.txt LEGAL.txt README.txt
-DOCSDIR=	${PREFIX}/share/doc/py-${PORTNAME}
 
 .include <bsd.port.pre.mk>
 
 PYDISTUTILS_INSTALLARGS+=--install-data ${DATADIR}
 
-post-install-DOCS-on:
+post-patch:
+	${TOUCH} ${WRKSRC}/contrib/plugins/aspaces/__init__.py \
+		${WRKSRC}/contrib/plugins/malware/__init__.py
+
+do-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}
 	${INSTALL_DATA} ${PORTDOCS:S,^,${WRKSRC}/,} ${STAGEDIR}${DOCSDIR}
 

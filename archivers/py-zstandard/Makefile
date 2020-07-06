@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	zstandard
-DISTVERSION=	0.9.1
+DISTVERSION=	0.13.0
 CATEGORIES=	archivers python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -10,6 +10,9 @@ MAINTAINER=	yuri@FreeBSD.org
 COMMENT=	Zstandard bindings for Python, a full-featured version
 
 LICENSE=	BSD2CLAUSE
+
+BROKEN_FreeBSD_11_powerpc64=	fails to build: cffi.error.CDefError: parse error
+BROKEN_FreeBSD_12_powerpc64=	fails to build: cffi.error.CDefError: parse error
 
 BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}cffi>=1.8.0:devel/py-cffi@${PY_FLAVOR}
 LIB_DEPENDS=	libzstd.so:archivers/zstd

@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	adplug
-PORTVERSION=	2.3.1
+PORTVERSION=	2.3.3
 DISTVERSIONPREFIX=	${PORTNAME}-
 CATEGORIES=	audio
 PKGNAMEPREFIX=	lib
@@ -15,17 +15,16 @@ LICENSE=	GPLv2
 LIB_DEPENDS=	libbinio.so:devel/libbinio
 
 USES=		autoreconf libtool makeinfo pathfix pkgconfig
-GNU_CONFIGURE=	yes
+USE_CSTD=	gnu89
 USE_GITHUB=	yes
 USE_LDCONFIG=	yes
-USE_CSTD=	gnu89
 
-INFO=		libadplug
-
+GNU_CONFIGURE=		yes
 CONFIGURE_ARGS+=	--enable-maintainer-mode
 
 INSTALL_TARGET=	install-strip
 
+INFO=		libadplug
 PLIST_SUB+=	PORTVERSION=${PORTVERSION}
 
 .include <bsd.port.mk>

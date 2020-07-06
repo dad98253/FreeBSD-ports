@@ -22,6 +22,7 @@ SVN_REV=	142
 MAKE_ENV=	LIBDIR="${LIBDIR}"
 PLIST_SUB=	LIBDIR="${LIBDIR:S|${PREFIX}/||}"
 LIBDIR=		${PREFIX}/lib/${PORTNAME}
+LDFLAGS_i386=	-Wl,-znotext
 
 OPTIONS_DEFINE=		CLIENT DEDICATED GAME GL SOFT UI
 OPTIONS_DEFINE_i386=	ASM
@@ -38,6 +39,7 @@ UI_DESC=	Build user interface (for client menus)
 .include <bsd.port.options.mk>
 
 .if ${PORT_OPTIONS:MCLIENT}
+USES+=		sdl
 USE_SDL+=	sdl
 ALL_TARGET+=	client
 PLIST_SUB+=	CLIENT=""
@@ -61,7 +63,7 @@ PLIST_SUB+=	GAME="@comment "
 
 .if ${PORT_OPTIONS:MGL}
 LIB_DEPENDS+=	libpng.so:graphics/png
-USES+=		jpeg
+USES+=		gl jpeg
 USE_GL=		gl
 ALL_TARGET+=	ref_newgl
 PLIST_SUB+=	GL=""

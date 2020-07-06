@@ -20,7 +20,7 @@ USES=		iconv pathfix libtool cpe
 USE_LDCONFIG=	yes
 GNU_CONFIGURE=	yes
 
-APR_VERSION=	1.6.3
+APR_VERSION=	1.7.0
 APU_VERSION=	1.6.1
 
 CPE_VENDOR=	apache
@@ -114,11 +114,17 @@ APU_CONF_ENV+=	${CONFIGURE_ENV:O:u} CC="${CC}" CFLAGS="${CFLAGS}" CPPFLAGS="${AP
 
 .include <bsd.port.options.mk>
 
+.if ${ARCH} == powerpc || ${ARCH} == powerpcspe
+CONFIGURE_ENV+=	ap_cv_atomic_builtins=no
+.endif
+
 .if ${PORT_OPTIONS:MSSL} || ${PORT_OPTIONS:MNSS}
 APU_CONF_ARGS+=	--with-crypto
 .else
 APU_CONF_ARGS+=	--without-crypto
 .endif
+
+.include <bsd.port.pre.mk>
 
 post-extract:
 # cleanup files not used on this platform
@@ -127,8 +133,6 @@ post-extract:
 post-patch:
 	@${REINPLACE_CMD} -e 's/OSVERSION/${OSVERSION}/g' \
 		${APR_WRKDIR}/configure
-	@${REINPLACE_CMD} -e '/recursive:/s/$$/ .MAKE/' \
-		${APR_WRKDIR}/build/apr_rules.mk.in
 
 do-configure:
 	@${ECHO_MSG} "# ===> ${.TARGET} apr-${APR_VERSION}"
@@ -170,4 +174,4 @@ rpfl: configure
 	${SED} -i '' -E 's|^configure:[0-9]+:|configure:_pid_:|g' ${APR_WRKDIR}/config.log
 	${SED} -i '' -E 's|^configure:[0-9]+:|configure:_pid_:|g' ${APU_WRKDIR}/config.log
 
-.include <bsd.port.mk>
+.include <bsd.port.post.mk>

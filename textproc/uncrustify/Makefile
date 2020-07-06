@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	uncrustify
-PORTVERSION=	0.67
+PORTVERSION=	0.70.1
 DISTVERSIONPREFIX=	${PORTNAME}-
 CATEGORIES=	textproc
 
@@ -12,23 +12,23 @@ COMMENT=	Highly configurable source code beautifier
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-BROKEN_mips=		fails to compile: cc1plus: error: unrecognized command line option "-std=gnu++0x"
-BROKEN_mips64=		fails to compile: cc1plus: error: unrecognized command line option "-std=gnu++0x"
-BROKEN_powerpc64=	fails to compile: cc1plus: error: unrecognized command line option "-std=gnu++0x"
-
 USE_GITHUB=	yes
 
-USES=		cmake:outsource
+USES=		cmake compiler:c++11-lang
 CMAKE_ARGS=	-DNoGitVersionString:BOOL=TRUE
 TEST_TARGET=	test
 
 PORTDOCS=	*
+PORTEXAMPLES=	*
 
-OPTIONS_DEFINE=	DOCS
+PLIST_FILES=	bin/uncrustify man/man1/uncrustify.1.gz
 
-post-install:
-	@${MKDIR} ${STAGEDIR}${ETCDIR}
-	${INSTALL_DATA} ${WRKSRC}/etc/*.cfg ${STAGEDIR}${ETCDIR}
+OPTIONS_DEFINE=	DOCS EXAMPLES
+
+# fixes build on gcc archs (unrecognized command line option
+# -std=gnu++0x), but may introduce other errors in future
+post-patch:
+	@${REINPLACE_CMD} -e '/gnu++0x/ d' ${WRKSRC}/CMakeLists.txt
 
 post-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}

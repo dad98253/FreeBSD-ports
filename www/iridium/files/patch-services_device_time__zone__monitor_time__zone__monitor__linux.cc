@@ -1,22 +1,14 @@
---- services/device/time_zone_monitor/time_zone_monitor_linux.cc.orig	2017-04-19 19:06:37 UTC
+--- services/device/time_zone_monitor/time_zone_monitor_linux.cc.orig	2019-03-11 22:01:01 UTC
 +++ services/device/time_zone_monitor/time_zone_monitor_linux.cc
-@@ -59,6 +59,9 @@ class TimeZoneMonitorLinuxImpl
-         main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-         file_task_runner_(file_task_runner),
-         owner_(owner) {
-+  }
-+
-+  void StartWatching() {
-     DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
-     file_task_runner_->PostTask(
-         FROM_HERE,
-@@ -150,6 +153,9 @@ TimeZoneMonitorLinux::TimeZoneMonitorLin
-   // changed.
-   if (!getenv("TZ")) {
-     impl_ = new TimeZoneMonitorLinuxImpl(this, file_task_runner);
-+    if (impl_.get()) {
-+      impl_->StartWatching();
-+    }
-   }
- }
- 
+@@ -104,7 +104,11 @@ class TimeZoneMonitorLinuxImpl
+     // false positives are harmless, assuming the false positive rate is
+     // reasonable.
+     const char* const kFilesToWatch[] = {
++#if defined(OS_BSD)
++        "/etc/localtime",
++#else
+         "/etc/localtime", "/etc/timezone", "/etc/TZ",
++#endif
+     };
+     for (size_t index = 0; index < base::size(kFilesToWatch); ++index) {
+       file_path_watchers_.push_back(std::make_unique<base::FilePathWatcher>());

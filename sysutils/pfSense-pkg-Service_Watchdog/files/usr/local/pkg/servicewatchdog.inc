@@ -3,7 +3,7 @@
  * servicewatchdog.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2013-2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2013-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,9 +57,7 @@ function servicewatchdog_service_matches($svc1, $svc2) {
 
 function servicewatchdog_is_service_watched($svc) {
 	global $config;
-	if (!is_array($config['installedpackages']['servicewatchdog']['item'])) {
-		$config['installedpackages']['servicewatchdog']['item'] = array();
-	}
+	init_config_arr(array('installedpackages', 'servicewatchdog', 'item'));
 	$a_pwservices = &$config['installedpackages']['servicewatchdog']['item'];
 	$blacklisted_services = array("cron");
 
@@ -77,9 +75,7 @@ function servicewatchdog_is_service_watched($svc) {
 
 function servicewatchdog_cron_job($force_remove = false) {
 	global $config;
-	if (!is_array($config['installedpackages']['servicewatchdog']['item'])) {
-		$config['installedpackages']['servicewatchdog']['item'] = array();
-	}
+	init_config_arr(array('installedpackages', 'servicewatchdog', 'item'));
 	$a_pwservices = &$config['installedpackages']['servicewatchdog']['item'];
 
 	if (($force_remove == false) && (count($a_pwservices) > 0)) {
@@ -93,9 +89,7 @@ function servicewatchdog_cron_job($force_remove = false) {
 
 function servicewatchdog_check_services() {
 	global $config;
-	if (!is_array($config['installedpackages']['servicewatchdog']['item'])) {
-		$config['installedpackages']['servicewatchdog']['item'] = array();
-	}
+	init_config_arr(array('installedpackages', 'servicewatchdog', 'item'));
 	$a_pwservices = &$config['installedpackages']['servicewatchdog']['item'];
 
 	foreach ($a_pwservices as $svc) {
@@ -108,7 +102,7 @@ function servicewatchdog_check_services() {
 			$error_message = "Service Watchdog detected service {$svc['name']} stopped. Restarting {$svc['name']} ({$descr})";
 			log_error($error_message);
 			if (isset($svc['notify'])) {
-				notify_via_smtp($error_message);
+				notify_all_remote($error_message);
 			}
 			service_control_start($svc['name'], $svc);
 		}

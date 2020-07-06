@@ -4,12 +4,14 @@
 PORTNAME=	thrulay
 PORTVERSION=	0.9
 PORTREVISION=	1
-CATEGORIES=	benchmarks net ipv6
-MASTER_SITES=	SF \
-		http://www.internet2.edu/~shalunov/thrulay/
+CATEGORIES=	benchmarks net
+MASTER_SITES=	SF
 
 MAINTAINER=	shalunov@shlang.com
 COMMENT=	Network capacity tester
+
+LICENSE=	BSD3CLAUSE
+LICENSE_FILE=	${WRKSRC}/LICENSE
 
 GNU_CONFIGURE=	yes
 USES=		gmake libtool
@@ -20,13 +22,15 @@ MAKE_JOBS_UNSAFE=	yes
 
 PORTDOCS=	ChangeLog README thrulay-protocol.txt thrulay-index.html
 
+OPTIONS_DEFINE=	DOCS
+
 post-patch:
 	${REINPLACE_CMD} -e '922s,datarootdir,prefix,g' ${WRKSRC}/configure
 
 post-extract:
 	@${CP} ${WRKSRC}/doc/*.[ht]* ${WRKSRC}/
 
-post-install:
+post-install-DOCS-on:
 	@${MKDIR} ${STAGEDIR}${DOCSDIR}
 .for docs in ${PORTDOCS}
 	${INSTALL_DATA} ${WRKSRC}/${docs} ${STAGEDIR}${DOCSDIR}

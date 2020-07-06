@@ -23,7 +23,7 @@ GH_ACCOUNT=	snoutmate
 GH_PROJECT=	Sea-Defender
 GH_TAGNAME=	d628051
 
-USES=		gmake
+USES=		gl gmake sdl xorg
 USE_SDL=	sdl mixer image ttf
 USE_GL=		gl glu
 USE_XORG=	x11 xrandr
@@ -43,6 +43,9 @@ DESKTOP_ENTRIES="Sea Defender" \
 		""
 
 OPTIONS_DEFINE=	DOCS
+
+post-patch:
+	@${REINPLACE_CMD} -e '/typedef/ d' ${WRKSRC}/snoutlib/gldefs.h
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/sea ${STAGEDIR}${PREFIX}/libexec/${PORTNAME}

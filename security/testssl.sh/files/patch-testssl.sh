@@ -1,12 +1,12 @@
---- testssl.sh.orig	2018-03-17 15:02:25 UTC
+--- testssl.sh.orig	2019-12-11 11:41:31 UTC
 +++ testssl.sh
-@@ -175,6 +175,9 @@ TERM_CURRPOS=0                          
- ## CONFIGURATION PART ##
- # following variables make use of $ENV, e.g. OPENSSL=<myprivate_path_to_openssl> ./testssl.sh <host>
- # 0 means (normally) true here. Some of the variables are also accessible with a command line switch, see --help
+@@ -190,6 +190,9 @@ TERM_CURRPOS=0                                        
+ ########### Defining (and presetting) variables which can be changed
+ #
+ # Following variables make use of $ENV and can be used like "OPENSSL=<myprivate_path_to_openssl> ./testssl.sh <URI>"
 +if [[ -z "$OPENSSL" ]] ; then
 +     OPENSSL=PREFIX/openssl-unsafe/bin/openssl
 +fi
- declare -x OPENSSL OPENSSL_TIMEOUT
- FAST_SOCKET=${FAST_SOCKET:-false}       # EXPERIMENTAL feature to accelerate sockets -- DO NOT USE it for production
- COLOR=${COLOR:-2}                       # 2: Full color, 1: b/w+positioning, 0: no ESC at all
+ declare -x OPENSSL
+ OPENSSL_TIMEOUT=${OPENSSL_TIMEOUT:-""}  # Default connect timeout with openssl before we call the server side unreachable
+ CONNECT_TIMEOUT=${CONNECT_TIMEOUT:-""}  # Default connect timeout with sockets before we call the server side unreachable

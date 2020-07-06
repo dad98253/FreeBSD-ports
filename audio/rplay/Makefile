@@ -5,7 +5,7 @@ PORTNAME=	rplay
 PORTVERSION=	3.3.2
 PORTREVISION=	3
 CATEGORIES=	audio
-MASTER_SITES=	http://rplay.doit.org/dist/
+MASTER_SITES=	http://ponce.cc/slackware/sources/repo/
 
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Network audio player
@@ -22,6 +22,7 @@ CPPFLAGS+=	-I${LOCALBASE}/include
 LIBS+=		-L${LOCALBASE}/lib
 
 INFO=		RPLAY RPTP librplay rplayd
+MAKE_ARGS=	infodir=${PREFIX}/${INFO_PATH}
 
 .include <bsd.port.pre.mk>
 

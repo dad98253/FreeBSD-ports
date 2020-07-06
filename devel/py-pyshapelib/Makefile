@@ -5,7 +5,7 @@ PORTNAME=	pyshapelib
 PORTVERSION=	1.0
 CATEGORIES=	devel python geography
 MASTER_SITES=	http://wald.intevation.org/frs/download.php/899/:py \
-		http://download.osgeo.org/shapelib/:c
+		https://download.osgeo.org/shapelib/:c
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 DISTFILES=	${DISTNAME}${EXTRACT_SUFX}:py ${SHAPELIB}${EXTRACT_SUFX}:c
 
@@ -13,6 +13,9 @@ MAINTAINER=	fmysh@iijmio-mail.jp
 COMMENT=	Python bindings for Shapelib
 
 LICENSE=	LGPL20
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 USES=		python:2.7
 USE_LDCONFIG=	yes

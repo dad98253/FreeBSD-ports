@@ -3,7 +3,7 @@
 
 PORTNAME=	rubygame
 PORTVERSION=	2.6.4
-PORTREVISION=	8
+PORTREVISION=	9
 CATEGORIES=	devel rubygems
 MASTER_SITES=	RG
 
@@ -18,6 +18,6 @@ RUN_DEPENDS=	rubygem-rake>=0.7.0:devel/rubygem-rake \
 NO_ARCH=	yes
 USE_RUBY=	yes
 USE_SDL=	gfx image mixer ttf
-USES=		gem
+USES=		gem sdl
 
 .include <bsd.port.mk>

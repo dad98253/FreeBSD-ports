@@ -3,11 +3,12 @@
 
 PORTNAME=	gnu-cobol
 PORTVERSION=	2.2
+PORTREVISION=	1
 CATEGORIES=	lang
 MASTER_SITES=	GNU/gnucobol
 DISTNAME=	gnucobol-${PORTVERSION}
 
-MAINTAINER=	johans@FreeBSD.org
+MAINTAINER=	wen@FreeBSD.org
 COMMENT=	Open-source COBOL compiler
 
 LICENSE=	GPLv3 LGPL3
@@ -23,13 +24,14 @@ INFO=		gnucobol
 DATADIR=	${PREFIX}/share/gnucobol
 
 INSTALL_TARGET=	install-strip
+SSP_CFLAGS?=	-fstack-protector # XXX -strong fails to build
 CPPFLAGS+=	-I${BDB_INCLUDE_DIR} -I${LOCALBASE}/include
 LDFLAGS+=	-L${LOCALBASE}/lib
 
 OPTIONS_DEFINE=	NLS
 OPTIONS_SUB=	yes
 NLS_USES=	gettext
-CONFIGURE_ENABLE=nls
+NLS_CONFIGURE_ENABLE=nls
 
 post-patch:
 	@${REINPLACE_CMD} -e 's|__gmp_randinit|__gmpz_init|g ; \

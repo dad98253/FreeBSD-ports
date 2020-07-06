@@ -1,34 +1,30 @@
---- Makefile.orig	2017-10-05 16:45:18 UTC
+--- Makefile.orig	2020-03-01 15:16:08 UTC
 +++ Makefile
-@@ -21,10 +21,11 @@
- # Makefile for bowtie, bowtie2-build, bowtie2-inspect
- #
+@@ -200,22 +200,22 @@ endif
  
--prefix = /usr/local
--bindir = $(prefix)/bin
-+PREFIX ?= /usr/local
-+bindir = $(PREFIX)/bin
- 
- INC = $(if $(RELEASE_BUILD),-I$(CURDIR)/.include)
-+INC += -I${LOCALBASE}/include
- LIBS = $(LDFLAGS) $(if $(RELEASE_BUILD),-L$(CURDIR)/.lib) -lz
- GCC_PREFIX = $(shell dirname `which gcc`)
- GCC_SUFFIX =
-@@ -98,7 +99,7 @@ endif
- 
- #default is to use Intel TBB
- ifneq (1,$(NO_TBB))
--	LIBS += $(PTHREAD_LIB) -ltbb -ltbbmalloc$(if $(RELEASE_BUILD),,_proxy)
-+	LIBS += $(PTHREAD_LIB) -L${LOCALBASE}/lib -ltbb -ltbbmalloc
- 	override EXTRA_FLAGS += -DWITH_TBB
- else
- 	LIBS += $(PTHREAD_LIB)
-@@ -189,7 +190,7 @@ SSE_FLAG=-msse2
- 
- DEBUG_FLAGS    = -O0 -g3 -m64 $(SSE_FLAG)
- DEBUG_DEFS     = -DCOMPILER_OPTIONS="\"$(DEBUG_FLAGS) $(EXTRA_FLAGS)\""
--RELEASE_FLAGS  = -O3 -m64 $(SSE_FLAG) -funroll-loops -g3
-+RELEASE_FLAGS  = $(CXXFLAGS) $(SSE_FLAG) -funroll-loops
- RELEASE_DEFS   = -DCOMPILER_OPTIONS="\"$(RELEASE_FLAGS) $(EXTRA_FLAGS)\""
- NOASSERT_FLAGS = -DNDEBUG
- FILE_FLAGS     = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE
+ BITS := 32
+ SSE_FLAG := -msse2
+-ifeq (x86_64,$(shell uname -m))
++ifeq (x86_64,$(shell uname -p))
+   BITS := 64
+-else ifeq (amd64,$(shell uname -m))
++else ifeq (amd64,$(shell uname -p))
+   BITS := 64
+-else ifeq (aarch64,$(shell uname -m))
++else ifeq (aarch64,$(shell uname -p))
+   BITS := 64
+   SSE_FLAG :=
+   CXXFLAGS := -fopenmp-simd
+   CPPFLAGS := -Ithird_party/simde
+-else ifeq (s390x,$(shell uname -m))
++else ifeq (s390x,$(shell uname -p))
+   BITS := 64
+   SSE_FLAG :=
+   CXXFLAGS := -fopenmp-simd
+   CPPFLAGS := -Ithird_party/simde
+   SANITIZER_FLAGS :=
+-else ifeq (ppc64le,$(shell uname -m))
++else ifeq (ppc64le,$(shell uname -p))
+   BITS := 64
+   SSE_FLAG :=
+   CXXFLAGS := -fopenmp-simd

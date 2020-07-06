@@ -2,48 +2,48 @@
 # $FreeBSD$
 
 PORTNAME=	nano
-PORTVERSION=	2.9.8
+PORTVERSION=	4.8
 CATEGORIES=	editors
-MASTER_SITES=	http://www.nano-editor.org/dist/v${PORTVERSION:R}/ GNU
+MASTER_SITES=	https://www.nano-editor.org/dist/v${PORTVERSION:R}/ GNU
 
 MAINTAINER=	danilo@FreeBSD.org
 COMMENT=	Nano's ANOther editor, an enhanced free Pico clone
 
 LICENSE=	GPLv3
+LICENSE_FILE=	${WRKSRC}/COPYING
+
+USES=		charsetfix ncurses tar:xz
 
 CONFLICTS=	nano-devel-2*
 
-USES=		charsetfix ncurses
 GNU_CONFIGURE=	yes
 
 CONFIGURE_ARGS=	--docdir=${DOCSDIR} --enable-utf8
+CONFIGURE_ENV+=	NCURSESW_CFLAGS="-I${NCURSESINC}" \
+		NCURSESW_LIBS="-L${NCURSESLIB} -l${NCURSES_IMPL}"
+
 MAKE_ARGS+=	install_htmlmanDATA=install-htmlmanDATA
-CPPFLAGS+=	-I${LOCALBASE}/include
-LDFLAGS+=	-L${LOCALBASE}/lib
 
 OPTIONS_DEFINE=	DOCS EXAMPLES NLS
 OPTIONS_SUB=	yes
 
-DOCS_USES=	groff
-
-NLS_USES=		gettext
+NLS_USES=		gettext localbase
 NLS_CONFIGURE_ENABLE=	nls
 
 INFO=		nano
 
 PORTSCOUT=	limitw:1,even
 
-post-configure:
-	${REINPLACE_CMD} -e 's/update_revision//g' ${WRKSRC}/src/Makefile
+post-patch:
+	${REINPLACE_CMD} -e 's/^groff.*/false/' ${WRKSRC}/configure
 
-post-build:
-	cd ${WRKSRC}/doc; ${REINPLACE_CMD} \
-		-e 's:SYSCONFDIR:${PREFIX}/etc:g' \
-		-e 's:EXAMPLESDIR:${EXAMPLESDIR}:g' \
-		nano.1 rnano.1 nanorc.5 ${WRKSRC}/doc/${INFO:=.info}
-
-post-install:
+post-install-EXAMPLES-on:
 	${MKDIR} ${STAGEDIR}${EXAMPLESDIR}
 	${INSTALL_DATA} ${WRKSRC}/doc/sample.nanorc ${STAGEDIR}${EXAMPLESDIR}
+
+post-install-DOCS-on:
+.for doc in nano.1.html rnano.1.html nanorc.5.html
+	${INSTALL_DATA} ${WRKSRC}/doc/${doc} ${STAGEDIR}${DOCSDIR}
+.endfor
 
 .include <bsd.port.mk>

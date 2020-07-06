@@ -3,7 +3,7 @@
 
 PORTNAME=	monsterz
 PORTVERSION=	0.7.1
-PORTREVISION=	11
+PORTREVISION=	14
 CATEGORIES=	games
 MASTER_SITES=	http://sam.zoy.org/monsterz/ \
 		SF/nemysisfreebsdp/:icons
@@ -17,9 +17,13 @@ COMMENT=	Monsterz - arcade puzzle game
 LICENSE=	WTFPL
 LICENSE_FILE=	${WRKSRC}/COPYING
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 RUN_DEPENDS=	${PYGAME}
 
-USES=		python:2.7
+USES=		python:2.7 shebangfix
+SHEBANG_FILES=	monsterz.py
 MAKE_ENV=	prefix=${PREFIX}
 
 PORTDOCS=	AUTHORS README TODO

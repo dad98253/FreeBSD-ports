@@ -1,43 +1,38 @@
 # $FreeBSD$
 
 PORTNAME=	libva-utils
-PORTVERSION=	2.1.0
+PORTVERSION=	2.6.0
+PORTREVISION=	1
 CATEGORIES=	multimedia
 
-MAINTAINER=	madpilot@FreeBSD.org
+PATCH_SITES=	https://github.com/${GH_ACCOUNT}/${GH_PROJECT}/commit/
+PATCHFILES+=	0d033c074b63.patch:-p1 # https://github.com/intel/libva-utils/pull/185
+PATCHFILES+=	4aeb5254a191.patch:-p1 # https://github.com/intel/libva-utils/pull/183
+PATCHFILES+=	520ea5582c9a.patch:-p1 # https://github.com/intel/libva-utils/pull/184
+PATCHFILES+=	24a87768547a.patch:-p1 # https://github.com/intel/libva-utils/pull/184
+PATCHFILES+=	fde08663af79.patch:-p1 # https://github.com/intel/libva-utils/pull/184
+
+MAINTAINER=	jbeich@FreeBSD.org
 COMMENT=	Collection of tests and utilities for VAAPI
 
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-LIB_DEPENDS=	libva.so:multimedia/libva
+LIB_DEPENDS=	libva-drm.so:multimedia/libva
 
-USES=		autoreconf gmake libtool pkgconfig tar:bzip2
-#USE_XORG=	glproto pciaccess xext xfixes
-#USE_GL=	gl
-GNU_CONFIGURE=	yes
-INSTALL_TARGET=	install-strip
-
+USES=		compiler:c++11-lang meson pkgconfig
 USE_GITHUB=	yes
-GH_ACCOUNT=	01org
+GH_ACCOUNT=	intel
 
-#LDFLAGS+=	-lpthread
-# prevent types conflict: videodev2.h vs. drm.h
-#CFLAGS+=	-DHAVE_LINUX_INTEGER_TYPES
+OPTIONS_DEFINE=	WAYLAND X11
+OPTIONS_DEFAULT=WAYLAND X11
+OPTIONS_SUB=	yes
 
-OPTIONS_DEFINE=	DEBUG
+WAYLAND_LIB_DEPENDS=	libwayland-client.so:graphics/wayland
+WAYLAND_MESON_TRUE=	wayland
 
-DEBUG_CFLAGS=		-D_DEBUG
-DEBUG_CFLAGS_OFF=	-DNDEBUG
-
-#post-patch:	.SILENT
-#	${REINPLACE_CMD} -e 's|\($$libdir\)/dri|\1/va|' \
-#		-e 's|$${libdir}/\(pkgconfig\)|${PREFIX}/libdata/\1|' \
-#		${WRKSRC}/configure.ac
-#	${REINPLACE_CMD} -e 's/va\(info\)/\1/g' -e 's/info\.c/vainfo\.c/' \
-#		${WRKSRC}/test/vainfo/Makefile.am
-#	${REINPLACE_CMD} '/^export VA_HEADER_/d' \
-#		${WRKSRC}/doc/Makefile.am
-#	${REINPLACE_CMD} 's/-ldl//' ${WRKSRC}/va/Makefile.am
+X11_USES=		xorg
+X11_USE=		XORG=x11,xext,xfixes
+X11_MESON_TRUE=		x11
 
 .include <bsd.port.mk>

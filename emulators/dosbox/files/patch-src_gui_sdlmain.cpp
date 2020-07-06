@@ -1,25 +1,11 @@
-*** src/gui/sdlmain.cpp.orig	Mon Mar  6 03:02:24 2017
---- src/gui/sdlmain.cpp	Mon Mar  6 03:03:21 2017
-***************
-*** 1134,1143 ****
-  #endif
-  	const char * gl_ext = (const char *)glGetString (GL_EXTENSIONS);
-  	if(gl_ext && *gl_ext){
-! 		sdl.opengl.packed_pixel=(strstr(gl_ext,"EXT_packed_pixels") > 0);
-! 		sdl.opengl.paletted_texture=(strstr(gl_ext,"EXT_paletted_texture") > 0);
-  #if defined(NVIDIA_PixelDataRange)
-! 		sdl.opengl.pixel_data_range=(strstr(gl_ext,"GL_NV_pixel_data_range") >0 ) &&
-  			glPixelDataRangeNV && db_glAllocateMemoryNV && db_glFreeMemoryNV;
-  		sdl.opengl.pixel_data_range = 0;
-  #endif
---- 1134,1143 ----
-  #endif
-  	const char * gl_ext = (const char *)glGetString (GL_EXTENSIONS);
-  	if(gl_ext && *gl_ext){
-! 		sdl.opengl.packed_pixel=(strstr(gl_ext,"EXT_packed_pixels") != 0);
-! 		sdl.opengl.paletted_texture=(strstr(gl_ext,"EXT_paletted_texture") != 0);
-  #if defined(NVIDIA_PixelDataRange)
-! 		sdl.opengl.pixel_data_range=(strstr(gl_ext,"GL_NV_pixel_data_range") != 0 ) &&
-  			glPixelDataRangeNV && db_glAllocateMemoryNV && db_glFreeMemoryNV;
-  		sdl.opengl.pixel_data_range = 0;
-  #endif
+--- src/gui/sdlmain.cpp.orig	2020-03-21 19:17:13 UTC
++++ src/gui/sdlmain.cpp
+@@ -1433,7 +1433,7 @@ void GFX_LosingFocus(void) {
+ #define DB_POLLSKIP 1
+ #endif
+ 
+-#if defined(LINUX)
++#if defined(LINUX) || defined(BSD)
+ #define SDL_XORG_FIX 1
+ #else
+ #define SDL_XORG_FIX 0

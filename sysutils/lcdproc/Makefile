@@ -6,7 +6,7 @@ DISTVERSIONPREFIX=	v
 DISTVERSION=	0.5.9
 CATEGORIES=	sysutils
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	daniel@shafer.cc
 COMMENT=	Client/server suite for LCD devices
 
 LICENSE=	GPLv2
@@ -47,6 +47,7 @@ SERDISP_CFLAGS=		-I${LOCALBASE}/include
 SERDISP_LDFLAGS=	-L${LOCALBASE}/lib
 SERDISP_CPPFLAGS=	-I${LOCALBASE}/include
 
+X11_USES=		xorg
 X11_USE=		xorg=x11
 X11_CONFIGURE_ENABLE=	libX11
 
@@ -94,7 +95,7 @@ LCDPROC_DRIVERS+=IOWarrior \
 		shuttleVFD
 
 . if ${PORT_OPTIONS:MFTDI}
-LIB_DEPENDS+=		libftdi.so:devel/libftdi
+LIB_DEPENDS+=		libftdi1.so:devel/libftdi1
 PLIST_SUB+=		FTDI=""
 LCDPROC_DRIVERS+=i2500vfd \
 		lis \

@@ -11,14 +11,22 @@ DISTNAME=	${PORTVERSION}
 MAINTAINER=	jgh@FreeBSD.org
 COMMENT=	Python utilities for console mail clients (eg. mutt)
 
+LICENSE=	GPLv2
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
+USES=		python:2.7
+
 CONFLICTS=	zh-wenju-[0-9]* talkfilters-[0-9]* reed-[0-9]*
 
 CHANGESET=	8bb26094df06
 WRKSRC=		${WRKDIR}/blacktrash-${PORTNAME}-${CHANGESET}
-USES=		python:2.7
 USE_PYTHON=	distutils autoplist
 
 PORTEXAMPLES=	*
+
+OPTIONS_DEFINE=	EXAMPLES
 
 .include <bsd.port.options.mk>
 

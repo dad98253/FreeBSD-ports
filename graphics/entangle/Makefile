@@ -3,7 +3,7 @@
 
 PORTNAME=	entangle
 PORTVERSION=	0.7.2
-PORTREVISION=	1
+PORTREVISION=	4
 CATEGORIES=	graphics
 MASTER_SITES=	http://entangle-photo.org/download/sources/
 
@@ -23,7 +23,8 @@ LIB_DEPENDS=	libgphoto2.so:graphics/libgphoto2 \
 RUN_DEPENDS:=	${BUILD_DEPENDS:Nitstool*} \
 		${PYTHON_PKGNAMEPREFIX}libpeas>=0:devel/py-libpeas@${PY_FLAVOR}
 
-USES=		gettext-tools gmake libtool pkgconfig python:3.4+
+USES=		compiler:c++11-lang gettext-tools gmake gnome libtool \
+		pkgconfig python:3.4+ xorg
 GNU_CONFIGURE=	yes
 USE_GNOME=	cairo gtk30 intltool introspection
 USE_GSTREAMER1=	core
@@ -44,6 +45,7 @@ NLS_USES=		gettext-runtime
 
 post-patch:
 	@${REINPLACE_CMD} -e '/checking for GUDEV/,+93d ; \
+		s,gstreamer-plugins-base-1,gstreamer-base-1, ; \
 		s,gnome-icon-theme-symbolic,mate-icon-theme, ; \
 		s,/usr/share/icons/gnome,${LOCALBASE}/share/icons/mate,' \
 			${WRKSRC}/configure

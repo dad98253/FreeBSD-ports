@@ -3,29 +3,28 @@
 
 PORTNAME=	groupoffice
 DISTVERSIONPREFIX=	com-
-DISTVERSION=	6.3.6
+DISTVERSION=	6.4.125
 CATEGORIES=	www
 MASTER_SITES=	SF/group-office/${DISTVERSION:R}
+DISTNAME=	${PORTNAME}-${DISTVERSION}-php-71
 
 MAINTAINER=	joneum@FreeBSD.org
 COMMENT=	Modular web application framework for office
 
 LICENSE=	AGPLv3
-LICENSE_FILE=	${WRKSRC}/LICENSE.AGPL
+
+USES=		mysql shebangfix php:web python
 
 RESTRICTED=	Free for personal use only
 
 NO_ARCH=	yes
 NO_BUILD=	yes
-USES=		mysql shebangfix php:web python
-USE_PHP=	mysqli session mbstring pcre xml
+USE_PHP=	ctype curl dom fileinfo filter hash intl json mbstring \
+		mysqli openssl pcre pdo pdo_mysql phar session \
+		simplexml soap tokenizer xml xmlreader xmlwriter zip zlib
 SHEBANG_FILES=	groupoffice \
 		groupofficecli.php \
-		install/autoinstall.php \
 		modules/postfixadmin/scripts/vacation.pl \
-		modules/sync/z-push/install.sh \
-		modules/sync/z-push/z-push-admin.php \
-		modules/sync/z-push/z-push-top.php \
 		vendor/sabre/dav/bin/naturalselection \
 		vendor/sabre/dav/bin/googlecode_upload.py \
 		vendor/bin/../sabre/dav/bin/naturalselection \
@@ -51,10 +50,8 @@ post-patch:
 	@${REINPLACE_CMD} 's|%%LOCALBASE%%|${LOCALBASE}|g' \
 		${WRKSRC}/go/base/Config.php
 	@${REINPLACE_CMD} 's|/etc/groupoffice|${PREFIX}&|g' \
-		${WRKSRC}/go/base/Config.php \
+		${WRKSRC}/go/modules/community/serverclient/model/HttpClient.php \
 		${WRKSRC}/install/configfile.php \
-		${WRKSRC}/modules/serverclient/HttpClient.php \
-		${WRKSRC}/modules/serverclient/ServerclientModule.php \
 		${WRKSRC}/modules/site/index.php
 
 do-install:

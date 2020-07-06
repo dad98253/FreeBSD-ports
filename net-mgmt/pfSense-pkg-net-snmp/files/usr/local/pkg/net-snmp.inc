@@ -4,7 +4,7 @@
  * net-snmp.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2017 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2017-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -307,6 +307,10 @@ function netsnmp_resync() {
 	}
 	if (!empty($nhisettings['sysdescr'])) {
 		$snmpd_config .= "sysDescr {$nhisettings['sysdescr']}\n";
+	} else {
+		$snmpd_config .= "sysDescr {$g['product_name']} {$config['system']['hostname']}.{$config['system']['domain']}" .
+						 " {$g['product_version_string']} {$g['platform']} " . php_uname("s") .
+						 " " . php_uname("r") . " " . php_uname("m") . "\n";
 	}
 
 	if (!empty($nhisettings['interface_fadeout'])) {
@@ -1353,6 +1357,9 @@ function netsnmp_validate_netsnmptrapdcommunities($post, &$input_errors) {
 	global $config;
 
 	/* type: log, net, execute */
+	if (!is_array($post['type'])) {
+		$post['type'] = array();
+	}
 	foreach ($post['type'] as $t) {
 		if (!in_array($t, array('log', 'net', 'execute'))) {
 			$input_errors[] = gettext("Invalid Process Type.");
@@ -1387,6 +1394,9 @@ function netsnmp_validate_netsnmptrapdusers($post, &$input_errors) {
 		$input_errors[] = gettext("Invalid Trap User.");
 	}
 	/* type: log, net, execute */
+	if (!is_array($post['type'])) {
+		$post['type'] = array();
+	}
 	foreach ($post['type'] as $t) {
 		if (!in_array($t, array('log', 'net', 'execute'))) {
 			$input_errors[] = gettext("Invalid Process Type.");

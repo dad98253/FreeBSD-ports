@@ -3,7 +3,7 @@
 
 PORTNAME=	mtools
 PORTVERSION=	1.2.3
-PORTREVISION=	2
+PORTREVISION=	4
 CATEGORIES=	databases python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
@@ -13,6 +13,9 @@ MAINTAINER=	bsam@FreeBSD.org
 COMMENT=	Setup test environments; parse, filter and visualize MongoDB log files
 
 LICENSE=	APACHE20
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}psutil>=2.0:sysutils/py-psutil@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}pymongo>0:databases/pymongo@${PY_FLAVOR} \

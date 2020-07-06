@@ -2,7 +2,8 @@
 # $FreeBSD$
 
 PORTNAME=	graphite-web
-PORTVERSION=	1.1.3
+PORTVERSION=	1.1.5
+PORTREVISION=	1
 CATEGORIES=	www python
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
@@ -11,10 +12,13 @@ COMMENT=	Enterprise scalable realtime graphing platform
 
 LICENSE=	APACHE20
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
+
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}cairo>=1.8.10:graphics/py-cairo@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}carbon>=${PORTVERSION}:databases/py-carbon@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}django-tagging>=0.3.1:www/py-django-tagging@${PY_FLAVOR} \
-		${PYTHON_PKGNAMEPREFIX}django>=1.4:www/py-django@${PY_FLAVOR} \
+		${PYTHON_PKGNAMEPREFIX}django111>=1.11:www/py-django111@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}pytz>0:devel/py-pytz@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}scandir>=0:sysutils/py-scandir@${PY_FLAVOR} \
 		${PYTHON_PKGNAMEPREFIX}pyparsing>=0:devel/py-pyparsing@${PY_FLAVOR} \

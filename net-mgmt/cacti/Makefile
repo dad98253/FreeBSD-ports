@@ -1,12 +1,12 @@
 # $FreeBSD$
 
 PORTNAME=	cacti
-PORTVERSION=	1.1.37
+PORTVERSION=	1.2.12
 CATEGORIES=	net-mgmt www
 MASTER_SITES=	http://www.cacti.net/downloads/ \
 		ftp://ftpmirror.uk/freebsd-ports/cacti/
 
-MAINTAINER=	freebsd-ports@dan.me.uk
+MAINTAINER=	m.muenz@gmail.com
 COMMENT=	Web-driven graphing interface for RRDTool
 
 LICENSE=	GPLv2+
@@ -15,6 +15,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 RUN_DEPENDS=	rrdtool:databases/rrdtool
 
 USES=		cpe mysql php:web shebangfix
+
 USE_PHP=	ctype filter gd gettext gmp hash json ldap mbstring openssl pcre pdo pdo_mysql posix session simplexml sockets snmp xml zlib
 NO_ARCH=	yes
 NO_BUILD=	yes
@@ -39,12 +40,10 @@ CACTIGROUP?=	cacti
 USERS?=		${CACTIUSER}
 GROUPS?=	${CACTIGROUP}
 
-PLIST_SUB+=	CACTIDIR=${CACTIDIR}  CACTIUSER=${CACTIUSER} \
+PLIST_SUB=	CACTIDIR=${CACTIDIR}  CACTIUSER=${CACTIUSER} \
 		CACTIGROUP=${CACTIGROUP}
-SUB_LIST+=	CACTIDIR=${CACTIDIR} CACTIUSER=${CACTIUSER} \
+SUB_LIST=	CACTIDIR=${CACTIDIR} CACTIUSER=${CACTIUSER} \
 		CACTIGROUP=${CACTIGROUP}
-
-CONFLICTS_INSTALL=	cacti88
 
 post-patch:
 	@${FIND} ${WRKSRC} -name \*.orig -delete; \
@@ -56,12 +55,6 @@ do-install:
 	${MKDIR} ${STAGEDIR}/var/log/cacti
 	${MKDIR} ${STAGEDIR}/var/db/cacti/rra
 	${MKDIR} ${STAGEDIR}/var/db/cacti/scripts
-	${CP} -R ${WRKSRC}/* ${STAGEDIR}/${PREFIX}/${CACTIDIR}
-	if [ -f ${PREFIX}/${CACTIDIR}/include/db-settings.php ]; then \
-		${ECHO_CMD} "======================================================================="; \
-		${ECHO_CMD} "WARNING! You have to move DB settings from"; \
-		${ECHO_CMD} "${PREFIX}/${CACTIDIR}/include/db-settings.php file to"; \
-		${ECHO_CMD} "${PREFIX}/${CACTIDIR}/include/config.php and remove db-settings.php"; \
-	fi
+	cd ${WRKSRC} && ${COPYTREE_SHARE} . ${STAGEDIR}${PREFIX}/${CACTIDIR} "! -name \.mdl*"
 
 .include <bsd.port.mk>

@@ -3,7 +3,7 @@
  * haproxy_listeners_edit.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2009 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2009-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2013-2015 PiBa-NL
  * Copyright (c) 2008 Remco Hoef <remcoverhoef@pfsense.com>
  * Copyright (c) 2013 Marcello Coutinho <marcellocoutinho@gmail.com>
@@ -41,8 +41,8 @@ if (!function_exists("cert_get_purpose")) {
 
 haproxy_config_init();
 
-$a_backend = &$config['installedpackages']['haproxy']['ha_backends']['item'];
-$a_pools = $config['installedpackages']['haproxy']['ha_pools']['item'];
+$a_backend = &getarraybyref($config,'installedpackages','haproxy','ha_backends','item');
+$a_pools = getarraybyref($config,'installedpackages','haproxy','ha_pools','item');
 uasort($a_pools, 'haproxy_compareByName');
 
 global $simplefields;
@@ -365,8 +365,9 @@ if ($_POST) {
 	}
 
 	/* Ensure that our pool names are unique */
-	for ($i=0; isset($config['installedpackages']['haproxy']['ha_backends']['item'][$i]); $i++) {
-		if (($_POST['name'] == $config['installedpackages']['haproxy']['ha_backends']['item'][$i]['name']) && ($i != $id)) {
+	$a_frontends = getarraybyref($config, 'installedpackages', 'haproxy', 'ha_backends', 'item');
+	for ($i=0; isset($a_frontends[$i]); $i++) {
+		if (($_POST['name'] == $a_frontends[$i]['name']) && ($i != $id)) {
 			$input_errors[] = gettext("This frontend name has already been used. Frontend names must be unique.")." $i != $id";
 		}
 	}

@@ -8,6 +8,9 @@ MASTER_SITES=	http://concurrencykit.org/releases/ \
 		http://repnop.org/releases/
 DISTNAME=	ck-${PORTVERSION}
 
+PATCH_SITES=	https://github.com/${PORTNAME}/ck/commit/
+PATCHFILES=	999d4612e873bb19867ad1d7043c9c18c7c4d3b9.patch:-p1
+
 MAINTAINER=	koobs@FreeBSD.org
 COMMENT=	Lock-free data structures for high performance concurrent systems
 
@@ -15,10 +18,6 @@ LICENSE=	BSD2CLAUSE
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
 ONLY_FOR_ARCHS=	aarch64 amd64 armv6 armv7 i386 powerpc powerpc64 sparc64
-BROKEN_aarch64=		fails to configure: Detecting machine architecture...failed  [unsupported]
-BROKEN_armv6=		fails to configure: Finding suitable compiler........failed  [not found]
-BROKEN_armv7=		fails to configure: Finding suitable compiler........failed  [not found]
-BROKEN_powerpc64=	fails to link: skipping incompatible /usr/lib/libgcc.a when searching for -lgcc
 
 OPTIONS_DEFINE=		RTM VMAPACK
 OPTIONS_DEFAULT=	VMAPACK

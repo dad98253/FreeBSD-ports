@@ -2,11 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	lilypond
-DISTVERSION=	2.19.81
+DISTVERSION=	2.19.83
 PORTREVISION=	1
 CATEGORIES=	print audio
-MASTER_SITES=	http://download.linuxaudio.org/lilypond/sources/v${DISTVERSION:R}/ \
-		http://lilypond.org/downloads/sources/v${DISTVERSION:R}/
+MASTER_SITES=	http://lilypond.org/download/source/v${DISTVERSION:R}/
 PKGNAMESUFFIX=	-devel
 
 MAINTAINER=	m.ne@gmx.net
@@ -14,10 +13,13 @@ COMMENT=	GNU music typesetter
 
 LICENSE=	GPLv3
 
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
+
 BUILD_DEPENDS=	pdftexi2dvi:print/texinfo \
 		t1ascii:print/t1utils \
 		bash:shells/bash \
-		convert:graphics/ImageMagick \
+		convert:graphics/ImageMagick6 \
 		dblatex:textproc/dblatex \
 		fontforge:print/fontforge \
 		help2man:misc/help2man \
@@ -46,15 +48,14 @@ INFO=		internals \
 		lilypond-web \
 		music-glossary
 
-USES=		bison:build gettext ghostscript gmake pkgconfig perl5 \
-		compiler:gcc-c++11-lib python:2.7
+USES=		bison:build compiler:gcc-c++11-lib gettext ghostscript gmake \
+		gnome perl5 pkgconfig python:2.7
 USE_CXXSTD=	c++11
 USE_TEX=	latex texmf
 USE_PERL5=	build
 USE_GNOME=	pango
 
 MAKEFILE=	GNUmakefile
-GNU_MAKEFILE=	yes
 
 GNU_CONFIGURE=	yes
 CONFIGURE_ARGS+=--with-texgyre-dir=${LOCALBASE}/${TEXMFDISTDIR}/fonts/opentype/public/tex-gyre \

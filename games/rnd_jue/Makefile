@@ -25,7 +25,7 @@ LICENSE=	GPLv2
 LIB_DEPENDS+=	libsmpeg.so:multimedia/smpeg
 EXTRACT_DEPENDS+=${UNZIP_CMD}:archivers/unzip
 
-USES=		gmake
+USES=		gmake gnome sdl
 USE_SDL=	image mixer net sdl
 MAKE_ARGS=	CC="${CC}" MAKE="${MAKE_CMD}" OPTIONS="${CFLAGS}" \
 		RO_GAME_DIR="${DATADIR}" \
@@ -44,6 +44,8 @@ ICON_SIZES=	32x32 48x48 64x64 72x72 96x96
 
 DESKTOP_ENTRIES="R'n'D jue" "" "${PORTNAME}" \
 		"${PORTNAME}" "Game;ArcadeGame;" ""
+
+OPTIONS_DEFINE=	DOCS
 
 post-extract-script:
 	@(cd ${WRKDIR}/rocksndiamonds* && ${COPYTREE_SHARE} levels ${WRKSRC})

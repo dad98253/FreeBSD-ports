@@ -15,13 +15,15 @@ LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/GPL_license.txt
 
 USE_SDL=	sdl mixer image
-USES=		gmake
+USES=		gmake sdl
 MAKE_ARGS=	CC="${CXX}" DATDIR="${DATADIR}" DEFCONFIGDIR="${DATADIR}"
 
 PLIST_FILES=	bin/${PORTNAME}
 
 PORTDATA=	*
 PORTDOCS=	*
+
+OPTIONS_DEFINE=	DOCS
 
 pre-build:
 	@${MKDIR} ${WRKSRC}/obj

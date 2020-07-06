@@ -14,7 +14,7 @@
 #
 #
 
-export PATH="$PATH:/usr/local/bin:/usr/local/sbin"
+export PATH="$PATH:%%PREFIX%%/bin:%%PREFIX%%/sbin"
 
 . /etc/rc.subr
 
@@ -31,7 +31,7 @@ load_rc_config $name
 
 burp_flags="-c ${burp_config}"
 
-command="/usr/local/sbin/${name}"
+command="%%PREFIX%%/sbin/${name}"
 command_args="> /dev/null 2>&1"
 
 pidfile="/var/run/${name}.server.pid"  # this really depends on the config file so make sure they concur

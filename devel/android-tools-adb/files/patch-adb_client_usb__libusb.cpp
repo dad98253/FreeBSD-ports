@@ -1,13 +1,6 @@
 --- adb/client/usb_libusb.cpp.orig	2017-06-20 10:50:27 UTC
 +++ adb/client/usb_libusb.cpp
-@@ -22,13 +22,14 @@
- 
- #include <atomic>
- #include <chrono>
-+#include <condition_variable>
- #include <memory>
- #include <mutex>
- #include <string>
+@@ -30,7 +30,7 @@
  #include <thread>
  #include <unordered_map>
  
@@ -16,11 +9,21 @@
  
  #include <android-base/file.h>
  #include <android-base/logging.h>
+@@ -39,6 +39,9 @@
+ 
+ #include "adb.h"
+ #include "adb_utils.h"
++#if !defined(__linux__) && !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__HAIKU__)
++#include "sysdeps/chrono.h"
++#endif
+ #include "transport.h"
+ #include "usb.h"
+ 
 @@ -89,7 +89,11 @@ struct transfer_info {
  };
  
  namespace libusb {
-+#if defined(__linux__) || defined(__APPLE__)
++#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32)
  struct usb_handle : public ::usb_handle {
 +#else
 +struct usb_handle {
@@ -32,7 +35,7 @@
  static auto& usb_handles = *new std::unordered_map<std::string, std::unique_ptr<usb_handle>>();
  static auto& usb_handles_mutex = *new std::mutex();
  
-+#if defined(LIBUSB_API_VERSION) && LIBUSB_API_VERSION >= 0x01000102
++#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__HAIKU__)
  static libusb_hotplug_callback_handle hotplug_handle;
 +#else
 +static std::thread* device_poll_thread = nullptr;
@@ -47,7 +50,7 @@
      LOG(INFO) << "registered new usb device '" << device_serial << "'";
  }
  
-+#if defined(LIBUSB_API_VERSION) && LIBUSB_API_VERSION >= 0x01000102
++#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__HAIKU__)
  static std::atomic<int> connecting_devices(0);
  
  static void device_connected(libusb_device* device) {
@@ -87,7 +90,7 @@
          LOG(FATAL) << "failed to initialize libusb: " << libusb_error_name(rc);
      }
  
-+#if defined(LIBUSB_API_VERSION) && LIBUSB_API_VERSION >= 0x01000102
++#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__HAIKU__)
      // Register the hotplug callback.
      rc = libusb_hotplug_register_callback(
          nullptr, static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
@@ -104,14 +107,14 @@
          }
      }).detach();
 +
-+#if !defined(LIBUSB_API_VERSION) || LIBUSB_API_VERSION < 0x01000102
++#if !defined(__linux__) && !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__HAIKU__)
 +    std::unique_lock<std::mutex> lock(device_poll_mutex);
 +    device_poll_thread = new std::thread(poll_for_devices);
 +#endif
  }
  
  void usb_cleanup() {
-+#if defined(LIBUSB_API_VERSION) && LIBUSB_API_VERSION >= 0x01000102
++#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__HAIKU__)
      libusb_hotplug_deregister_callback(nullptr, hotplug_handle);
 +#else
 +    {

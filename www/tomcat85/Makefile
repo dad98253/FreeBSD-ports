@@ -2,9 +2,10 @@
 # $FreeBSD$
 
 PORTNAME=	tomcat
-PORTVERSION=	8.5.30
+PORTVERSION=	8.5.55
+PORTREVISION=	0
 CATEGORIES=	www java
-MASTER_SITES=	APACHE/tomcat/tomcat-8/v${PORTVERSION}/bin
+MASTER_SITES=	APACHE/${PORTNAME}/${PORTNAME}-${PORTVERSION:C/([0-9])(.*)/\1/}/v${PORTVERSION}/bin
 PKGNAMESUFFIX=	85
 DISTNAME=	apache-${PORTNAME}-${PORTVERSION}
 
@@ -13,13 +14,12 @@ COMMENT=	Open-source Java web server by Apache, 8.5.x branch
 
 LICENSE=	APACHE20
 
-RUN_DEPENDS=	jsvc:devel/jakarta-commons-daemon
+RUN_DEPENDS=	jsvc:devel/apache-commons-daemon
 
 USES=		cpe
 CPE_VENDOR=	apache
 USE_JAVA=	yes
-JAVA_VERSION=	1.7+
-USE_RC_SUBR=	${PKGBASE}
+USE_RC_SUBR=	${PKGBASE:C/-/_/}
 
 NO_ARCH=	yes
 NO_BUILD=	yes
@@ -30,8 +30,8 @@ SUB_LIST=	TOMCAT_HOME=${TOMCAT_HOME} \
 		TOMCAT_USER=${WWWOWN} \
 		JAVA_HOME=${JAVA_HOME}
 
-OPTIONS_DEFINE=		HOST_MANAGER MANAGER DOCS EXAMPLES ROOT
-OPTIONS_DEFAULT=	HOST_MANAGER MANAGER DOCS EXAMPLES ROOT
+OPTIONS_DEFINE=		HOST_MANAGER MANAGER DOCS EXAMPLES ROOT NLS
+OPTIONS_DEFAULT=	HOST_MANAGER MANAGER ROOT
 OPTIONS_SUB=		yes
 
 DOCS_DESC=		Install Documentation web application
@@ -43,29 +43,29 @@ ROOT_DESC=		Install default ROOT web application
 TOMCAT_SUBDIR?=	${DISTNAME:R}
 TOMCAT_HOME=	${PREFIX}/${TOMCAT_SUBDIR}
 
+post-patch:
+	@${RM} ${WRKSRC}/bin/commons-daemon-native.tar.gz ${WRKSRC}/bin/commons-daemon.jar ${WRKSRC}/bin/tomcat-native.tar.gz
+	@${REINPLACE_CMD} -e 's|%%PREFIX%%|${PREFIX}|g; s|%%JAVAJARDIR%%|${JAVAJARDIR}|g' ${WRKSRC}/bin/daemon.sh
+	@${FIND} ${WRKSRC} -name '*.bak' -delete -o -name '*.orig' -delete
+
 do-install:
 	@${MKDIR} ${STAGEDIR}${TOMCAT_HOME}/logs
 	@${MKDIR} ${STAGEDIR}${TOMCAT_HOME}/endorsed
-	${CP} -R ${WRKSRC}/* ${STAGEDIR}${TOMCAT_HOME}
+	@${CP} -R ${WRKSRC}/* ${STAGEDIR}${TOMCAT_HOME}
 
 post-install:
 	@${RM} ${STAGEDIR}${TOMCAT_HOME}/bin/*.bat
-	(cd ${STAGEDIR}${TOMCAT_HOME}/conf &&\
-		for f in $$(find . -type f); do ${MV} $$f $$f.sample; done)
+	@(cd ${STAGEDIR}${TOMCAT_HOME}/conf &&\
+		for f in $$(find . -type f -not -name '*.xsd'); do ${MV} $$f $$f.sample; done)
 
-post-install-HOST_MANAGER-off:
-	@${RM} -R ${STAGEDIR}${TOMCAT_HOME}/webapps/host-manager
+post-install-HOST_MANAGER-on:
+	@(cd ${STAGEDIR}${TOMCAT_HOME}/webapps &&\
+		for f in host-manager/META-INF/context.xml host-manager/WEB-INF/web.xml; do \
+			${MV} $$f $$f.sample; done)
 
-post-install-MANAGER-off:
-	@${RM} -R ${STAGEDIR}${TOMCAT_HOME}/webapps/manager
-
-post-install-DOCS-off:
-	@${RM} -R ${STAGEDIR}${TOMCAT_HOME}/webapps/docs
-
-post-install-EXAMPLES-off:
-	@${RM} -R ${STAGEDIR}${TOMCAT_HOME}/webapps/examples
-
-post-install-ROOT-off:
-	@${RM} -R ${STAGEDIR}${TOMCAT_HOME}/webapps/ROOT
+post-install-MANAGER-on:
+	@(cd ${STAGEDIR}${TOMCAT_HOME}/webapps &&\
+		for f in manager/META-INF/context.xml manager/WEB-INF/web.xml; do \
+			${MV} $$f $$f.sample; done)
 
 .include <bsd.port.mk>

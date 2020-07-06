@@ -3,7 +3,7 @@
 
 PORTNAME=	h2o
 DISTVERSIONPREFIX=	v
-DISTVERSION=	2.2.5
+DISTVERSION=	2.2.6
 CATEGORIES=	www
 
 MAINTAINER=	dch@FreeBSD.org
@@ -14,14 +14,19 @@ LICENSE_COMB=	multi
 
 BROKEN_armv6=		fails to compile: asm_arm.inc:139:36: '.syntax divided' arm assembly not supported
 BROKEN_armv7=		fails to compile: asm_arm.inc:139:36: '.syntax divided' arm assembly not supported
-BROKEN_powerpc64=	fails to link: unrecognized option '-Wl,-rpath=/usr/local/lib/gcc6'
+BROKEN_FreeBSD_11_powerpc64=	fails to link: unrecognized option '-Wl,-rpath=/usr/local/lib/gcc6'
+BROKEN_FreeBSD_12_powerpc64=	fails to link: unrecognized option '-Wl,-rpath=/usr/local/lib/gcc6'
 
 LIB_DEPENDS=	libuv.so:devel/libuv
 
 USES=		cmake:noninja compiler:c11 cpe perl5 shebangfix ssl pkgconfig
-CPE_VENDOR=	h2o_project
 USE_GITHUB=	yes
 USE_PERL5=	run
+USE_LDCONFIG=  yes
+
+CPE_VENDOR=	h2o_project
+
+CONFLICTS=	h2o-devel-*
 
 SHEBANG_FILES=	share/h2o/start_server
 
@@ -49,7 +54,6 @@ OPTIONS_SUB=		yes
 MRUBY_DESC=		Build with embedded mruby handler support
 
 CMAKE_ARGS+=		-DBUILD_SHARED_LIBS=ON -DWITH_BUNDLED_SSL=OFF
-CMAKE_VERBOSE=		yes
 
 MRUBY_CMAKE_BOOL=	WITH_MRUBY
 MRUBY_USES=		bison

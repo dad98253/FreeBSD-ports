@@ -2,22 +2,23 @@
 # $FreeBSD$
 
 PORTNAME=	pry
-PORTVERSION=	0.11.3
+PORTVERSION=	0.13.0
 CATEGORIES=	devel rubygems
 MASTER_SITES=	RG
 
-MAINTAINER=	ruby@FreeBSD.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	IRB alternative and runtime developer console
 
 LICENSE=	MIT
 LICENSE_FILE=	${WRKSRC}/LICENSE
 
-RUN_DEPENDS=	rubygem-coderay>=1.1.0:textproc/rubygem-coderay \
-		rubygem-method_source>=0.9.0:devel/rubygem-method_source
+RUN_DEPENDS=	rubygem-coderay>=1.1<2:textproc/rubygem-coderay \
+		rubygem-method_source>=1.0<2:devel/rubygem-method_source
+
+USES=		gem
+USE_RUBY=	yes
 
 NO_ARCH=	yes
-USE_RUBY=	yes
-USES=		gem
 
 PLIST_FILES=	bin/pry
 

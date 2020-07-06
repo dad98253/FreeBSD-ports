@@ -3,7 +3,7 @@
 
 PORTNAME=		stltools
 PORTVERSION=		3.2
-PORTREVISION=		2
+PORTREVISION=		4
 CATEGORIES=		graphics python
 MASTER_SITES=		http://rsmith.home.xs4all.nl/files/
 PKGNAMEPREFIX=		${PYTHON_PKGNAMEPREFIX}
@@ -12,6 +12,9 @@ MAINTAINER=		rsmith@xs4all.nl
 COMMENT=		Converts STL models to POV-Ray meshes or PostScript/PDF images
 
 LICENSE=		BSD2CLAUSE
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 RUN_DEPENDS=		${PYNUMPY}
 

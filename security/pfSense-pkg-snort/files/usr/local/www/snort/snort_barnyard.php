@@ -3,10 +3,10 @@
  * snort_barnyard.php
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2018 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2019-2020 Rubicon Communications, LLC (Netgate)
  * Copyright (c) 2003-2004 Manuel Kasper <mk@neon1.net>
  * Copyright (c) 2008-2009 Robert Zelaya
- * Copyright (c) 2014-2018 Bill Meeks
+ * Copyright (c) 2014-2019 Bill Meeks
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,9 +98,7 @@ if ($_POST['save']) {
 
 		// No need to rebuild rules for Barnyard2 changes
 		$rebuild_rules = false;
-		conf_mount_rw();
 		sync_snort_package_config();
-		conf_mount_ro();
 		header( 'Expires: Sat, 26 Jul 1997 05:00:00 GMT' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 		header( 'Cache-Control: no-store, no-cache, must-revalidate' );
@@ -201,9 +199,7 @@ if ($_POST['save']) {
 
 		// No need to rebuild rules for Barnyard2 changes
 		$rebuild_rules = false;
-		conf_mount_rw();
 		sync_snort_package_config();
-		conf_mount_ro();
 
 		// If disabling Barnyard2 on the interface, stop any
 		// currently running instance.  If an instance is
@@ -214,7 +210,7 @@ if ($_POST['save']) {
 			snort_barnyard_stop($a_nat[$id], get_real_interface($a_nat[$id]['interface']));
 		}
 		elseif ($a_nat[$id]['barnyard_enable'] == "on") {
-			if (snort_is_running($a_nat[$id]['uuid'], get_real_interface($a_nat[$id]['interface']), "barnyard2"))
+			if (snort_is_running(get_real_interface($a_nat[$id]['interface']), "barnyard2"))
 				snort_barnyard_reload_config($a_nat[$id], "HUP");
 			else {
 				// Notify user a Snort restart is required if enabling Barnyard2 for the first time	

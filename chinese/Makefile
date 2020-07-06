@@ -12,7 +12,6 @@
     SUBDIR += auto-cn-l10n
     SUBDIR += auto-tw-l10n
     SUBDIR += autoconvert
-    SUBDIR += bg5pdf
     SUBDIR += big5width
     SUBDIR += bitchx
     SUBDIR += brise
@@ -45,9 +44,7 @@
     SUBDIR += gb2ps
     SUBDIR += gcin
     SUBDIR += gcin-gtk3
-    SUBDIR += gcin-qt4
     SUBDIR += gcin-qt5
-    SUBDIR += gimp-help-zh_CN
     SUBDIR += gydict
     SUBDIR += hc
     SUBDIR += ibus-array
@@ -58,8 +55,6 @@
     SUBDIR += ibus-table-chinese
     SUBDIR += jis2gb
     SUBDIR += kcfonts
-    SUBDIR += kde4-l10n-zh_CN
-    SUBDIR += kde4-l10n-zh_TW
     SUBDIR += libcangjie
     SUBDIR += libchewing
     SUBDIR += libpinyin
@@ -83,6 +78,7 @@
     SUBDIR += p5-Lingua-ZH-HanDetect
     SUBDIR += p5-Lingua-ZH-Keywords
     SUBDIR += p5-Lingua-ZH-Numbers
+    SUBDIR += p5-Lingua-ZH-Romanize-Pinyin
     SUBDIR += p5-Lingua-ZH-Segment
     SUBDIR += p5-Lingua-ZH-Summarize
     SUBDIR += p5-Lingua-ZH-TaBE
@@ -97,14 +93,15 @@
     SUBDIR += pycangjie
     SUBDIR += pyzy
     SUBDIR += qe
-    SUBDIR += qt4-codecs-cn
-    SUBDIR += qt4-codecs-tw
-    SUBDIR += qterm
-    SUBDIR += reciteword
     SUBDIR += scim-fcitx
     SUBDIR += scim-pinyin
     SUBDIR += scim-tables
+    SUBDIR += sourcehansans-sc-otf
+    SUBDIR += sourcehansans-tc-otf
+    SUBDIR += sourcehanserif-sc-otf
+    SUBDIR += sourcehanserif-tc-otf
     SUBDIR += sunpinyin
+    SUBDIR += taipeisanstc
     SUBDIR += tin
     SUBDIR += tintin++
     SUBDIR += ttf2pt1

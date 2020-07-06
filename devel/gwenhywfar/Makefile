@@ -1,10 +1,10 @@
 # $FreeBSD$
 
 PORTNAME=	gwenhywfar
-PORTVERSION=	4.19.0
-PORTREVISION?=	1
+PORTVERSION=	4.20.2
+PORTREVISION?=	0
 CATEGORIES=	devel net security
-MASTER_SITES=	http://www.aquamaniac.de/sites/download/download.php?package=01&release=207&file=01&dummy=/
+MASTER_SITES=	https://www.aquamaniac.de/rdm/attachments/download/108/
 
 MAINTAINER?=	jhale@FreeBSD.org
 COMMENT?=	Multi-platform helper library for networking and security applications
@@ -55,18 +55,13 @@ CONFIGURE_ARGS+=--with-fox-includes=${LOCALBASE}/include/fox-1.6 \
 .  elif ${SLAVEPORT}=="gtk2"
 LIB_DEPENDS+=	libfreetype.so:print/freetype2 \
 		libfontconfig.so:x11-fonts/fontconfig
+USES+=		gnome
 USE_GNOME+=	cairo gdkpixbuf2 gtk20
 .  elif ${SLAVEPORT}=="gtk3"
+USES+=		gnome
 USE_GNOME+=	cairo gdkpixbuf2 gtk30
-.  elif ${SLAVEPORT}=="qt4"
-USES+=		qmake:no_env qt:4
-USE_QT=		corelib gui moc_build uic_build
-CONFIGURE_ARGS+=--with-qt4-includes=${QT_INCDIR} \
-		--with-qt4-libs=${QT_LIBDIR} \
-		--with-qt4-moc=${MOC} \
-		--with-qt4-uic=${UIC}
 .  elif ${SLAVEPORT}=="qt5"
-USES+=		qmake:no_env qt:5
+USES+=		compiler:c++11-lang gl qmake:no_env qt:5
 USE_GL=		gl
 USE_QT=		core gui widgets \
 		buildtools_build qmake_build

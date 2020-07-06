@@ -15,12 +15,11 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 
 ONLY_FOR_ARCHS=	amd64
 ONLY_FOR_ARCHS_REASON=	"Only builds on amd64: https://github.com/arangodb/arangodb/issues/2334"
-BROKEN_FreeBSD_10=	libc++ is too old
 
 CONFLICTS_INSTALL=	arangodb32
 CONFLICTS_BUILD=	v8
 
-USES=		cmake:outsource,noninja compiler gmake python:2.7 ssl  # ninja: error: loading 'build.ninja': No such file or directory
+USES=		cmake:noninja compiler gmake python:2.7 ssl  # ninja: error: loading 'build.ninja': No such file or directory
 USE_GITHUB=	yes
 
 CMAKE_OFF=	USE_JEMALLOC
@@ -31,6 +30,8 @@ USERS=		arangodb
 GROUPS=		arangodb
 USE_RC_SUBR=	arangod
 
+OPTIONS_DEFINE=	DOCS
+
 .include <bsd.port.options.mk>
 
 .if ${OPSYS} == FreeBSD && ${OSVERSION} >= 1200057
@@ -40,13 +41,9 @@ SUB_LIST+=	LEGACY_LIMITS="" MODERN_LIMITS="@comment "
 .endif
 
 post-install:
-.for section in 1 8
-	@${MV} ${STAGEDIR}${PREFIX}/share/man/man${section}/* ${STAGEDIR}${PREFIX}/man/man${section}/
-	@${RMDIR} ${STAGEDIR}${PREFIX}/share/man/man${section}
-.endfor
 	@${REINPLACE_CMD} -e 's|/usr/local/var/lib/arangodb3|/var/db/arangodb|g' ${STAGEDIR}${PREFIX}/etc/arangodb/*.conf
 	@${REINPLACE_CMD} -e 's|/usr/local/var/log/arangodb3|/var/log/arangodb|g' ${STAGEDIR}${PREFIX}/etc/arangodb/arangod.conf
 	@${FIND} ${STAGEDIR}${PREFIX}/etc/arangodb/ -type f -name *.conf -exec ${MV} {} {}.sample \;
-	@cd ${STAGEDIR}${PREFIX} && ${RMDIR} share/man var/lib/arangodb var/lib/arangodb-apps var/lib var/log/arangodb var/log var
+	@cd ${STAGEDIR}${PREFIX} && ${RMDIR} var/lib/arangodb var/lib/arangodb-apps var/lib var/log/arangodb var/log var
 
 .include <bsd.port.mk>

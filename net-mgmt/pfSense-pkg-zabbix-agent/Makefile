@@ -1,7 +1,8 @@
 # $FreeBSD$
 
 PORTNAME?=	pfSense-pkg-zabbix-agent
-PORTVERSION=	1.0.1
+PORTVERSION=	1.0.4
+PORTREVISION=	6
 CATEGORIES=	net-mgmt
 MASTER_SITES=	# empty
 DISTFILES=	# empty
@@ -12,9 +13,9 @@ COMMENT=	pfSense package zabbix-agent
 
 LICENSE=	APACHE20
 
-CONFLICTS?=	pfSense-pkg-zabbix-agent22 \
-		pfSense-pkg-zabbix-agent32 \
-		pfSense-pkg-zabbix-agent34
+CONFLICTS?=	pfSense-pkg-zabbix-agent4 \
+		pfSense-pkg-zabbix-agent44 \
+		pfSense-pkg-zabbix-agent5
 
 RUN_DEPENDS?=	zabbix_agentd:net-mgmt/zabbix3-agent
 

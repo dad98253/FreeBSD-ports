@@ -3,11 +3,18 @@
 
 PORTNAME=	python
 PORTVERSION=	${PYTHON_PORTVERSION}
-CATEGORIES=	lang python ipv6
+CATEGORIES=	lang python
 MASTER_SITES=	PYTHON/ftp/python/${PORTVERSION}
 PKGNAMESUFFIX=	${PYTHON_SUFFIX}
 DISTNAME=	Python-${PORTVERSION}
 DIST_SUBDIR=	python
+
+# Resolve sinpi name clash with libm (IEEE-754 violation)
+PATCH_SITES=	https://github.com/python/cpython/commit/
+PATCHFILES=	f57cd8288dbe6aba99c057f37ad6d58f8db75350.patch:-p1 \
+		f9c01a16dae8aa15d264a1937fb589e8598d1c88.patch:-p1 \
+		69cdeeb93e0830004a495ed854022425b93b3f3e.patch:-p1 \
+		83fc70159b24f5b11a5ef87c9b05c2cf4c7faeba.patch:-p1
 
 MAINTAINER=	python@FreeBSD.org
 COMMENT=	Interpreted object-oriented programming language
@@ -36,7 +43,6 @@ TEST_TARGET=		buildbottest
 TEST_ARGS=		TESTOPTS=-j${MAKE_JOBS_NUMBER}
 
 MAKE_ARGS+=		INSTALL_SHARED="${INSTALL_LIB}"				# Strip shared library
-MAKE_JOBS_UNSAFE=	yes							# Parser/pgen build bug. See Issue: 200622, 201974
 
 SUB_FILES=		pkg-message
 SUB_LIST=		PYTHON_SUFFIX=${PYTHON_SUFFIX}
@@ -118,15 +124,6 @@ DISABLED_EXTENSIONS+=	nis
 PLIST_SUB+=	NO_NIS=""
 .endif
 
-post-patch:
-# readline shared library is present on base before FreeBSD 11 - r268461
-# force setup.py ignore base and use readline from ports
-.if ${OPSYS} == FreeBSD && ${OSVERSION} < 1100000
-	@${REINPLACE_CMD} -e \
-		"s|lib_dirs,\ \'readline\'|[\'${LOCALBASE}/lib\',\ \'.\'],\ \'readline\'|" \
-		${WRKSRC}/setup.py
-.endif
-
 post-install:
 .if ! ${PORT_OPTIONS:MDEBUG}
 	${RM} ${STAGEDIR}${PREFIX}/lib/libpython3.so						# Upstream Issue: https://bugs.python.org/issue17975
@@ -138,6 +135,12 @@ post-install:
 # FreeBSD base system provides.  sbruno 02Aug2017
 .if ${CC} == /nxb-bin/usr/bin/cc
 	@${REINPLACE_CMD} -e 's=/nxb-bin==' \
+		${STAGEDIR}${PREFIX}/lib/python${PYTHON_VER}/_sysconfigdata_m_freebsd${OSREL:R}_.py
+	@cd ${WRKSRC} && ${SETENV} LD_LIBRARY_PATH=${WRKSRC} \
+		./python -E -m compileall -d ${PREFIX}/lib/python${PYTHON_VER} \
+		${STAGEDIR}${PREFIX}/lib/python${PYTHON_VER}/_sysconfigdata_m_freebsd${OSREL:R}_.py
+	@cd ${WRKSRC} && ${SETENV} LD_LIBRARY_PATH=${WRKSRC} \
+		./python -E -O -m compileall -d ${PREFIX}/lib/python${PYTHON_VER} \
 		${STAGEDIR}${PREFIX}/lib/python${PYTHON_VER}/_sysconfigdata_m_freebsd${OSREL:R}_.py
 	@${REINPLACE_CMD} -e 's=/nxb-bin==' \
 		${STAGEDIR}${PREFIX}/lib/python${PYTHON_VER}/config-${PYTHON_VER}m/Makefile

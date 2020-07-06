@@ -2,13 +2,12 @@
 # $FreeBSD$
 
 PORTNAME=	temperature.app
-PORTVERSION=	1.4
-PORTREVISION=	5
+PORTVERSION=	1.5
 CATEGORIES=	x11 windowmaker
-MASTER_SITES=	http://www.fukt.bsnet.se/~per/temperature/
+MASTER_SITES=	https://www.dockapps.net/download/
 DISTNAME=	Temperature.app-${PORTVERSION}
 
-MAINTAINER=	ports@FreeBSD.org
+MAINTAINER=	mbeis@xs4all.nl
 COMMENT=	Dockable WindowMaker applet which displays the local temperature
 
 LICENSE=	GPLv2+
@@ -16,6 +15,7 @@ LICENSE_FILE=	${WRKSRC}/COPYING
 
 RUN_DEPENDS=	wget:ftp/wget
 
+USES=		xorg
 USE_XORG=	x11 xpm
 
 PORTDOCS=	README

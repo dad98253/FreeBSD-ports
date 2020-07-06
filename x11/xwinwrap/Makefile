@@ -3,7 +3,7 @@
 
 PORTNAME=	xwinwrap
 PORTVERSION=	0.3
-PORTREVISION=	1
+PORTREVISION=	4
 CATEGORIES=	x11
 MASTER_SITES=	LOCAL/vg
 
@@ -13,8 +13,8 @@ COMMENT=	XWinWrap replace a desktop background with a movie or screensaver
 WRKSRC=		${WRKDIR}/${PORTNAME}
 
 ONLY_FOR_ARCHS=	amd64 i386
-USES=	tar:bzip2
-USE_XORG=	x11 xproto xrender xext
+USES=		tar:bzip2 xorg
+USE_XORG=	x11 xorgproto xrender xext
 PLIST_FILES=	bin/${PORTNAME}
 MAKE_ARGS+=	PREFIX=${PREFIX}
 

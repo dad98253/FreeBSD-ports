@@ -2,28 +2,43 @@
 # $FreeBSD$
 
 PORTNAME=	fs-uae
-PORTVERSION=	2.4.1
-PORTREVISION=	5
+PORTVERSION=	3.0.2
 CATEGORIES=	emulators
 MASTER_SITES=	http://fs-uae.net/stable/${PORTVERSION}/
 
-MAINTAINER=	tomse@oagd.net
+MAINTAINER=	sirdice@gmail.com
 COMMENT=	Amiga emulator
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
 
-LIB_DEPENDS=	libpng.so:graphics/png \
-		libopenal.so:audio/openal-soft
+BUILD_DEPENDS=	zip:archivers/zip
+LIB_DEPENDS=	libmpeg2.so:multimedia/libmpeg2 \
+		libopenal.so:audio/openal-soft \
+		libpng.so:graphics/png
 
-USES=		gettext gmake pkgconfig
-USE_SDL=	sdl
+USES=		compiler:c11 desktop-file-utils gettext gl gmake gnome \
+		localbase pkgconfig sdl shared-mime-info xorg
+
+USE_SDL=	sdl2
 USE_GL=		gl
 USE_GNOME=	glib20
-LLD_UNSAFE=	yes
-INSTALLS_ICONS=	yes
-MAKE_ARGS+=	prefix=${PREFIX}
+USE_XORG=	x11
 
-OPTIONS_DEFINE=	DOCS
+INSTALLS_ICONS=	yes
+
+GNU_CONFIGURE=	yes
+CFLAGS+=	-Wno-c++11-narrowing
+LDFLAGS_i386=	-Wl,-znotext
+
+OPTIONS_DEFINE=	DOCS DEBUG JIT
+
+JIT_DESC=	Enable JIT compiler (experimental)
+JIT_CONFIGURE_ENABLE=	jit
+
+post-patch:
+	@${REINPLACE_CMD} -e 's|= bind|= ::bind|' \
+		${WRKSRC}/src/od-fs/bsdsocket_posix.cpp \
+		${WRKSRC}/src/support/socket.cpp
 
 .include <bsd.port.mk>

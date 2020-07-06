@@ -10,8 +10,10 @@ DISTFILES=	${DISTNAME:S/-/_/}.orig${EXTRACT_SUFX}
 MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Communications package for the X Window system
 
-USES=		imake
+USES=		imake xorg
 USE_XORG=	x11 xext xpm xmu xaw xt sm ice
+
+MAKE_JOBS_UNSAFE=	yes
 
 PLIST_FILES=	bin/seyon lib/X11/app-defaults/Seyon \
 		lib/X11/app-defaults/Seyon-color lib/X11/seyon.help \

@@ -8,7 +8,7 @@
  * stunnel.xml
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2015-2016 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2015-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,7 +61,7 @@
 		</columnitem>
 		<columnitem>
 			<fielddescr>Certificate</fielddescr>
-			<fieldname>certificatelink</fieldname>
+			<fieldname>certname</fieldname>
 		</columnitem>
 		<columnitem>
 			<fielddescr>Redirects to IP</fielddescr>
@@ -97,12 +97,18 @@
 			<description>Enter the local port to bind this redirection to.</description>
 			<type>input</type>
 		</field>
+			<field>
+			<fielddescr>Protocol</fielddescr>
+			<fieldname>protocol</fieldname>
+			<description>Select a specific application protocol (https://www.stunnel.org/static/stunnel.html#protocol-PROTO)</description>
+			<type>input</type>
+		</field>
 		<field>
 			<fielddescr>Certificate</fielddescr>
 			<fieldname>certificate</fieldname>
 			<description>Select server certificate to use for this tunnel.</description>
 			<type>select_source</type>
-			<source><![CDATA[$config['cert']]]></source>
+			<source><![CDATA[cert_build_list('cert', 'IPsec', true)]]></source>
 			<source_name>descr</source_name>
 			<source_value>refid</source_value>
 			<show_disable_value>default</show_disable_value>
@@ -125,6 +131,37 @@
 			<fieldname>sourceip</fieldname>
 			<description>Enter the source IP address for outgoing connections.</description>
 			<type>input</type>
+		</field>
+		<field>
+				<fielddescr>Log Level</fielddescr>
+				<fieldname>loglevel</fieldname>
+				<type>select</type>
+				<default_value>5</default_value>
+				<options>
+						<option><name>EMERGENCY</name><value>0</value></option>
+						<option><name>ALERT</name><value>1</value></option>
+						<option><name>CRITICAL</name><value>2</value></option>
+						<option><name>ERROR</name><value>3</value></option>
+						<option><name>WARNING</name><value>4</value></option>
+						<option><name>NOTICE</name><value>5</value></option>
+						<option><name>INFO</name><value>6</value></option>
+						<option><name>DEBUG</name><value>7</value></option>
+				</options>
+				<description>Logging level</description>
+		</field>
+		<field>
+			<fielddescr>TIMEOUT close</fielddescr>
+			<fieldname>timeoutclose</fieldname>
+			<description>Time to wait for close_notify (set to 0 for buggy MSIE)</description>
+			<type>input</type>
+			<default_value>0</default_value>
+		</field>
+		<field>
+			<fielddescr>Custom Options</fielddescr>
+			<fieldname>custom_options</fieldname>
+			<type>textarea</type>
+			<description>Custom service level options (https://www.stunnel.org/static/stunnel.html#SERVICE-LEVEL-OPTIONS)</description>
+			<encoding>base64</encoding>
 		</field>
 	</fields>
 	<custom_add_php_command_late>

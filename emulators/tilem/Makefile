@@ -8,13 +8,13 @@ CATEGORIES=	emulators
 MASTER_SITES=	SF
 
 MAINTAINER=	ports@FreeBSD.org
-COMMENT=	Emulator for the Z80 series of Texas Instruments calculators
+COMMENT=	Texas Instruments Z80 series calculator emulator
 
 LICENSE=	GPLv3
 
 LIB_DEPENDS=	libticalcs2.so:comms/libticalcs2
 
-USES=		desktop-file-utils pkgconfig shared-mime-info tar:bzip2
+USES=		desktop-file-utils gnome pkgconfig shared-mime-info tar:bzip2
 GNU_CONFIGURE=	yes
 CONFIGURE_ENV=	OPT_CFLAGS=" "	# Inhibit -O3, our default CFLAGS are upheld
 USE_GNOME=	gtk20

@@ -11,6 +11,8 @@ MASTER_SITES=	http://keyserver.kjsl.com/~jharris/distfiles/
 MAINTAINER=	jharris@widomaker.com
 COMMENT=	Command-line utility to encrypt files
 
+BROKEN=		unfetchable
+
 USES=		tar:tgz ssl
 GNU_CONFIGURE=	yes
 
@@ -19,6 +21,8 @@ PORTDOCS=	COPYING README ChangeLog
 
 CFLAGS+=	-I${OPENSSLINC}
 LDFLAGS+=	-L${OPENSSLLIB}
+
+OPTIONS_DEFINE=	DOCS
 
 post-patch:
 	${REINPLACE_CMD} -e "s|\(-lcrypto\)|${LDFLAGS} \1|g" \

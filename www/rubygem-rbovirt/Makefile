@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	rbovirt
-PORTVERSION=	0.1.5
+PORTVERSION=	0.1.7
 CATEGORIES=	www rubygems
 MASTER_SITES=	RG
 
@@ -15,8 +15,9 @@ LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 RUN_DEPENDS=	rubygem-nokogiri>=0:textproc/rubygem-nokogiri \
 		rubygem-rest-client>=1.7.0:www/rubygem-rest-client
 
-NO_ARCH=	yes
-USE_RUBY=	yes
 USES=		gem
+USE_RUBY=	yes
+
+NO_ARCH=	yes
 
 .include <bsd.port.mk>

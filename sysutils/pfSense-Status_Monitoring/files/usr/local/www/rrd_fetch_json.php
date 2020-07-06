@@ -167,7 +167,7 @@ foreach ($side as $settings) {
 
 	$rrd_array = rrd_fetch($settings['rrd_file'], $rrd_options);
 	if (!($rrd_array)) {
-		die ('{ "error" : "' . rrd_error() . '" }');
+		die ('{ "error" : ' . json_encode(rrd_error()) . ' }');
 	}
 
 	$ds_list = array_keys ($rrd_array['data']);
@@ -228,7 +228,6 @@ foreach ($side as $settings) {
 				break;
 			case "inpass":
 				$ninetyfifth = true;
-				$multiplier = 8;
 				$format = "s";
 				break;
 			case "max":
@@ -236,19 +235,16 @@ foreach ($side as $settings) {
 				break;
 			case "inpass6":
 				$ninetyfifth = true;
-				$multiplier = 8;
 				$format = "s";
 				break;
 			case "outpass":
 				$invert = $invert_graph;
 				$ninetyfifth = true;
-				$multiplier = 8;
 				$format = "s";
 				break;
 			case "outpass6":
 				$invert = $invert_graph;
 				$ninetyfifth = true;
-				$multiplier = 8;
 				$format = "s";
 				break;
 			case "rate":
@@ -273,6 +269,10 @@ foreach ($side as $settings) {
 			case "freq":
 				$unit_acronym = "";
 				break;
+		}
+
+		if ($settings['category'] === "traffic") {
+			$multiplier = 8;
 		}
 
 		if (!$ignore) {

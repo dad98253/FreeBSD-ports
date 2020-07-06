@@ -2,11 +2,11 @@
 # $FreeBSD$
 
 PORTNAME=	zsh
-DISTVERSION=	5.5.1
+DISTVERSION=	5.8
 CATEGORIES=	shells
-MASTER_SITES=	http://www.zsh.org/pub/ \
+MASTER_SITES=	https://www.zsh.org/pub/ \
 		SF \
-		http://www.zsh.org/pub/:doc \
+		https://www.zsh.org/pub/:doc \
 		SF/${PORTNAME}/${PORTNAME}-doc/${PORTVERSION}:doc
 DISTFILES=	${DISTNAME}${EXTRACT_SUFX}
 
@@ -33,6 +33,11 @@ CONFIGURE_ARGS=	--with-tcsetpgrp \
 		--enable-multibyte \
 		--enable-zsh-secure-free \
 		--sysconfdir=${PREFIX}/etc
+
+# fix PREFIX != LOCALBASE
+CONFIGURE_ARGS+=--disable-site-fndir \
+		--enable-additional-fpath=${DATADIR}/site-functions
+
 CONFIGURE_ENV+=	zsh_cv_sys_path_dev_fd=no \
 		ac_cv_header_sys_capability_h=no
 
@@ -88,6 +93,7 @@ post-patch:
 	@${REINPLACE_CMD} -e '/LIBS/s|-lrt||' ${WRKSRC}/configure
 	@${REINPLACE_CMD} -e "s|/etc/|${LOCALBASE}/etc/|" \
 		${WRKSRC}/Functions/MIME/zsh-mime-setup
+	${RM} ${WRKSRC}/Doc/help.txt
 
 post-patch-STATIC-on:
 	@${REINPLACE_CMD} -e "s|link=dynamic|link=either|" \
@@ -102,6 +108,7 @@ post-build:
 		${WRKSRC}/Doc/zshall.1)
 
 post-install:
+	${MKDIR} ${STAGEDIR}${DATADIR}/site-functions
 	${LN} -f ${STAGEDIR}${PREFIX}/bin/zsh ${STAGEDIR}${PREFIX}/bin/rzsh
 # Precompile completions and functions
 	(${STAGEDIR}${PREFIX}/bin/zsh -fc ' \

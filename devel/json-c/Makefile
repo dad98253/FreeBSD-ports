@@ -2,25 +2,25 @@
 # $FreeBSD$
 
 PORTNAME=	json-c
-PORTVERSION=	0.13
+PORTVERSION=	0.14
 CATEGORIES=	devel
-MASTER_SITES=	https://s3.amazonaws.com/json-c_releases/releases/
+MASTER_SITES=	https://s3.amazonaws.com/json-c_releases/releases/ \
+		LOCAL/sunpoet
 
 MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	JSON (JavaScript Object Notation) implementation in C
 
 LICENSE=	MIT
+LICENSE_FILE=	${WRKSRC}/COPYING
 
-GNU_CONFIGURE=	yes
-INSTALL_TARGET=	install-strip
-TEST_TARGET=	check
+USES=		cmake compiler:c11 cpe
+
+CMAKE_OFF=	BUILD_DOCUMENTATION
+CMAKE_ON=	BUILD_SHARED_LIBS BUILD_STATIC_LIBS DISABLE_WERROR
+TEST_TARGET=	test
 USE_LDCONFIG=	yes
-USES=		autoreconf cpe gmake libtool pathfix pkgconfig
 
 CPE_VENDOR=	json-c_project
-
-post-patch:
-	@${REINPLACE_CMD} -e 's| -Werror||g' ${WRKSRC}/Makefile.in
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/json_object_private.h ${STAGEDIR}${PREFIX}/include/json-c/

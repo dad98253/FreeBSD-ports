@@ -6,7 +6,7 @@ PORTREVISION?=	0
 CATEGORIES?=	comms
 MASTER_SITES=	http://www.${PORTNAME}.org/downloads/
 
-MAINTAINER?=	avilla@FreeBSD.org
+MAINTAINER?=	ports@FreeBSD.org
 COMMENT?=	Library to communicate with Apple iOS devices
 
 LICENSE?=	LGPL21
@@ -26,6 +26,7 @@ INSTALL_TARGET=	install-strip
 LIB_DEPENDS=	libplist.so:devel/libplist \
 		libusbmuxd.so:comms/libusbmuxd
 
+USES+=		gnome
 USE_GNOME=	glib20
 CONFIGURE_ARGS+=--without-cython
 USE_CSTD=	gnu89

@@ -2,21 +2,20 @@
 # $FreeBSD$
 
 PORTNAME=	expect
-PORTVERSION=	0.3.3
+PORTVERSION=	0.4.0
 PORTREVISION=	2
 CATEGORIES=	devel pear
 
-MAINTAINER=	joneum@FreeBSD.org
+MAINTAINER=	sunpoet@FreeBSD.org
 COMMENT=	PHP extension for expect library
 
 LICENSE=	PHP301
 
 LIB_DEPENDS=	libexpect.so:lang/expect
 
-USES=		php:pecl tcl:86
-IGNORE_WITH_PHP=	70 71 72
+USES=		php:pecl tcl
 
 CFLAGS+=	-I${TCL_INCLUDEDIR}
-CONFIGURE_ARGS+=--with-expect=${LOCALBASE}
+CONFIGURE_ARGS=	--with-expect=${LOCALBASE}
 
 .include <bsd.port.mk>

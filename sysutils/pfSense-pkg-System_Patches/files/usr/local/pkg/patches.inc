@@ -3,7 +3,7 @@
  * patches.inc
  *
  * part of pfSense (https://www.pfsense.org)
- * Copyright (c) 2012-2015 Rubicon Communications, LLC (Netgate)
+ * Copyright (c) 2012-2020 Rubicon Communications, LLC (Netgate)
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,6 @@ function patch_commit($patch, $action, $test=false, $fulldetail=false) {
 	$whitespace = isset($patch['ignorewhitespace']) ? "--ignore-whitespace" : "";
 	$pathstrip = '-p' . $patch['pathstrip'];
 	$full_patch_command = "{$patch_cmd} --directory={$directory} {$force} {$pathstrip} {$filename} {$check} {$direction} {$whitespace}";
-	conf_mount_rw();
 	patch_write($patch);
 	if (!$fulldetail) {
 		$output = (mwexec($full_patch_command, true) == 0);
@@ -54,7 +53,6 @@ function patch_commit($patch, $action, $test=false, $fulldetail=false) {
 		$output = $full_patch_command . "\n\n" . shell_exec($full_patch_command . ' 2>&1');
 	}
 	patch_erase($patch);
-	conf_mount_ro();
 	return $output;
 }
 
@@ -181,12 +179,14 @@ function bootup_apply_patches() {
 
 	$a_patches = &$config['installedpackages']['patches']['item'];
 
-	foreach ($a_patches as $patch) {
+	foreach ($a_patches as $id => $patch) {
 		/* Skip if it should not be automatically applied;
 		   only attempt to apply if it can be applied;
 		   and	if it can be reverted it is presumably already applied, so skip it. */
 		if (isset($patch['autoapply']) && patch_test_apply($patch) && !patch_test_revert($patch)) {
-			patch_apply($patch);
+			$descr = patch_descr($id);
+			$savemsg = patch_apply($patch) ? gettext("Patch autoapplied succesfully") : gettext("Patch could NOT be autoapplied");
+			patchlog($savemsg . $descr);
 		}
 	}
 }
@@ -227,6 +227,24 @@ function patch_remove_shellcmd() {
 	if ($removed > 0) {
 		write_config("System Patches package removed {$removed} existing early shellcmd(s): apply patches");
 	}
+}
+
+function patchlog($msg) {
+	syslog(LOG_WARNING, gettext("System Patches: {$msg}"));
+}
+
+function patch_descr($id) {
+	global $config;
+	$a_patches = &$config['installedpackages']['patches']['item'];
+	if (!isset($a_patches[$id])) {
+		return null;
+	}
+	$descr = " (" . gettext("ID") . ": {$a_patches[$id]['uniqid']}";
+	if (isset($a_patches[$id]['descr'])) {
+		$descr .= ", " . gettext("DESCR") . ": {$a_patches[$id]['descr']}";
+	}
+	$descr .= ")";
+	return $descr;
 }
 
 ?>

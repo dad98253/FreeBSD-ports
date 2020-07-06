@@ -2,7 +2,7 @@
 # $FreeBSD$
 
 PORTNAME=	pngquant
-PORTVERSION=	2.11.7
+PORTVERSION=	2.12.5
 DISTVERSIONSUFFIX=	-src
 CATEGORIES=	graphics
 MASTER_SITES=	http://pngquant.org/

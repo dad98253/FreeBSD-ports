@@ -32,9 +32,9 @@ SYS_CA='https://ca.api.soyoustart.com/1.0'
 #'runabove-ca'
 RAV_CA='https://api.runabove.com/1.0'
 
-wiki="https://github.com/Neilpang/acme.sh/wiki/How-to-use-OVH-domain-api"
+wiki="https://github.com/acmesh-official/acme.sh/wiki/How-to-use-OVH-domain-api"
 
-ovh_success="https://github.com/Neilpang/acme.sh/wiki/OVH-Success"
+ovh_success="https://github.com/acmesh-official/acme.sh/wiki/OVH-Success"
 
 _ovh_get_api() {
   _ogaep="$1"
@@ -121,7 +121,7 @@ _initAuth() {
 
   _info "Checking authentication"
 
-  if ! _ovh_rest GET "domain" || _contains "$response" "INVALID_CREDENTIAL"; then
+  if ! _ovh_rest GET "domain" || _contains "$response" "INVALID_CREDENTIAL" || _contains "$response" "NOT_CREDENTIAL"; then
     _err "The consumer key is invalid: $OVH_CK"
     _err "Please retry to create a new one."
     _clearaccountconf OVH_CK

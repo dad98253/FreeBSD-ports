@@ -3,7 +3,7 @@
 
 PORTNAME=	libpqxx
 PORTVERSION=	3.1.1
-PORTREVISION=	2
+PORTREVISION=	4
 CATEGORIES=	databases
 MASTER_SITES=	http://pqxx.org/download/software/${PORTNAME}/
 PKGNAMEPREFIX=	postgresql-
@@ -14,6 +14,9 @@ MAINTAINER=	20080111.freebsd.org@ab.ote.we.lv
 COMMENT=	New C++ interface for PostgreSQL
 
 LICENSE=	BSD3CLAUSE
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 CONFLICTS=	postgresql-libpqxx-2.* postgresql-libpqxx-[4-9].* \
 		postgresql-libpqxx4-4.*

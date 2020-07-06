@@ -3,8 +3,8 @@
 
 PORTNAME=		mapcache
 DISTVERSION=		1.4.0-94
-PORTREVISION=		2
 DISTVERSIONSUFFIX=	-g732b3fd
+PORTREVISION=		4
 CATEGORIES=		graphics
 
 MAINTAINER=		gf-admins@iteris.com
@@ -21,7 +21,7 @@ LIB_DEPENDS=		libpng.so:graphics/png \
 USE_GITHUB=		yes
 GH_ACCOUNT=		mapserver
 
-USES=			cmake:outsource jpeg localbase
+USES=			cmake jpeg localbase
 USE_LDCONFIG=		yes
 CMAKE_ARGS+=		-DWITH_OGR=1 -DWITH_PIXMAN=1 -DWITH_BERKELEY_DB=0
 

@@ -3,7 +3,7 @@
 
 PORTNAME=	qonk
 PORTVERSION=	0.3.1
-PORTREVISION=	14
+PORTREVISION=	15
 CATEGORIES=	games
 MASTER_SITES=	SF/${PORTNAME}/${PORTNAME}/${PORTNAME}-${PORTVERSION}
 
@@ -14,7 +14,7 @@ LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 GNU_CONFIGURE=	yes
-USES=		gmake localbase
+USES=		gmake localbase sdl
 USE_SDL=	sdl gfx ttf image
 
 post-patch:

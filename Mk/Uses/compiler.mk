@@ -79,7 +79,7 @@ _CCVERSION!=	${CC} --version
 _CCVERSION_${_CC_hash}=	${_CCVERSION}
 PORTS_ENV_VARS+=	_CCVERSION_${_CC_hash}
 .endif
-COMPILER_VERSION=	${_CCVERSION:M[0-9].[0-9]*:tW:C/([0-9]).([0-9]).*/\1\2/g}
+COMPILER_VERSION=	${_CCVERSION:M[0-9]*.[0-9]*:[1]:C/([0-9]+)\.([0-9]+)\..*/\1\2/}
 .if ${_CCVERSION:Mclang}
 COMPILER_TYPE=	clang
 .else
@@ -103,7 +103,7 @@ _ALTCCVERSION_${_CC_hash}=	${_ALTCCVERSION}
 PORTS_ENV_VARS+=		_ALTCCVERSION_${_CC_hash}
 .endif
 
-ALT_COMPILER_VERSION=	${_ALTCCVERSION:M[0-9].[0-9]*:tW:C/([0-9]).([0-9]).*/\1\2/g}
+ALT_COMPILER_VERSION=	${_ALTCCVERSION:M[0-9]*.[0-9]*:[1]:C/([0-9]+)\.([0-9]+)\..*/\1\2/}
 .if ${_ALTCCVERSION:Mclang}
 ALT_COMPILER_TYPE=	clang
 .elif ${_ALTCCVERSION} != none
@@ -176,8 +176,8 @@ CHOSEN_COMPILER_TYPE=	gcc
 .if (defined(FAVORITE_COMPILER) && ${FAVORITE_COMPILER} == gcc) || (${ARCH} != amd64 && ${ARCH} != i386) # clang not always supported on Tier-2
 USE_GCC=	yes
 CHOSEN_COMPILER_TYPE=	gcc
-.elif (${COMPILER_TYPE} == clang && ${COMPILER_VERSION} < 50) || ${COMPILER_TYPE} == gcc
-.if ${ALT_COMPILER_TYPE} == clang && ${ALT_COMPILER_VERSION} >= 50
+.elif ${COMPILER_TYPE} == gcc
+.if ${ALT_COMPILER_TYPE} == clang
 CPP=	clang-cpp
 CC=	clang
 CXX=	clang++
@@ -198,8 +198,8 @@ CHOSEN_COMPILER_TYPE=	clang
 .if (defined(FAVORITE_COMPILER) && ${FAVORITE_COMPILER} == gcc) || (${ARCH} != amd64 && ${ARCH} != i386) # clang not always supported on Tier-2
 USE_GCC=	yes
 CHOSEN_COMPILER_TYPE=	gcc
-.elif (${COMPILER_TYPE} == clang && ${COMPILER_VERSION} < 35) || ${COMPILER_TYPE} == gcc
-.if ${ALT_COMPILER_TYPE} == clang && ${ALT_COMPILER_VERSION} >= 35
+.elif ${COMPILER_TYPE} == gcc
+.if ${ALT_COMPILER_TYPE} == clang
 CPP=	clang-cpp
 CC=	clang
 CXX=	clang++

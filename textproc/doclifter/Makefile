@@ -2,13 +2,15 @@
 # $FreeBSD$
 
 PORTNAME=	doclifter
-PORTVERSION=	2.17
-PORTREVISION=	1
+PORTVERSION=	2.18
 CATEGORIES=	textproc
 MASTER_SITES=	http://www.catb.org/~esr/doclifter/
 
 MAINTAINER=	araujo@FreeBSD.org
 COMMENT=	Translates documents written in troff macros to DocBook
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-09-15
 
 USES=		python:2.7 shebangfix
 SHEBANG_FILES=	doclifter manlifter

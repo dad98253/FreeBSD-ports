@@ -1,12 +1,15 @@
 # $FreeBSD$
 
 PORTNAME=	setuptools
-PORTVERSION=	39.2.0
+PORTVERSION=	44.0.0
 CATEGORIES=	devel python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 DIST_SUBDIR=	python
 
+# note: before committing to this port, contact portmgr to arrange for an
+# experimental ports run.  Untested commits may be backed out at portmgr's
+# discretion.
 MAINTAINER=	python@FreeBSD.org
 COMMENT=	Python packages installer
 
@@ -15,7 +18,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE
 
 NO_ARCH=	yes
 USES=		python zip
-USE_PYTHON=	autoplist concurrent distutils allflavors
+USE_PYTHON=	allflavors autoplist concurrent distutils
 
 PYDISTUTILS_SETUP=	${PYSETUP}
 
@@ -37,11 +40,12 @@ SUB_LIST+=	PYTHON_VER=${PYTHON_VER}
 #.if ${PYTHON_REL} < 3300
 #TEST_DEPENDS+=	${PYTHON_PKGNAMEPREFIX}mock>0:devel/py-mock@${PY_FLAVOR}
 #.endif
+# pkg install -y py36-pytest py36-mock py36-pytest-fixture-config py36-pytest-virtualenv py36-paver
 
 post-install:
 	${INSTALL_DATA} ${FILESDIR}/easy-install.pth.dist ${STAGEDIR}${PYTHON_SITELIBDIR}/
 
 do-test:
-	@cd ${WRKSRC} && ${PYTHON_CMD} ${PYDISTUTILS_SETUP} test
+	cd ${WRKSRC} && ${PYTHON_CMD} -m pytest -v -rs
 
 .include <bsd.port.post.mk>

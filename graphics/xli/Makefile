@@ -3,7 +3,7 @@
 
 PORTNAME=	xli
 PORTVERSION=	1.17.0
-PORTREVISION=	16
+PORTREVISION=	17
 CATEGORIES=	graphics
 MASTER_SITES=	DEBIAN
 DISTNAME=	xli_${PORTVERSION}+${XLI_SNAPVER:C/-//g}.orig
@@ -15,7 +15,7 @@ LIB_DEPENDS=	libpng.so:graphics/png
 
 CONFLICTS_INSTALL=	xloadimage-*
 
-USES=		imake jpeg
+USES=		imake jpeg xorg
 USE_XORG=	xi
 WRKSRC=		${WRKDIR}/xli-${XLI_SNAPVER}
 
@@ -26,9 +26,9 @@ PLIST_FILES=	bin/xli bin/xlito bin/xview bin/xsetbg \
 XLI_SNAPVER=	2006-11-10
 
 post-install:
-	${LN} -s ${MANPREFIX}/man/man1/xli.1.gz \
+	${RLN} ${STAGEDIR}${MANPREFIX}/man/man1/xli.1.gz \
 		${STAGEDIR}${MANPREFIX}/man/man1/xview.1.gz
-	${LN} -s ${MANPREFIX}/man/man1/xli.1.gz \
+	${RLN} ${STAGEDIR}${MANPREFIX}/man/man1/xli.1.gz \
 		${STAGEDIR}${MANPREFIX}/man/man1/xsetbg.1.gz
 
 .include <bsd.port.mk>

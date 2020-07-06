@@ -7,7 +7,7 @@ PORTREVISION=	4
 CATEGORIES=	x11-wm
 MASTER_SITES=	http://darkshed.net/files/c_cpp/fbcmd/
 
-MAINTAINER=	novel@FreeBSD.org
+MAINTAINER=	ports@FreeBSD.org
 COMMENT=	Commandline utility for controlling fluxbox
 
 LICENSE=	MIT
@@ -15,7 +15,7 @@ LICENSE_FILE=	${WRKSRC}/LICENSE.txt
 
 RUN_DEPENDS=	fluxbox:x11-wm/fluxbox
 
-USES=		gmake localbase:ldflags tar:bzip2
+USES=		gmake localbase:ldflags tar:bzip2 xorg
 ALL_TARGET=	first
 MAKE_ARGS=	CXX="${CXX}" CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" \
 		CXXFLAGS="${CXXFLAGS}" LFLAGS="${LDFLAGS}"

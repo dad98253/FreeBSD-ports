@@ -3,7 +3,7 @@
 
 PORTNAME=	lightyears
 PORTVERSION=	1.4
-PORTREVISION=	1
+PORTREVISION=	3
 CATEGORIES=	games
 MASTER_SITES=	http://www.jwhitham.org/20kly/
 
@@ -12,6 +12,9 @@ COMMENT=	Steampunk-themed strategy game: manage a steam supply network
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/LICENSE.txt
+
+DEPRECATED=	Uses deprecated version of python
+EXPIRATION_DATE=	2020-08-15
 
 RUN_DEPENDS=	${PYGAME}
 

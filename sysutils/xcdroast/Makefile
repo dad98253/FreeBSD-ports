@@ -20,7 +20,7 @@ NONROOT_DESC=	Use xcdroast w/o being root
 RUN_DEPENDS=	cdrecord:sysutils/cdrtools
 BUILD_DEPENDS=	cdrecord:sysutils/cdrtools
 
-USES=		gettext gmake iconv pkgconfig
+USES=		gettext gmake gnome iconv pkgconfig
 GNU_CONFIGURE=	yes
 
 CONFIGURE_ENV+=	GTK_CONFIG="${GTK_CONFIG}" \
@@ -34,9 +34,9 @@ CONFIGURE_ARGS=	--with-cdrtools-prefix=${LOCALBASE} \
 
 .if ${PORT_OPTIONS:MNLS}
 CONFIGURE_ARGS+=--disable-nls
-PLIST_SUB=	NLS="@comment "
+PLIST_SUB+=	NLS="@comment "
 .else
-PLIST_SUB=	NLS=""
+PLIST_SUB+=	NLS=""
 .endif
 
 .if ${PORT_OPTIONS:MGTK2}
